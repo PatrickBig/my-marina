@@ -6,21 +6,21 @@ The MVP is built in layers, starting with the foundation and working outward to 
 
 ---
 
-### Phase 1 — Foundation
+### Phase 1 — Foundation ✅
+
 *Everything else depends on this.*
 
-- [ ] Solution scaffold (projects, folder structure, `.sln`, `.gitignore`)
-- [ ] Update `CLAUDE.md` with build/test/lint commands and architecture notes
-- [ ] `MyMarina.Domain` — core entities, value objects, enums
-- [ ] `MyMarina.Infrastructure` — EF Core, PostgreSQL, initial migrations
-- [ ] Multi-tenancy middleware (`ITenantResolver`, global query filters)
-- [ ] ASP.NET Core Identity + JWT auth (register, login, refresh)
-- [ ] Health check endpoint (`/health`, `/ready`)
-- [ ] `docker-compose.yml` for local dev (API + Postgres)
-- [ ] Vite + React + TypeScript + Tailwind + shadcn/ui scaffold in `MyMarina.Web`
-- [ ] OpenAPI spec generation; TypeScript type codegen wired into frontend build
+- [x] Solution scaffold (projects, folder structure, `.sln`, `.gitignore`)
+- [x] Update `CLAUDE.md` with build/test/lint commands and architecture notes
+- [x] `MyMarina.Domain` — core entities, value objects, enums (UUID v7 PKs, CustomerAccount model, nullable DockId for moorings)
+- [x] `MyMarina.Infrastructure` — EF Core, PostgreSQL, initial migration applied
+- [x] Multi-tenancy plumbing (`ITenantContext`, `IMarinaContext`, `HttpTenantContext`, global query filters)
+- [x] Health check endpoints (`/health`, `/ready`) + Scalar UI at `/scalar/v1`
+- [x] `docker-compose.yml` for local dev (API + Postgres + Redis)
+- [x] Vite + React + TypeScript + Tailwind v4 + shadcn/ui peer deps scaffold in `MyMarina.Web`
+- [x] OpenAPI spec generation; `npm run generate-api` codegen wired into frontend
 
-**Deliverable:** A running API with auth, multi-tenancy, and a blank frontend shell.
+**Deliverable:** Running API (`:5222`) with multi-tenancy, real Postgres schema, Hangfire+Redis, and a blank frontend shell. Auth endpoints are first in Phase 2.
 
 ---
 

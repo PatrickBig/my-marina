@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MyMarina.Api/MyMarina.Api.csproj" />
+    <Project Path="src/MyMarina.Application/MyMarina.Application.csproj" />
+    <Project Path="src/MyMarina.Domain/MyMarina.Domain.csproj" />
+    <Project Path="src/MyMarina.Infrastructure/MyMarina.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MyMarina.IntegrationTests/MyMarina.IntegrationTests.csproj" />
+    <Project Path="tests/MyMarina.UnitTests/MyMarina.UnitTests.csproj" />
+  </Folder>
+</Solution>
