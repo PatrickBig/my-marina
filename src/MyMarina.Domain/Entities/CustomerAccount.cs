@@ -24,6 +24,8 @@ public class CustomerAccount : TenantEntity
     /// <summary>Internal marina notes — not visible to the customer.</summary>
     public string? Notes { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public ICollection<CustomerAccountMember> Members { get; init; } = [];
     public ICollection<Boat> Boats { get; init; } = [];
     public ICollection<Invoice> Invoices { get; init; } = [];

@@ -36,24 +36,21 @@ public class AppDbContext(
 
     private void ApplyTenantFilters(ModelBuilder builder)
     {
-        // Platform operators bypass all tenant filters
-        if (tenantContext.IsPlatformOperator)
-            return;
-
-        var tenantId = tenantContext.TenantId;
-
-        builder.Entity<Marina>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Dock>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Slip>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<SlipAssignment>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<CustomerAccount>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<CustomerAccountMember>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Boat>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Invoice>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<InvoiceLineItem>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Payment>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<MaintenanceRequest>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<WorkOrder>().HasQueryFilter(e => e.TenantId == tenantId);
-        builder.Entity<Announcement>().HasQueryFilter(e => e.TenantId == tenantId);
+        // Platform operators bypass all tenant filters.
+        // Reference tenantContext directly (not a captured local Guid) so EF re-evaluates
+        // the property on every query using the scoped ITenantContext for the current request.
+        builder.Entity<Marina>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Dock>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Slip>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<SlipAssignment>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<CustomerAccount>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<CustomerAccountMember>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Boat>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Invoice>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<InvoiceLineItem>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Payment>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<MaintenanceRequest>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<WorkOrder>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<Announcement>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
     }
 }

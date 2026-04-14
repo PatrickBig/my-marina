@@ -9,6 +9,7 @@ using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
 using MyMarina.Infrastructure.MultiTenancy;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Services;
 
 namespace MyMarina.Infrastructure;
 
@@ -57,6 +58,22 @@ public static class InfrastructureServiceExtensions
 
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();
+
+        // --- JWT token service ---
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+        // --- Command and query handlers (auto-registered via Scrutor) ---
+        services.Scan(scan => scan
+            .FromAssemblyOf<JwtTokenService>()
+            .AddClasses(c => c.AssignableTo(typeof(ICommandHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo(typeof(ICommandHandler<>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
         return services;
     }
