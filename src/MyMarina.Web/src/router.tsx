@@ -10,6 +10,8 @@ import { CustomersPage } from "./pages/CustomersPage";
 import { CustomerDetailPage } from "./pages/CustomerDetailPage";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { StaffPage } from "./pages/StaffPage";
+import { InvoicesPage } from "./pages/InvoicesPage";
+import { InvoiceDetailPage } from "./pages/InvoiceDetailPage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -84,6 +86,18 @@ const staffRoute = createRoute({
   component: StaffPage,
 });
 
+const invoicesRoute = createRoute({
+  getParentRoute: () => operatorRoute,
+  path: "/invoices",
+  component: InvoicesPage,
+});
+
+const invoiceDetailRoute = createRoute({
+  getParentRoute: () => operatorRoute,
+  path: "/invoices/$invoiceId",
+  component: InvoiceDetailPage,
+});
+
 // ─── Route tree ───────────────────────────────────────────────────────────────
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -96,6 +110,8 @@ const routeTree = rootRoute.addChildren([
     customerDetailRoute,
     assignmentsRoute,
     staffRoute,
+    invoicesRoute,
+    invoiceDetailRoute,
   ]),
 ]);
 

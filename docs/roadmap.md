@@ -85,30 +85,30 @@ The MVP is built in layers, starting with the foundation and working outward to 
 
 ---
 
-### Phase 3 — Billing (Manual)
+### Phase 3 — Billing (Manual) ✅
 
 *The marina can invoice customers and record payments.*
 
 #### Billing API
 
-- [ ] Invoice CRUD (create, edit draft, send, void)
-- [ ] Invoice line items (add/remove/edit)
-- [ ] Sequential invoice number generation per tenant
-- [ ] Payment recording (manual: cash, check, etc.)
-- [ ] Partial payment support
-- [ ] Overdue invoice flagging
-- [ ] Invoice status transitions with audit trail
-- [ ] Customer billing history view (operator side)
+- [x] Invoice CRUD (create, edit draft, send, void)
+- [x] Invoice line items (add/remove/edit)
+- [x] Sequential invoice number generation per tenant
+- [x] Payment recording (manual: cash, check, etc.)
+- [x] Partial payment support
+- [x] Overdue invoice flagging
+- [x] Invoice status transitions with audit trail
+- [x] Customer billing history view (operator side)
 
 #### Billing UI
 
-- [ ] Invoice list page — status badges (Draft, Sent, Paid, Overdue, Void), filters
-- [ ] Invoice detail page — line items, payment history, status action buttons (Send, Void)
-- [ ] Create/edit invoice form — customer picker, line item editor, due date
-- [ ] Record payment dialog — amount, method, date, notes
-- [ ] Customer billing history tab on customer detail page
+- [x] Invoice list page — status badges (Draft, Sent, Paid, Overdue, Void), filters
+- [x] Invoice detail page — line items, payment history, status action buttons (Send, Void)
+- [x] Create/edit invoice form — customer picker, line item editor, due date
+- [x] Record payment dialog — amount, method, date, notes
+- [x] Customer billing history tab on customer detail page
 
-**Deliverable:** A marina can issue invoices and track who has paid.
+**Deliverable:** A marina can issue invoices and track who has paid. ✅
 
 ---
 

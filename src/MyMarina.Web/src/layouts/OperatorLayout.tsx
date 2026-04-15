@@ -1,6 +1,6 @@
 import { Outlet, Link, useRouter } from "@tanstack/react-router";
 import {
-  Anchor, LayoutDashboard, Building2, Package, Ship, Users, Calendar, UserPlus, LogOut, ChevronDown,
+  Anchor, LayoutDashboard, Building2, Package, Ship, Users, Calendar, UserPlus, LogOut, ChevronDown, FileText,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -18,6 +18,7 @@ const navItems = [
   { to: "/slips", label: "Slips", icon: Ship },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/assignments", label: "Slip Assignments", icon: Calendar },
+  { to: "/invoices", label: "Invoices", icon: FileText },
   { to: "/staff", label: "Staff", icon: UserPlus },
 ];
 

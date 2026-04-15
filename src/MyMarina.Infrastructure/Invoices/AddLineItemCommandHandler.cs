@@ -30,7 +30,9 @@ public class AddLineItemCommandHandler(AppDbContext db) : ICommandHandler<AddLin
             SlipAssignmentId = command.SlipAssignmentId,
         };
 
-        invoice.LineItems.Add(lineItem);
+        db.InvoiceLineItems.Add(lineItem);
+        // EF Core relationship fixup adds lineItem to invoice.LineItems immediately,
+        // so RecalculateTotals can sum the full collection directly.
         RecalculateTotals(invoice);
         await db.SaveChangesAsync(ct);
 
