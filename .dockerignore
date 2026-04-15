@@ -1,0 +1,15 @@
+**/.git
+**/.gitignore
+**/bin
+**/obj
+**/*.user
+**/node_modules
+**/dist
+**/.env
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+k8s
+.github
+docs
+tests

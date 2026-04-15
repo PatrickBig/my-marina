@@ -17,7 +17,7 @@ namespace MyMarina.IntegrationTests;
 public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     // Credentials for the seeded platform operator — available to all test classes.
-    public const string PlatformOperatorEmail    = "admin@mymarina.io";
+    public const string PlatformOperatorEmail    = "admin@mymarina.org";
     public const string PlatformOperatorPassword = "Admin@Marina123!";
     public Guid         PlatformOperatorId       { get; private set; }
 
