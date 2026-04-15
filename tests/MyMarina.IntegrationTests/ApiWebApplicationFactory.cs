@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
@@ -69,6 +70,15 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Use PostgreSQL for Hangfire storage in tests — avoids needing a Redis container.
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Hangfire:UseRedis"] = "false"
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
             // Replace the production DbContext with one pointing at the test container
