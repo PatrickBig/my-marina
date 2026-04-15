@@ -71,11 +71,15 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Use PostgreSQL for Hangfire storage in tests — avoids needing a Redis container.
+        // Override ConnectionStrings:Postgres so Hangfire (and the health check) use the
+        // Testcontainers dynamic port instead of the hardcoded localhost:5432 in appsettings.json.
         builder.ConfigureAppConfiguration(config =>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Hangfire:UseRedis"] = "false"
+                ["Hangfire:UseRedis"]          = "false",
+                ["ConnectionStrings:Postgres"] = _postgres.GetConnectionString(),
+                ["ConnectionStrings:Redis"]    = "localhost:6379,abortConnect=false"
             });
         });
 
