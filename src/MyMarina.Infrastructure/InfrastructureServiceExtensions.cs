@@ -45,29 +45,31 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IMarinaContext>(sp => sp.GetRequiredService<HttpTenantContext>());
 
         // --- Hangfire storage (feature flag: Hangfire:UseRedis) ---
-        // Default is true (Redis). Set to false to use PostgreSQL storage instead
-        // when Redis is not available (e.g. cost reduction, simpler infra).
-        var useRedis = configuration.GetValue<bool>("Hangfire:UseRedis", defaultValue: true);
-        if (useRedis)
+        // Configuration is read lazily inside the callback so that test-time overrides
+        // (e.g. setting Hangfire:UseRedis=false via WebApplicationFactory) take effect
+        // before the storage is initialised.
+        services.AddHangfire((sp, config) =>
         {
-            var redisConnectionString = configuration.GetConnectionString("Redis")
-                ?? throw new InvalidOperationException("Redis connection string is required when Hangfire:UseRedis is true.");
-            services.AddHangfire(config => config
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseRedisStorage(redisConnectionString));
-        }
-        else
-        {
-            var pgConnection = configuration.GetConnectionString("Postgres")
-                ?? throw new InvalidOperationException("Postgres connection string is required when Hangfire:UseRedis is false.");
-            services.AddHangfire(config => config
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(pgConnection)));
-        }
+            var conf     = sp.GetRequiredService<IConfiguration>();
+            var useRedis = conf.GetValue<bool>("Hangfire:UseRedis", defaultValue: true);
+
+            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                  .UseSimpleAssemblyNameTypeSerializer()
+                  .UseRecommendedSerializerSettings();
+
+            if (useRedis)
+            {
+                var redisConnectionString = conf.GetConnectionString("Redis")
+                    ?? throw new InvalidOperationException("Redis connection string is required when Hangfire:UseRedis is true.");
+                config.UseRedisStorage(redisConnectionString);
+            }
+            else
+            {
+                var pgConnection = conf.GetConnectionString("Postgres")
+                    ?? throw new InvalidOperationException("Postgres connection string is required when Hangfire:UseRedis is false.");
+                config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(pgConnection));
+            }
+        });
 
         services.AddHangfireServer();
 
