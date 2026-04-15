@@ -20,8 +20,8 @@ WORKDIR /app
 EXPOSE 8080
 
 # Non-root user
-RUN addgroup --system --gid 1001 appgroup \
- && adduser  --system --uid 1001 --ingroup appgroup appuser
+RUN groupadd --system --gid 1001 appgroup \
+ && useradd  --system --uid 1001 --gid appgroup appuser
 USER appuser
 
 COPY --from=build /app/publish .
