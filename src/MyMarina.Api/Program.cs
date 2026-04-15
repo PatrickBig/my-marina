@@ -1,6 +1,7 @@
 using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MyMarina.Infrastructure.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -143,6 +144,12 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
 {
     Authorization = [new MyMarina.Api.Infrastructure.HangfireAuthFilter()]
 });
+
+// --- Recurring jobs ---
+RecurringJob.AddOrUpdate<MarkOverdueInvoicesJob>(
+    "mark-overdue-invoices",
+    job => job.ExecuteAsync(),
+    Cron.Daily);
 
 app.Run();
 
