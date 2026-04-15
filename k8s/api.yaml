@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mymarina-api
+  namespace: mymarina
+  labels:
+    app: mymarina-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mymarina-api
+  template:
+    metadata:
+      labels:
+        app: mymarina-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/patrickbig/my-marina/api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+
+            # Postgres — sourced from the PGO-generated secret (see postgres.yaml).
+            # PGO creates: mymarina-db-pguser-mymarina with a 'uri' field
+            # containing: postgresql://mymarina:<pass>@mymarina-db-primary.<ns>.svc:5432/mymarina
+            # Npgsql accepts PostgreSQL URIs directly.
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: mymarina-db-pguser-mymarina
+                  key: uri
+
+            # Redis and JWT — from mymarina-secrets (see secrets.yaml)
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: mymarina-secrets
+                  key: redis-connection-string
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: mymarina-secrets
+                  key: jwt-key
+
+            - name: Jwt__Issuer
+              value: mymarina-api
+            - name: Jwt__Audience
+              value: mymarina-clients
+            - name: Jwt__ExpiryMinutes
+              value: "60"
+            - name: Cors__AllowedOrigins__0
+              value: https://app.mymarina.org
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mymarina-api
+  namespace: mymarina
+spec:
+  selector:
+    app: mymarina-api
+  ports:
+    - port: 80
+      targetPort: 8080

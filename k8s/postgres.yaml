@@ -1,0 +1,60 @@
+# Crunchy Data PGO v5 — PostgresCluster
+#
+# Requires the PGO operator installed in your cluster:
+#   kubectl apply --server-side -k \
+#     github.com/CrunchyData/postgres-operator-examples/kustomize/install/namespace
+#
+# What PGO creates automatically:
+#   Secret:  mymarina-db-pguser-mymarina
+#     Fields: host, port, dbname, user, password, uri, jdbc-uri
+#   Services:
+#     mymarina-db-primary.mymarina.svc   — read/write (used by the API)
+#     mymarina-db-replicas.mymarina.svc  — read-only replicas
+#
+# NOTE: EF Core migrations must run against the primary (not a replica).
+#   Run them manually or via an init Job before the API deployment rolls out:
+#     kubectl run migrate --rm -it --image=<api-image> -n mymarina \
+#       --env="ConnectionStrings__Postgres=<uri>" \
+#       -- dotnet MyMarina.Api.dll migrate
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: mymarina-db
+  namespace: mymarina
+spec:
+  postgresVersion: 16
+
+  instances:
+    - name: pgha
+      replicas: 2                        # 1 primary + 1 standby for HA
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+
+  # pgBackRest backup repo — adjust storage class / size for your cluster
+  backups:
+    pgbackrest:
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 2 * * 0"           # weekly full Sunday 02:00
+            differential: "0 2 * * 1-6" # nightly differential Mon–Sat
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 40Gi
+
+  # Creates the mymarina database and a user whose credentials land in
+  # the secret: mymarina-db-pguser-mymarina
+  users:
+    - name: mymarina
+      databases:
+        - mymarina
+      options: "SUPERUSER"   # needed for EF Core schema migrations; tighten post-MVP

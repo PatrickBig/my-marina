@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["src/MyMarina.Domain/MyMarina.Domain.csproj", "MyMarina.Domain/"]
+COPY ["src/MyMarina.Application/MyMarina.Application.csproj", "MyMarina.Application/"]
+COPY ["src/MyMarina.Infrastructure/MyMarina.Infrastructure.csproj", "MyMarina.Infrastructure/"]
+COPY ["src/MyMarina.Api/MyMarina.Api.csproj", "MyMarina.Api/"]
+RUN dotnet restore "MyMarina.Api/MyMarina.Api.csproj"
+
+COPY src/ .
+RUN dotnet publish "MyMarina.Api/MyMarina.Api.csproj" -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "MyMarina.Api.dll"]
