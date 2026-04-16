@@ -221,10 +221,10 @@ export function SlipsPage() {
               <div className="space-y-1.5">
                 <Label>Dock (optional)</Label>
                 <Controller control={slipForm.control} name="dockId" render={({ field }) => (
-                  <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || null)}>
+                  <Select value={field.value ?? "none"} onValueChange={(v) => field.onChange(v === "none" ? null : v)}>
                     <SelectTrigger><SelectValue placeholder="No dock" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No dock</SelectItem>
+                      <SelectItem value="none">No dock</SelectItem>
                       {docks.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
