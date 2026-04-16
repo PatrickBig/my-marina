@@ -18,7 +18,8 @@ public static class InfrastructureServiceExtensions
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool registerHangfireServer = true)
     {
         // --- EF Core + Postgres ---
         services.AddDbContext<AppDbContext>((sp, options) =>
@@ -72,7 +73,8 @@ public static class InfrastructureServiceExtensions
             }
         });
 
-        services.AddHangfireServer();
+        if (registerHangfireServer)
+            services.AddHangfireServer();
 
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();

@@ -1,7 +1,6 @@
 using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using MyMarina.Infrastructure.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,7 +9,16 @@ using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Setup;
 using Scalar.AspNetCore;
+
+// --setup mode: apply migrations + seed users, then exit.
+// Designed to run as a Kubernetes pre-install/pre-upgrade Job or Helm hook.
+// Config comes from the "Setup" config section; supply secrets via env vars:
+//   Setup__PlatformOperator__Email, Setup__PlatformOperator__Password
+//   Setup__InitialMarina__TenantName, Setup__InitialMarina__TenantSlug,
+//   Setup__InitialMarina__OwnerEmail, Setup__InitialMarina__OwnerPassword
+var isSetupMode = args.Contains("--setup");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +27,16 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 // --- Infrastructure (EF Core, Identity, Redis, Hangfire, multi-tenancy) ---
-builder.Services.AddInfrastructure(builder.Configuration);
+// In setup mode the Hangfire server is skipped so no Redis connection is required.
+builder.Services.AddInfrastructure(builder.Configuration, registerHangfireServer: !isSetupMode);
+
+// --- Setup mode: bind options and register the hosted service ---
+if (isSetupMode)
+{
+    builder.Services.Configure<SetupOptions>(
+        builder.Configuration.GetSection(SetupOptions.Section));
+    builder.Services.AddHostedService<SetupHostedService>();
+}
 
 // --- JWT Bearer authentication ---
 var jwtKey = builder.Configuration["Jwt:Key"]
@@ -145,11 +162,9 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     Authorization = [new MyMarina.Api.Infrastructure.HangfireAuthFilter()]
 });
 
-// --- Recurring jobs ---
-RecurringJob.AddOrUpdate<MarkOverdueInvoicesJob>(
-    "mark-overdue-invoices",
-    job => job.ExecuteAsync(),
-    Cron.Daily);
+// Recurring jobs are registered by the --setup pass on each deployment,
+// not at application startup. Hangfire stores them in its backend (Redis/Postgres)
+// so they survive restarts without re-registration.
 
 app.Run();
 
