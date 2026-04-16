@@ -167,26 +167,26 @@ The MVP is built in layers, starting with the foundation and working outward to 
 
 ---
 
-### Phase 6 — Platform Operator Tools
+### Phase 6 — Platform Operator Tools ✅
 
 *The support and admin tooling for managing the SaaS itself.*
 
 #### Platform API
 
-- [ ] Platform operator dashboard (tenant list)
-- [ ] Tenant creation, suspension, reactivation
-- [ ] Cross-tenant user management (view, reset password, revoke session)
-- [ ] Audit log viewer (cross-tenant)
+- [x] Platform operator dashboard (tenant list)
+- [x] Tenant creation, suspension, reactivation
+- [x] Cross-tenant user management (view, reset password, revoke session)
+- [x] Audit log viewer (cross-tenant)
 
 #### Platform UI
 
-- [ ] Platform admin shell (separate layout from marina operator UI)
-- [ ] Tenant list — status badges, create tenant form, suspend/reactivate actions
-- [ ] Tenant detail — marina list, owner info, subscription tier editor
-- [ ] Cross-tenant user search + detail + reset password
-- [ ] Audit log viewer — filterable by tenant, user, action, date range
+- [x] Platform admin shell (separate layout from marina operator UI)
+- [x] Tenant list — status badges, create tenant form, suspend/reactivate actions
+- [x] Tenant detail — marina list, owner info, subscription tier editor
+- [x] Cross-tenant user search + detail + reset password
+- [x] Audit log viewer — filterable by tenant, user, action, date range
 
-**Deliverable:** A platform operator can administer the SaaS without touching the database.
+**Deliverable:** A platform operator can administer the SaaS without touching the database. ✅
 
 ---
 

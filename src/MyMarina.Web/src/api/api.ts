@@ -402,3 +402,121 @@ export const updateWorkOrder = (id: string, data: {
 
 export const completeWorkOrder = (id: string, notes?: string | null) =>
   apiClient.post(`/work-orders/${id}/complete`, { notes });
+
+// ─── Tenants (Platform) ───────────────────────────────────────────────────────
+
+export type SubscriptionTier = 0 | 1 | 2 | 3; // Free|Starter|Pro|Enterprise
+
+export interface TenantDto {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  subscriptionTier: SubscriptionTier;
+  createdAt: string;
+}
+
+export interface TenantMarinaDto {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface TenantOwnerDto {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+}
+
+export interface TenantDetailDto extends TenantDto {
+  marinas: TenantMarinaDto[];
+  owner: TenantOwnerDto | null;
+}
+
+export const getTenants = () =>
+  apiClient.get<TenantDto[]>("/tenants").then((r) => r.data);
+
+export const getTenant = (id: string) =>
+  apiClient.get<TenantDetailDto>(`/tenants/${id}`).then((r) => r.data);
+
+export const createTenant = (data: {
+  name: string; slug: string;
+  ownerEmail: string; ownerFirstName: string; ownerLastName: string; ownerPassword: string;
+  subscriptionTier?: SubscriptionTier;
+}) => apiClient.post<{ tenantId: string; ownerId: string }>("/tenants", data).then((r) => r.data);
+
+export const updateTenant = (id: string, data: {
+  name: string; isActive: boolean; subscriptionTier: SubscriptionTier;
+}) => apiClient.put(`/tenants/${id}`, data);
+
+export const suspendTenant = (id: string) =>
+  apiClient.post(`/tenants/${id}/suspend`);
+
+export const reactivateTenant = (id: string) =>
+  apiClient.post(`/tenants/${id}/reactivate`);
+
+// ─── Platform Users ───────────────────────────────────────────────────────────
+
+export type UserRole = 0 | 1 | 2 | 3; // PlatformOperator|MarinaOwner|MarinaStaff|Customer
+
+export interface PlatformUserDto {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  tenantId: string | null;
+  tenantName: string | null;
+  marinaId: string | null;
+  marinaName: string | null;
+  isActive: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export const getPlatformUsers = (params?: {
+  search?: string; tenantId?: string; role?: UserRole;
+}) => apiClient.get<PlatformUserDto[]>("/platform/users", { params }).then((r) => r.data);
+
+export const getPlatformUser = (id: string) =>
+  apiClient.get<PlatformUserDto>(`/platform/users/${id}`).then((r) => r.data);
+
+export const resetUserPassword = (id: string, newPassword: string) =>
+  apiClient.post(`/platform/users/${id}/reset-password`, { newPassword });
+
+export const deactivatePlatformUser = (id: string) =>
+  apiClient.post(`/platform/users/${id}/deactivate`);
+
+export const reactivatePlatformUser = (id: string) =>
+  apiClient.post(`/platform/users/${id}/reactivate`);
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+
+export interface AuditLogDto {
+  id: string;
+  tenantId: string | null;
+  tenantName: string | null;
+  userId: string;
+  userEmail: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  before: string | null;
+  after: string | null;
+  ipAddress: string | null;
+  timestamp: string;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export const getAuditLogs = (params?: {
+  tenantId?: string; userId?: string; action?: string; entityType?: string;
+  from?: string; to?: string; page?: number; pageSize?: number;
+}) => apiClient.get<PagedResult<AuditLogDto>>("/platform/audit-logs", { params }).then((r) => r.data);
