@@ -112,31 +112,36 @@ The MVP is built in layers, starting with the foundation and working outward to 
 
 ---
 
-### Phase 4 — Customer Portal
+### Phase 4 — Customer Portal ✅
 
 *Customers can log in and see their information.*
 
 #### Portal API
 
-- [ ] Customer self-registration (via invitation link)
-- [ ] View current slip assignment
-- [ ] View registered boats
-- [ ] View invoices and payment history
-- [ ] Submit maintenance request
-- [ ] View maintenance request status and history
-- [ ] View announcement feed
+- [x] Customer self-registration (via invitation link — `POST /customers/{id}/invite` returns temporary password)
+- [x] `ICustomerContext` — resolves `CustomerAccountId` from JWT `customer_account_id` claim
+- [x] View current slip assignment (`GET /portal/slip`)
+- [x] View registered boats (`GET /portal/boats`)
+- [x] View invoices and payment history (`GET /portal/invoices`, `GET /portal/invoices/{id}`)
+- [x] Submit maintenance request (`POST /portal/maintenance-requests`)
+- [x] View maintenance request status and history (`GET /portal/maintenance-requests`)
+- [x] View announcement feed (`GET /portal/announcements`)
+- [x] 15 integration tests — invitation, all portal endpoints, cross-tenant isolation
 
 #### Portal UI
 
-- [ ] Customer login + registration pages (separate route from operator login)
-- [ ] Customer dashboard — current slip, balance due at a glance
-- [ ] My boats page
-- [ ] My invoices page — list + detail view
-- [ ] Submit maintenance request form
-- [ ] My requests page — status history
-- [ ] Announcements feed
+- [x] Customer login redirects to `/portal` (role-based post-login routing)
+- [x] `PortalLayout` — dedicated sidebar layout (separate from operator shell)
+- [x] Customer dashboard — current slip summary, balance due, overdue alert, recent invoices
+- [x] My Slip page — slip/dock/marina details, assignment type, rate
+- [x] My Boats page — boat cards with type, dimensions, registration
+- [x] Invoices list page — status badges, balance due column
+- [x] Invoice detail page — line items, payment history, subtotal/total/balance cards
+- [x] Submit maintenance request form — title, description, priority picker
+- [x] Maintenance requests list — status + priority badges, resolved date
+- [x] Announcements feed — pinned announcements highlighted
 
-**Deliverable:** Customers have a working self-service portal.
+**Deliverable:** Customers have a working self-service portal. ✅
 
 ---
 

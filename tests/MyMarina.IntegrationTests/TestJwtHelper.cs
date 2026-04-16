@@ -17,28 +17,43 @@ public static class TestJwtHelper
     public const string Issuer   = "mymarina-api";
     public const string Audience = "mymarina-clients";
 
+    public static string PlatformOperatorToken()
+        => GenerateToken(Guid.NewGuid(), "platform@mymarina.io", UserRole.PlatformOperator);
+
+    public static string MarinaOwnerToken(Guid tenantId, Guid? marinaId = null)
+        => GenerateToken(Guid.NewGuid(), "owner@marina.io", UserRole.MarinaOwner, tenantId, marinaId);
+
+    public static string MarinaStaffToken(Guid tenantId, Guid marinaId)
+        => GenerateToken(Guid.NewGuid(), "staff@marina.io", UserRole.MarinaStaff, tenantId, marinaId);
+
+    public static string CustomerToken(Guid tenantId, Guid customerAccountId)
+        => GenerateToken(Guid.NewGuid(), "customer@portal.io", UserRole.Customer, tenantId,
+            customerAccountId: customerAccountId);
+
     public static string GenerateToken(
         Guid userId,
         string email,
         UserRole role,
         Guid? tenantId = null,
-        Guid? marinaId = null)
+        Guid? marinaId = null,
+        Guid? customerAccountId = null)
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
             new(JwtRegisteredClaimNames.GivenName, "Test"),
-            new(JwtRegisteredClaimNames.FamilyName, "User"),
+            new(JwtRegisteredClaimNames.FamilyName, "Customer"),
             new(ClaimTypes.Role, role.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
         if (tenantId.HasValue)
             claims.Add(new Claim("tenant_id", tenantId.Value.ToString()));
-
         if (marinaId.HasValue)
             claims.Add(new Claim("marina_id", marinaId.Value.ToString()));
+        if (customerAccountId.HasValue)
+            claims.Add(new Claim("customer_account_id", customerAccountId.Value.ToString()));
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
         var token = new JwtSecurityToken(
@@ -50,13 +65,4 @@ public static class TestJwtHelper
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-    public static string PlatformOperatorToken()
-        => GenerateToken(Guid.NewGuid(), "platform@mymarina.io", UserRole.PlatformOperator);
-
-    public static string MarinaOwnerToken(Guid tenantId, Guid? marinaId = null)
-        => GenerateToken(Guid.NewGuid(), "owner@marina.io", UserRole.MarinaOwner, tenantId, marinaId);
-
-    public static string MarinaStaffToken(Guid tenantId, Guid marinaId)
-        => GenerateToken(Guid.NewGuid(), "staff@marina.io", UserRole.MarinaStaff, tenantId, marinaId);
 }

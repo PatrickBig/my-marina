@@ -209,3 +209,84 @@ export const recordPayment = (invoiceId: string, data: {
 export const inviteStaff = (data: {
   marinaId: string; email: string; firstName: string; lastName: string; role: number;
 }) => apiClient.post<InviteStaffResult>("/staff/invite", data).then((r) => r.data);
+
+export const inviteCustomer = (customerAccountId: string, data: {
+  email: string; firstName: string; lastName: string;
+}) => apiClient.post<{ userId: string; temporaryPassword: string }>(
+  `/customers/${customerAccountId}/invite`, data
+).then((r) => r.data);
+
+// ─── Portal (Customer self-service) ──────────────────────────────────────────
+
+export interface PortalMeDto {
+  userId: string; email: string; firstName: string; lastName: string;
+  customerAccountId: string; accountDisplayName: string; billingEmail: string; billingPhone: string | null;
+}
+
+export interface PortalSlipDto {
+  id: string; slipId: string; slipName: string; dockName: string | null; marinaName: string;
+  boatName: string; assignmentType: number; startDate: string; endDate: string | null;
+  rateOverride: number | null; notes: string | null;
+}
+
+export interface PortalBoatDto {
+  id: string; name: string; make: string | null; model: string | null; year: number | null;
+  length: number; beam: number; draft: number; boatType: number;
+  registrationNumber: string | null; insuranceExpiresOn: string | null;
+}
+
+export interface PortalInvoiceDto {
+  id: string; invoiceNumber: string; status: InvoiceStatus;
+  issuedDate: string; dueDate: string; totalAmount: number;
+  amountPaid: number; balanceDue: number; notes: string | null; createdAt: string;
+}
+
+export interface PortalLineItemDto {
+  description: string; quantity: number; unitPrice: number; lineTotal: number;
+}
+
+export interface PortalPaymentDto {
+  amount: number; paidOn: string; method: PaymentMethod; referenceNumber: string | null;
+}
+
+export interface PortalInvoiceDetailDto extends PortalInvoiceDto {
+  subTotal: number; taxAmount: number;
+  lineItems: PortalLineItemDto[];
+  payments: PortalPaymentDto[];
+}
+
+export interface PortalMaintenanceRequestDto {
+  id: string; title: string; description: string; status: number; priority: number;
+  slipId: string | null; slipName: string | null; boatId: string | null; boatName: string | null;
+  submittedAt: string; resolvedAt: string | null;
+}
+
+export interface PortalAnnouncementDto {
+  id: string; title: string; body: string; isPinned: boolean;
+  publishedAt: string; expiresAt: string | null; marinaName: string;
+}
+
+export const getPortalMe = () =>
+  apiClient.get<PortalMeDto>("/portal/me").then((r) => r.data);
+
+export const getPortalSlip = () =>
+  apiClient.get<PortalSlipDto>("/portal/slip").then((r) => r.data).catch(() => null);
+
+export const getPortalBoats = () =>
+  apiClient.get<PortalBoatDto[]>("/portal/boats").then((r) => r.data);
+
+export const getPortalInvoices = () =>
+  apiClient.get<PortalInvoiceDto[]>("/portal/invoices").then((r) => r.data);
+
+export const getPortalInvoice = (id: string) =>
+  apiClient.get<PortalInvoiceDetailDto>(`/portal/invoices/${id}`).then((r) => r.data);
+
+export const getPortalMaintenanceRequests = () =>
+  apiClient.get<PortalMaintenanceRequestDto[]>("/portal/maintenance-requests").then((r) => r.data);
+
+export const submitMaintenanceRequest = (data: {
+  title: string; description: string; priority: number; slipId?: string | null; boatId?: string | null;
+}) => apiClient.post<string>("/portal/maintenance-requests", data).then((r) => r.data);
+
+export const getPortalAnnouncements = () =>
+  apiClient.get<PortalAnnouncementDto[]>("/portal/announcements").then((r) => r.data);

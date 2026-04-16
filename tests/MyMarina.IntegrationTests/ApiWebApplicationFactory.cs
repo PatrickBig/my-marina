@@ -115,4 +115,7 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
 
     public HttpClient CreateMarinaOwnerClient(Guid tenantId, Guid? marinaId = null)
         => CreateClientWithToken(TestJwtHelper.MarinaOwnerToken(tenantId, marinaId));
+
+    public HttpClient CreateCustomerClient(Guid tenantId, Guid customerAccountId)
+        => CreateClientWithToken(TestJwtHelper.CustomerToken(tenantId, customerAccountId));
 }

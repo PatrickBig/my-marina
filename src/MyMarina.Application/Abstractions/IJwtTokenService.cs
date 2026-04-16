@@ -22,4 +22,5 @@ public sealed record UserTokenInfo(
     string LastName,
     UserRole Role,
     Guid? TenantId,
-    Guid? MarinaId);
+    Guid? MarinaId,
+    Guid? CustomerAccountId = null);

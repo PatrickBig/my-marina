@@ -1,6 +1,7 @@
 import { createRouter, createRoute, createRootRoute, redirect } from "@tanstack/react-router";
 import { RootLayout } from "./layouts/RootLayout";
 import { OperatorLayout } from "./layouts/OperatorLayout";
+import { PortalLayout } from "./layouts/PortalLayout";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { MarinaProfilePage } from "./pages/MarinaProfilePage";
@@ -12,6 +13,13 @@ import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { StaffPage } from "./pages/StaffPage";
 import { InvoicesPage } from "./pages/InvoicesPage";
 import { InvoiceDetailPage } from "./pages/InvoiceDetailPage";
+import { PortalDashboardPage } from "./pages/portal/PortalDashboardPage";
+import { PortalSlipPage } from "./pages/portal/PortalSlipPage";
+import { PortalBoatsPage } from "./pages/portal/PortalBoatsPage";
+import { PortalInvoicesPage } from "./pages/portal/PortalInvoicesPage";
+import { PortalInvoiceDetailPage } from "./pages/portal/PortalInvoiceDetailPage";
+import { PortalMaintenanceRequestsPage } from "./pages/portal/PortalMaintenanceRequestsPage";
+import { PortalAnnouncementsPage } from "./pages/portal/PortalAnnouncementsPage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -30,10 +38,23 @@ const operatorRoute = createRoute({
   id: "operator",
   component: OperatorLayout,
   beforeLoad: () => {
-    const { token } = useAuthStore.getState();
-    if (!token) {
-      throw redirect({ to: "/login" });
-    }
+    const { token, user } = useAuthStore.getState();
+    if (!token) throw redirect({ to: "/login" });
+    // Customers belong in the portal, not the operator shell
+    if (user?.role === 3) throw redirect({ to: "/portal" });
+  },
+});
+
+// ─── Customer portal shell ────────────────────────────────────────────────────
+const portalRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/portal",
+  component: PortalLayout,
+  beforeLoad: () => {
+    const { token, user } = useAuthStore.getState();
+    if (!token) throw redirect({ to: "/login" });
+    // Only customers can access the portal; operators go to dashboard
+    if (user?.role !== 3) throw redirect({ to: "/" });
   },
 });
 
@@ -98,6 +119,49 @@ const invoiceDetailRoute = createRoute({
   component: InvoiceDetailPage,
 });
 
+// ─── Portal page routes (relative paths — parent is /portal) ─────────────────
+const portalDashboardRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "/",
+  component: PortalDashboardPage,
+});
+
+const portalSlipRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "slip",
+  component: PortalSlipPage,
+});
+
+const portalBoatsRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "boats",
+  component: PortalBoatsPage,
+});
+
+const portalInvoicesRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "invoices",
+  component: PortalInvoicesPage,
+});
+
+const portalInvoiceDetailRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "invoices/$invoiceId",
+  component: PortalInvoiceDetailPage,
+});
+
+const portalMaintenanceRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "maintenance",
+  component: PortalMaintenanceRequestsPage,
+});
+
+const portalAnnouncementsRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "announcements",
+  component: PortalAnnouncementsPage,
+});
+
 // ─── Route tree ───────────────────────────────────────────────────────────────
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -112,6 +176,15 @@ const routeTree = rootRoute.addChildren([
     staffRoute,
     invoicesRoute,
     invoiceDetailRoute,
+  ]),
+  portalRoute.addChildren([
+    portalDashboardRoute,
+    portalSlipRoute,
+    portalBoatsRoute,
+    portalInvoicesRoute,
+    portalInvoiceDetailRoute,
+    portalMaintenanceRoute,
+    portalAnnouncementsRoute,
   ]),
 ]);
 
