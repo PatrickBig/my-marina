@@ -6,8 +6,7 @@ using MyMarina.Infrastructure.Persistence;
 namespace MyMarina.Infrastructure.Portal;
 
 public class GetPortalAnnouncementsQueryHandler(
-    AppDbContext db,
-    ITenantContext tenantContext) : IQueryHandler<GetPortalAnnouncementsQuery, IReadOnlyList<PortalAnnouncementDto>>
+    AppDbContext db) : IQueryHandler<GetPortalAnnouncementsQuery, IReadOnlyList<PortalAnnouncementDto>>
 {
     public async Task<IReadOnlyList<PortalAnnouncementDto>> HandleAsync(
         GetPortalAnnouncementsQuery query, CancellationToken ct = default)
