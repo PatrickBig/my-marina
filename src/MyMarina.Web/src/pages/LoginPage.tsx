@@ -38,8 +38,10 @@ export function LoginPage() {
         tenantId: result.tenantId ?? null,
         marinaId: result.marinaId ?? null,
       });
-      // Customers go to the self-service portal; operators go to the dashboard
-      router.navigate({ to: role === 3 ? "/portal" : "/" });
+      // Route by role: platform operators → /platform, customers → /portal, operators → /
+      if (role === 0) router.navigate({ to: "/platform/tenants" });
+      else if (role === 3) router.navigate({ to: "/portal" });
+      else router.navigate({ to: "/" });
     } catch {
       toast.error("Invalid email or password");
     }

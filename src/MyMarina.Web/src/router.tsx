@@ -23,6 +23,11 @@ import { PortalAnnouncementsPage } from "./pages/portal/PortalAnnouncementsPage"
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { MaintenanceRequestsPage } from "./pages/MaintenanceRequestsPage";
 import { WorkOrdersPage } from "./pages/WorkOrdersPage";
+import { PlatformLayout } from "./layouts/PlatformLayout";
+import { TenantsPage } from "./pages/platform/TenantsPage";
+import { TenantDetailPage } from "./pages/platform/TenantDetailPage";
+import { UsersPage } from "./pages/platform/UsersPage";
+import { AuditLogPage } from "./pages/platform/AuditLogPage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -140,6 +145,46 @@ const workOrdersRoute = createRoute({
   component: WorkOrdersPage,
 });
 
+// ─── Platform admin shell ─────────────────────────────────────────────────────
+const platformRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/platform",
+  component: PlatformLayout,
+  beforeLoad: () => {
+    const { token, user } = useAuthStore.getState();
+    if (!token) throw redirect({ to: "/login" });
+    if (user?.role !== 0) throw redirect({ to: "/" });
+  },
+});
+
+// ─── Platform page routes (relative paths — parent is /platform) ──────────────
+const platformTenantsRoute = createRoute({
+  getParentRoute: () => platformRoute,
+  path: "tenants",
+  component: TenantsPage,
+});
+
+const platformTenantDetailRoute = createRoute({
+  getParentRoute: () => platformRoute,
+  path: "tenants/$tenantId",
+  component: TenantDetailPage,
+});
+
+const platformUsersRoute = createRoute({
+  getParentRoute: () => platformRoute,
+  path: "users",
+  component: UsersPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    tenantId: typeof search.tenantId === "string" ? search.tenantId : undefined,
+  }),
+});
+
+const platformAuditLogRoute = createRoute({
+  getParentRoute: () => platformRoute,
+  path: "audit-logs",
+  component: AuditLogPage,
+});
+
 // ─── Portal page routes (relative paths — parent is /portal) ─────────────────
 const portalDashboardRoute = createRoute({
   getParentRoute: () => portalRoute,
@@ -200,6 +245,12 @@ const routeTree = rootRoute.addChildren([
     announcementsRoute,
     maintenanceRequestsRoute,
     workOrdersRoute,
+  ]),
+  platformRoute.addChildren([
+    platformTenantsRoute,
+    platformTenantDetailRoute,
+    platformUsersRoute,
+    platformAuditLogRoute,
   ]),
   portalRoute.addChildren([
     portalDashboardRoute,

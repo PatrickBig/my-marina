@@ -12,7 +12,8 @@ namespace MyMarina.Api.Controllers;
 public class TenantsController(
     ICommandHandler<CreateTenantCommand, CreateTenantResult> createHandler,
     ICommandHandler<UpdateTenantCommand> updateHandler,
-    IQueryHandler<GetTenantsQuery, IReadOnlyList<TenantDto>> getTenantsHandler) : ControllerBase
+    IQueryHandler<GetTenantsQuery, IReadOnlyList<TenantDto>> getTenantsHandler,
+    IQueryHandler<GetTenantQuery, TenantDetailDto?> getTenantHandler) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<TenantDto>), StatusCodes.Status200OK)]
@@ -20,6 +21,15 @@ public class TenantsController(
     {
         var tenants = await getTenantsHandler.HandleAsync(new GetTenantsQuery(), ct);
         return Ok(tenants);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(TenantDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    {
+        var tenant = await getTenantHandler.HandleAsync(new GetTenantQuery(id), ct);
+        return tenant is null ? NotFound() : Ok(tenant);
     }
 
     [HttpPost]
@@ -30,7 +40,7 @@ public class TenantsController(
         try
         {
             var result = await createHandler.HandleAsync(command, ct);
-            return CreatedAtAction(nameof(GetAll), result);
+            return CreatedAtAction(nameof(GetById), new { id = result.TenantId }, result);
         }
         catch (InvalidOperationException ex)
         {
@@ -45,14 +55,40 @@ public class TenantsController(
     {
         try
         {
-            var command = new UpdateTenantCommand(id, request.Name, request.IsActive, request.SubscriptionTier);
-            await updateHandler.HandleAsync(command, ct);
+            await updateHandler.HandleAsync(
+                new UpdateTenantCommand(id, request.Name, request.IsActive, request.SubscriptionTier), ct);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("{id:guid}/suspend")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Suspend(Guid id, CancellationToken ct)
+    {
+        var tenant = await getTenantHandler.HandleAsync(new GetTenantQuery(id), ct);
+        if (tenant is null) return NotFound();
+
+        await updateHandler.HandleAsync(
+            new UpdateTenantCommand(id, tenant.Name, false, tenant.SubscriptionTier), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/reactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reactivate(Guid id, CancellationToken ct)
+    {
+        var tenant = await getTenantHandler.HandleAsync(new GetTenantQuery(id), ct);
+        if (tenant is null) return NotFound();
+
+        await updateHandler.HandleAsync(
+            new UpdateTenantCommand(id, tenant.Name, true, tenant.SubscriptionTier), ct);
+        return NoContent();
     }
 }
 
