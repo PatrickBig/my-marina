@@ -49,6 +49,7 @@ jobs:
         with:
           context: .
           file: src/MyMarina.Api/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -89,6 +90,7 @@ jobs:
         with:
           context: src/MyMarina.Web
           file: src/MyMarina.Web/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
