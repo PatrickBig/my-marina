@@ -145,25 +145,25 @@ The MVP is built in layers, starting with the foundation and working outward to 
 
 ---
 
-### Phase 5 — Announcements & Maintenance Workflow
+### Phase 5 — Announcements & Maintenance Workflow ✅
 
 *Full communication loop between marina and customers.*
 
 #### Announcements & Maintenance API
 
-- [ ] Announcement CRUD (marina operator side)
-- [ ] Draft, publish, pin, expire announcements
-- [ ] Maintenance request review and status updates (marina operator side)
-- [ ] Work order creation and assignment (internal or from a request)
-- [ ] Work order status tracking
+- [x] Announcement CRUD (marina operator side)
+- [x] Draft, publish, pin, expire announcements
+- [x] Maintenance request review and status updates (marina operator side)
+- [x] Work order creation and assignment (internal or from a request)
+- [x] Work order status tracking
 
 #### Announcements & Maintenance UI
 
-- [ ] Announcements manager — list, create/edit, publish/pin/expire actions
-- [ ] Maintenance request inbox — list, status filter, detail view, status update
-- [ ] Work order list — create from request or scratch, assignee, status board
+- [x] Announcements manager — list, create/edit, publish/pin/expire actions
+- [x] Maintenance request inbox — list, status filter, detail view, status update
+- [x] Work order list — create from request or scratch, assignee, status board
 
-**Deliverable:** Marina operators can communicate with customers and track maintenance work.
+**Deliverable:** Marina operators can communicate with customers and track maintenance work. ✅
 
 ---
 

@@ -290,3 +290,115 @@ export const submitMaintenanceRequest = (data: {
 
 export const getPortalAnnouncements = () =>
   apiClient.get<PortalAnnouncementDto[]>("/portal/announcements").then((r) => r.data);
+
+// ─── Announcements (Operator) ─────────────────────────────────────────────────
+
+export interface AnnouncementDto {
+  id: string;
+  marinaId: string;
+  title: string;
+  body: string;
+  isPinned: boolean;
+  isPublished: boolean;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  createdByUserId: string;
+  createdAt: string;
+}
+
+export const getAnnouncements = (marinaId: string, params?: {
+  includeDrafts?: boolean; includeExpired?: boolean;
+}) => apiClient.get<AnnouncementDto[]>(`/marinas/${marinaId}/announcements`, { params }).then((r) => r.data);
+
+export const getAnnouncement = (marinaId: string, id: string) =>
+  apiClient.get<AnnouncementDto>(`/marinas/${marinaId}/announcements/${id}`).then((r) => r.data);
+
+export const createAnnouncement = (marinaId: string, data: {
+  title: string; body: string; publish: boolean; isPinned: boolean; expiresAt?: string | null;
+}) => apiClient.post<string>(`/marinas/${marinaId}/announcements`, data).then((r) => r.data);
+
+export const updateAnnouncement = (marinaId: string, id: string, data: {
+  title: string; body: string; isPinned: boolean; expiresAt?: string | null;
+}) => apiClient.put(`/marinas/${marinaId}/announcements/${id}`, data);
+
+export const publishAnnouncement = (marinaId: string, id: string) =>
+  apiClient.post(`/marinas/${marinaId}/announcements/${id}/publish`);
+
+export const unpublishAnnouncement = (marinaId: string, id: string) =>
+  apiClient.post(`/marinas/${marinaId}/announcements/${id}/unpublish`);
+
+export const deleteAnnouncement = (marinaId: string, id: string) =>
+  apiClient.delete(`/marinas/${marinaId}/announcements/${id}`);
+
+// ─── Maintenance Requests (Operator) ─────────────────────────────────────────
+
+export type MaintenanceStatus = 0 | 1 | 2 | 3 | 4; // Submitted|UnderReview|InProgress|Completed|Declined
+export type Priority = 0 | 1 | 2 | 3;              // Low|Medium|High|Urgent
+
+export interface MaintenanceRequestDto {
+  id: string;
+  customerAccountId: string;
+  customerDisplayName: string;
+  slipId: string | null;
+  slipName: string | null;
+  boatId: string | null;
+  boatName: string | null;
+  title: string;
+  description: string;
+  status: MaintenanceStatus;
+  priority: Priority;
+  submittedAt: string;
+  resolvedAt: string | null;
+  workOrderId: string | null;
+}
+
+export const getMaintenanceRequests = (params?: {
+  status?: MaintenanceStatus; priority?: Priority;
+}) => apiClient.get<MaintenanceRequestDto[]>("/maintenance-requests", { params }).then((r) => r.data);
+
+export const getMaintenanceRequest = (id: string) =>
+  apiClient.get<MaintenanceRequestDto>(`/maintenance-requests/${id}`).then((r) => r.data);
+
+export const updateMaintenanceStatus = (id: string, status: MaintenanceStatus) =>
+  apiClient.post(`/maintenance-requests/${id}/status`, { status });
+
+// ─── Work Orders ──────────────────────────────────────────────────────────────
+
+export type WorkOrderStatus = 0 | 1 | 2 | 3 | 4; // Open|InProgress|OnHold|Completed|Cancelled
+
+export interface WorkOrderDto {
+  id: string;
+  maintenanceRequestId: string | null;
+  maintenanceRequestTitle: string | null;
+  title: string;
+  description: string;
+  assignedToUserId: string | null;
+  assignedToName: string | null;
+  status: WorkOrderStatus;
+  priority: Priority;
+  scheduledDate: string | null;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export const getWorkOrders = (params?: {
+  status?: WorkOrderStatus; assignedToUserId?: string;
+}) => apiClient.get<WorkOrderDto[]>("/work-orders", { params }).then((r) => r.data);
+
+export const getWorkOrder = (id: string) =>
+  apiClient.get<WorkOrderDto>(`/work-orders/${id}`).then((r) => r.data);
+
+export const createWorkOrder = (data: {
+  title: string; description: string; priority: Priority;
+  maintenanceRequestId?: string | null; assignedToUserId?: string | null;
+  scheduledDate?: string | null; notes?: string | null;
+}) => apiClient.post<string>("/work-orders", data).then((r) => r.data);
+
+export const updateWorkOrder = (id: string, data: {
+  title: string; description: string; priority: Priority; status: WorkOrderStatus;
+  assignedToUserId?: string | null; scheduledDate?: string | null; notes?: string | null;
+}) => apiClient.put(`/work-orders/${id}`, data);
+
+export const completeWorkOrder = (id: string, notes?: string | null) =>
+  apiClient.post(`/work-orders/${id}/complete`, { notes });

@@ -20,6 +20,9 @@ import { PortalInvoicesPage } from "./pages/portal/PortalInvoicesPage";
 import { PortalInvoiceDetailPage } from "./pages/portal/PortalInvoiceDetailPage";
 import { PortalMaintenanceRequestsPage } from "./pages/portal/PortalMaintenanceRequestsPage";
 import { PortalAnnouncementsPage } from "./pages/portal/PortalAnnouncementsPage";
+import { AnnouncementsPage } from "./pages/AnnouncementsPage";
+import { MaintenanceRequestsPage } from "./pages/MaintenanceRequestsPage";
+import { WorkOrdersPage } from "./pages/WorkOrdersPage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -119,6 +122,24 @@ const invoiceDetailRoute = createRoute({
   component: InvoiceDetailPage,
 });
 
+const announcementsRoute = createRoute({
+  getParentRoute: () => operatorRoute,
+  path: "/announcements",
+  component: AnnouncementsPage,
+});
+
+const maintenanceRequestsRoute = createRoute({
+  getParentRoute: () => operatorRoute,
+  path: "/maintenance",
+  component: MaintenanceRequestsPage,
+});
+
+const workOrdersRoute = createRoute({
+  getParentRoute: () => operatorRoute,
+  path: "/work-orders",
+  component: WorkOrdersPage,
+});
+
 // ─── Portal page routes (relative paths — parent is /portal) ─────────────────
 const portalDashboardRoute = createRoute({
   getParentRoute: () => portalRoute,
@@ -176,6 +197,9 @@ const routeTree = rootRoute.addChildren([
     staffRoute,
     invoicesRoute,
     invoiceDetailRoute,
+    announcementsRoute,
+    maintenanceRequestsRoute,
+    workOrdersRoute,
   ]),
   portalRoute.addChildren([
     portalDashboardRoute,
