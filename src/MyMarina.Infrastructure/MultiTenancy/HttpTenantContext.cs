@@ -6,14 +6,16 @@ using MyMarina.Domain.Enums;
 namespace MyMarina.Infrastructure.MultiTenancy;
 
 /// <summary>
-/// Resolves the current tenant and marina from the authenticated user's JWT claims.
+/// Resolves the current tenant, marina, and customer account from the authenticated user's JWT claims.
 /// Registered as scoped — one instance per HTTP request.
 /// </summary>
-public class HttpTenantContext : ITenantContext, IMarinaContext
+public class HttpTenantContext : ITenantContext, IMarinaContext, ICustomerContext
 {
     public Guid TenantId { get; }
     public bool IsPlatformOperator { get; }
     public Guid? MarinaId { get; }
+    public Guid CustomerAccountId { get; }
+    public bool IsCustomer { get; }
 
     public HttpTenantContext(IHttpContextAccessor accessor)
     {
@@ -23,6 +25,7 @@ public class HttpTenantContext : ITenantContext, IMarinaContext
 
         var roleStr = user.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
         IsPlatformOperator = roleStr == nameof(UserRole.PlatformOperator);
+        IsCustomer = roleStr == nameof(UserRole.Customer);
 
         if (!IsPlatformOperator)
         {
@@ -33,6 +36,10 @@ public class HttpTenantContext : ITenantContext, IMarinaContext
             var marinaClaim = user.FindFirstValue("marina_id");
             if (Guid.TryParse(marinaClaim, out var marinaId))
                 MarinaId = marinaId;
+
+            var customerClaim = user.FindFirstValue("customer_account_id");
+            if (Guid.TryParse(customerClaim, out var customerAccountId))
+                CustomerAccountId = customerAccountId;
         }
     }
 }

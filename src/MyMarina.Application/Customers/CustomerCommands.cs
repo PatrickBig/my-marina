@@ -27,3 +27,17 @@ public sealed record DeactivateCustomerAccountCommand(Guid CustomerAccountId);
 public interface ICreateCustomerAccountCommandHandler : ICommandHandler<CreateCustomerAccountCommand, Guid>;
 public interface IUpdateCustomerAccountCommandHandler : ICommandHandler<UpdateCustomerAccountCommand>;
 public interface IDeactivateCustomerAccountCommandHandler : ICommandHandler<DeactivateCustomerAccountCommand>;
+
+/// <summary>
+/// Creates a portal user linked to an existing CustomerAccount.
+/// Returns a temporary password the marina operator shares out-of-band.
+/// </summary>
+public sealed record InviteCustomerCommand(
+    Guid CustomerAccountId,
+    string Email,
+    string FirstName,
+    string LastName);
+
+public sealed record InviteCustomerResult(Guid UserId, string TemporaryPassword);
+
+public interface IInviteCustomerCommandHandler : ICommandHandler<InviteCustomerCommand, InviteCustomerResult>;

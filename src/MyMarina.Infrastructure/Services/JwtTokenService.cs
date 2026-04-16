@@ -33,6 +33,9 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
         if (user.MarinaId.HasValue)
             claims.Add(new Claim("marina_id", user.MarinaId.Value.ToString()));
 
+        if (user.CustomerAccountId.HasValue)
+            claims.Add(new Claim("customer_account_id", user.CustomerAccountId.Value.ToString()));
+
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 

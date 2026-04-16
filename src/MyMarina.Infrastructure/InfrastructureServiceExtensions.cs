@@ -43,6 +43,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<HttpTenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<HttpTenantContext>());
         services.AddScoped<IMarinaContext>(sp => sp.GetRequiredService<HttpTenantContext>());
+        services.AddScoped<ICustomerContext>(sp => sp.GetRequiredService<HttpTenantContext>());
 
         // --- Hangfire storage (feature flag: Hangfire:UseRedis) ---
         // Configuration is read lazily inside the callback so that test-time overrides

@@ -133,7 +133,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -158,7 +159,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -166,6 +168,8 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MarinaId");
+
+                    b.HasIndex("TenantId", "MarinaId", "PublishedAt");
 
                     b.ToTable("Announcements");
                 });
@@ -516,7 +520,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
@@ -538,7 +543,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -835,13 +841,15 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<Guid?>("MaintenanceRequestId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
@@ -857,7 +865,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1278,7 +1287,8 @@ namespace MyMarina.Infrastructure.Migrations
                 {
                     b.HasOne("MyMarina.Domain.Entities.MaintenanceRequest", "MaintenanceRequest")
                         .WithOne("WorkOrder")
-                        .HasForeignKey("MyMarina.Domain.Entities.WorkOrder", "MaintenanceRequestId");
+                        .HasForeignKey("MyMarina.Domain.Entities.WorkOrder", "MaintenanceRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("MaintenanceRequest");
                 });

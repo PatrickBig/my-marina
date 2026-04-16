@@ -14,6 +14,7 @@ public class CustomersController(
     ICommandHandler<CreateCustomerAccountCommand, Guid> createHandler,
     ICommandHandler<UpdateCustomerAccountCommand> updateHandler,
     ICommandHandler<DeactivateCustomerAccountCommand> deactivateHandler,
+    ICommandHandler<InviteCustomerCommand, InviteCustomerResult> inviteHandler,
     IQueryHandler<GetCustomerAccountsQuery, IReadOnlyList<CustomerAccountDto>> getAccountsHandler,
     IQueryHandler<GetCustomerAccountQuery, CustomerAccountDto?> getAccountHandler) : ControllerBase
 {
@@ -78,6 +79,31 @@ public class CustomersController(
             return NotFound(new { message = ex.Message });
         }
     }
+
+    [HttpPost("{id:guid}/invite")]
+    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [ProducesResponseType(typeof(InviteCustomerResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Invite(Guid id, [FromBody] InviteCustomerRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var command = new InviteCustomerCommand(id, request.Email, request.FirstName, request.LastName);
+            var result = await inviteHandler.HandleAsync(command, ct);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ex.Message.Contains("already exists")
+                ? Conflict(new { message = ex.Message })
+                : BadRequest(new { message = ex.Message });
+        }
+    }
 }
 
 public sealed record UpdateCustomerRequest(
@@ -88,3 +114,8 @@ public sealed record UpdateCustomerRequest(
     string? EmergencyContactName,
     string? EmergencyContactPhone,
     string? Notes);
+
+public sealed record InviteCustomerRequest(
+    string Email,
+    string FirstName,
+    string LastName);

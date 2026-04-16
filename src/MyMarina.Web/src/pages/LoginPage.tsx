@@ -28,16 +28,18 @@ export function LoginPage() {
   const onSubmit = async (values: FormValues) => {
     try {
       const result = await login(values.email, values.password);
+      const role = result.role as number;
       storeLogin(result.token, {
         userId: result.userId,
         email: result.email,
         firstName: result.firstName,
         lastName: result.lastName,
-        role: result.role as number,
+        role,
         tenantId: result.tenantId ?? null,
         marinaId: result.marinaId ?? null,
       });
-      router.navigate({ to: "/" });
+      // Customers go to the self-service portal; operators go to the dashboard
+      router.navigate({ to: role === 3 ? "/portal" : "/" });
     } catch {
       toast.error("Invalid email or password");
     }

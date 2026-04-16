@@ -1,13 +1,17 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Auth;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
+using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Auth;
 
 public class LoginCommandHandler(
     UserManager<ApplicationUser> userManager,
-    IJwtTokenService jwtTokenService) : ICommandHandler<LoginCommand, LoginResult>
+    IJwtTokenService jwtTokenService,
+    AppDbContext db) : ICommandHandler<LoginCommand, LoginResult>
 {
     public async Task<LoginResult> HandleAsync(LoginCommand command, CancellationToken ct = default)
     {
@@ -24,6 +28,17 @@ public class LoginCommandHandler(
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userManager.UpdateAsync(user);
 
+        // For customer users, include their CustomerAccountId in the token so portal
+        // endpoints can scope queries without an extra DB lookup per request.
+        Guid? customerAccountId = null;
+        if (user.Role == UserRole.Customer && user.TenantId.HasValue)
+        {
+            customerAccountId = await db.CustomerAccountMembers
+                .Where(m => m.UserId == user.Id && m.TenantId == user.TenantId.Value)
+                .Select(m => (Guid?)m.CustomerAccountId)
+                .FirstOrDefaultAsync(ct);
+        }
+
         var tokenInfo = new UserTokenInfo(
             UserId: user.Id,
             Email: user.Email!,
@@ -31,7 +46,8 @@ public class LoginCommandHandler(
             LastName: user.LastName,
             Role: user.Role,
             TenantId: user.TenantId,
-            MarinaId: user.MarinaId);
+            MarinaId: user.MarinaId,
+            CustomerAccountId: customerAccountId);
 
         var token = jwtTokenService.GenerateToken(tokenInfo);
 
