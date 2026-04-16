@@ -13,6 +13,7 @@ env:
   REGISTRY: ghcr.io
   API_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/api
   WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/web
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-api:
@@ -49,6 +50,7 @@ jobs:
         with:
           context: .
           file: src/MyMarina.Api/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -89,6 +91,7 @@ jobs:
         with:
           context: src/MyMarina.Web
           file: src/MyMarina.Web/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
