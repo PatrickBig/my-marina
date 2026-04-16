@@ -121,6 +121,89 @@ export const createAssignment = (data: CreateAssignmentData) =>
 export const endAssignment = (assignmentId: string, endDate: string) =>
   apiClient.post(`/slip-assignments/${assignmentId}/end`, { endDate });
 
+// ─── Invoices ────────────────────────────────────────────────────────────────
+
+export type InvoiceStatus = 0 | 1 | 2 | 3 | 4 | 5; // Draft|Sent|PartiallyPaid|Paid|Overdue|Voided
+export type PaymentMethod = 0 | 1 | 2 | 3 | 4;     // Cash|Check|CreditCard|BankTransfer|Other
+
+export interface InvoiceDto {
+  id: string;
+  invoiceNumber: string;
+  customerAccountId: string;
+  customerDisplayName: string;
+  status: InvoiceStatus;
+  issuedDate: string;
+  dueDate: string;
+  subTotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface InvoiceLineItemDto {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  slipAssignmentId: string | null;
+}
+
+export interface PaymentDto {
+  id: string;
+  amount: number;
+  paidOn: string;
+  method: PaymentMethod;
+  referenceNumber: string | null;
+  notes: string | null;
+  recordedByUserId: string;
+  createdAt: string;
+}
+
+export interface InvoiceDetailDto extends InvoiceDto {
+  lineItems: InvoiceLineItemDto[];
+  payments: PaymentDto[];
+}
+
+export const getInvoices = (params?: {
+  customerAccountId?: string; status?: InvoiceStatus; issuedFrom?: string; issuedTo?: string;
+}) => apiClient.get<InvoiceDto[]>("/invoices", { params }).then((r) => r.data);
+
+export const getInvoice = (id: string) =>
+  apiClient.get<InvoiceDetailDto>(`/invoices/${id}`).then((r) => r.data);
+
+export const createInvoice = (data: {
+  customerAccountId: string; issuedDate: string; dueDate: string; notes?: string | null;
+}) => apiClient.post<string>("/invoices", data).then((r) => r.data);
+
+export const updateInvoiceDraft = (id: string, data: {
+  issuedDate: string; dueDate: string; notes?: string | null;
+}) => apiClient.put(`/invoices/${id}`, data);
+
+export const sendInvoice = (id: string) =>
+  apiClient.post(`/invoices/${id}/send`);
+
+export const voidInvoice = (id: string) =>
+  apiClient.post(`/invoices/${id}/void`);
+
+export const addLineItem = (invoiceId: string, data: {
+  description: string; quantity: number; unitPrice: number; slipAssignmentId?: string | null;
+}) => apiClient.post<string>(`/invoices/${invoiceId}/line-items`, data).then((r) => r.data);
+
+export const updateLineItem = (invoiceId: string, lineItemId: string, data: {
+  description: string; quantity: number; unitPrice: number;
+}) => apiClient.put(`/invoices/${invoiceId}/line-items/${lineItemId}`, data);
+
+export const removeLineItem = (invoiceId: string, lineItemId: string) =>
+  apiClient.delete(`/invoices/${invoiceId}/line-items/${lineItemId}`);
+
+export const recordPayment = (invoiceId: string, data: {
+  amount: number; paidOn: string; method: PaymentMethod; referenceNumber?: string | null; notes?: string | null;
+}) => apiClient.post<string>(`/invoices/${invoiceId}/payments`, data).then((r) => r.data);
+
 // ─── Staff ───────────────────────────────────────────────────────────────────
 
 export const inviteStaff = (data: {

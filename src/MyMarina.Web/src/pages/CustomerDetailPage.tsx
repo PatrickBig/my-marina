@@ -5,11 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, FileText } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   getCustomer, updateCustomer, getBoats, createBoat, updateBoat, deleteBoat,
-  type BoatDto,
+  getInvoices,
+  type BoatDto, type InvoiceDto,
 } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Controller } from "react-hook-form";
 
 const BoatType = { 0: "Sailboat", 1: "Powerboat", 2: "Catamaran", 3: "Kayak", 4: "Other" } as const;
+
+const INV_STATUS_LABELS: Record<number, string> = {
+  0: "Draft", 1: "Sent", 2: "Part. Paid", 3: "Paid", 4: "Overdue", 5: "Voided",
+};
+const INV_STATUS_VARIANTS: Record<number, "secondary" | "default" | "warning" | "success" | "destructive"> = {
+  0: "secondary", 1: "default", 2: "warning", 3: "success", 4: "destructive", 5: "secondary",
+};
+
+function fmtCurrency(n: number) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+}
+
+function CustomerInvoiceRow({ inv }: { inv: InvoiceDto }) {
+  return (
+    <TableRow>
+      <TableCell>
+        <Link to="/invoices/$invoiceId" params={{ invoiceId: inv.id }} className="font-mono font-medium hover:underline text-primary">
+          {inv.invoiceNumber}
+        </Link>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{inv.issuedDate}</TableCell>
+      <TableCell className="text-muted-foreground">{inv.dueDate}</TableCell>
+      <TableCell>{fmtCurrency(inv.totalAmount)}</TableCell>
+      <TableCell className={inv.balanceDue > 0 && inv.status !== 5 ? "font-medium" : "text-muted-foreground"}>
+        {fmtCurrency(inv.balanceDue)}
+      </TableCell>
+      <TableCell>
+        <Badge variant={INV_STATUS_VARIANTS[inv.status] ?? "secondary"}>
+          {INV_STATUS_LABELS[inv.status] ?? inv.status}
+        </Badge>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 const customerSchema = z.object({
   displayName: z.string().min(1, "Required"),
@@ -68,6 +103,12 @@ export function CustomerDetailPage() {
   const { data: boats = [], isLoading: boatsLoading } = useQuery({
     queryKey: ["boats", customerId],
     queryFn: () => getBoats(customerId),
+    enabled: !!customerId,
+  });
+
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
+    queryKey: ["invoices", "customer", customerId],
+    queryFn: () => getInvoices({ customerAccountId: customerId }),
     enabled: !!customerId,
   });
 
@@ -197,6 +238,37 @@ export function CustomerDetailPage() {
                     </div>
                   </TableCell>
                 </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
+      {/* Billing History */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Billing History</h2>
+          <Link to="/invoices" search={{ customerAccountId: customerId } as any}>
+            <Button variant="outline" size="sm"><FileText className="h-4 w-4" /> All Invoices</Button>
+          </Link>
+        </div>
+        {invoicesLoading ? <p className="text-muted-foreground">Loading…</p> : invoices.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No invoices on file.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice #</TableHead>
+                <TableHead>Issued</TableHead>
+                <TableHead>Due</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Balance</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.slice(0, 10).map((inv) => (
+                <CustomerInvoiceRow key={inv.id} inv={inv} />
               ))}
             </TableBody>
           </Table>
