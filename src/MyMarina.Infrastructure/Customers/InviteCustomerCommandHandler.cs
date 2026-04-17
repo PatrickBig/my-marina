@@ -37,10 +37,8 @@ public class InviteCustomerCommandHandler(
         {
             UserName = account.BillingEmail,
             Email = account.BillingEmail,
-            FirstName = "Customer", // Placeholder; will be updated by customer on first login
+            FirstName = "Customer",
             LastName = account.DisplayName,
-            Role = UserRole.Customer,
-            TenantId = tenantContext.TenantId,
         };
 
         var result = await userManager.CreateAsync(user, temporaryPassword);
@@ -49,6 +47,19 @@ public class InviteCustomerCommandHandler(
             var errors = string.Join("; ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Failed to create customer user: {errors}");
         }
+
+        var customerRoleId = Guid.Parse("00000005-0000-0000-0000-000000000001");
+        var userContext = new UserContext
+        {
+            Id = Guid.CreateVersion7(),
+            UserId = user.Id,
+            RoleId = customerRoleId,
+            TenantId = tenantContext.TenantId,
+            MarinaId = null,
+            CustomerAccountId = account.Id,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        db.UserContexts.Add(userContext);
 
         var member = new CustomerAccountMember
         {

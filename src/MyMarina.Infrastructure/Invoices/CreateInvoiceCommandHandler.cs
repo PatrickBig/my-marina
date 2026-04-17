@@ -20,8 +20,20 @@ public class CreateInvoiceCommandHandler(
             throw new KeyNotFoundException($"Customer account {command.CustomerAccountId} not found.");
 
         var marinaId = command.MarinaId ?? marinaContext.MarinaId;
+
         if (marinaId == null || marinaId == Guid.Empty)
-            throw new InvalidOperationException("MarinaId is required but not provided.");
+        {
+            var firstMarina = await db.Marinas
+                .Where(m => m.TenantId == tenantContext.TenantId)
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => m.Id)
+                .FirstOrDefaultAsync(ct);
+
+            if (firstMarina == Guid.Empty)
+                throw new InvalidOperationException("No marina found for this tenant.");
+
+            marinaId = firstMarina;
+        }
 
         var invoiceNumber = await GenerateInvoiceNumberAsync(ct);
 

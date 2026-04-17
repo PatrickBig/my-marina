@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
@@ -35,9 +36,17 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         // Trigger WebApplicationFactory initialization so Services is available
         _ = CreateClient();
 
+        // Apply migrations
+        using (var scope = Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+        }
+
         // Seed a platform operator so Auth tests can call POST /auth/login
-        using var scope = Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        using var seedScope = Services.CreateScope();
+        var userManager = seedScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var seedDb = seedScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var existing = await userManager.FindByEmailAsync(PlatformOperatorEmail);
         if (existing is null)
@@ -48,7 +57,6 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
                 Email     = PlatformOperatorEmail,
                 FirstName = "Platform",
                 LastName  = "Admin",
-                Role      = UserRole.PlatformOperator,
             };
             var result = await userManager.CreateAsync(platformOp, PlatformOperatorPassword);
             if (!result.Succeeded)
@@ -61,6 +69,25 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             PlatformOperatorId = existing.Id;
         }
+
+        var platformAdminRoleId = Guid.Parse("00000001-0000-0000-0000-000000000001");
+        var existingContext = await seedDb.UserContexts.FirstOrDefaultAsync(
+            uc => uc.UserId == PlatformOperatorId && uc.RoleId == platformAdminRoleId);
+        if (existingContext is null)
+        {
+            var userContext = new UserContext
+            {
+                Id = Guid.CreateVersion7(),
+                UserId = PlatformOperatorId,
+                RoleId = platformAdminRoleId,
+                TenantId = Guid.Empty,
+                MarinaId = null,
+                CustomerAccountId = null,
+                CreatedAt = DateTimeOffset.UtcNow,
+            };
+            seedDb.UserContexts.Add(userContext);
+            await seedDb.SaveChangesAsync();
+        }
     }
 
     public new async Task DisposeAsync()
@@ -70,6 +97,8 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         // Use PostgreSQL for Hangfire storage in tests — avoids needing a Redis container.
         // Override ConnectionStrings:Postgres so Hangfire (and the health check) use the
         // Testcontainers dynamic port instead of the hardcoded localhost:5432 in appsettings.json.
