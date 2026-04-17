@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/store/authStore'
 
 /**
  * Base Axios instance. All API calls go through here so auth headers,
@@ -27,3 +29,16 @@ apiClient.interceptors.request.use((config) => {
   }
   return config
 })
+
+// Handle 401 errors (expired or invalid tokens)
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout()
+      toast.error('Your session has expired. Please log in again.')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
