@@ -3,7 +3,7 @@ import { RootLayout } from "./layouts/RootLayout";
 import { OperatorLayout } from "./layouts/OperatorLayout";
 import { PortalLayout } from "./layouts/PortalLayout";
 import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
+import { MyMarinasPage } from "./pages/MyManinasPage";
 import { MarinaProfilePage } from "./pages/MarinaProfilePage";
 import { DocksPage } from "./pages/DocksPage";
 import { SlipsPage } from "./pages/SlipsPage";
@@ -70,7 +70,7 @@ const portalRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => operatorRoute,
   path: "/",
-  component: DashboardPage,
+  component: MyMarinasPage,
 });
 
 const marinaProfileRoute = createRoute({

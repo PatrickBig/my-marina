@@ -46,7 +46,7 @@ export function LoginPage() {
 
       // Single context or immediate token available
       const token = result.token || "";
-      const role = result.role as number;
+      const role = (result.role as unknown) as number;
       storeLogin(token, {
         userId: result.userId,
         email: result.email,
