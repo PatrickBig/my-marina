@@ -26,7 +26,9 @@ public static class InfrastructureServiceExtensions
         {
             options.UseNpgsql(
                 configuration.GetConnectionString("Postgres"),
-                npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
+                npgsql => npgsql
+                    .MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
+                    .MigrationsHistoryTable("__EFMigrationsHistory", "mymarina"));
         });
 
         // --- ASP.NET Core Identity ---

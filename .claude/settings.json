@@ -7,7 +7,9 @@
       "Bash(openspec status *)",
       "Bash(openspec instructions *)",
       "Bash(xargs grep *)",
-      "Bash(openspec list *)"
+      "Bash(openspec list *)",
+      "Bash(helm template *)",
+      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")"
     ]
   }
 }
