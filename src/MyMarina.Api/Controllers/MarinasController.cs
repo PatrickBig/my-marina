@@ -12,8 +12,10 @@ namespace MyMarina.Api.Controllers;
 public class MarinasController(
     ICommandHandler<CreateMarinaCommand, Guid> createHandler,
     ICommandHandler<UpdateMarinaCommand> updateHandler,
+    ICommandHandler<UpdateMarinaHealthTargetsCommand> updateHealthTargetsHandler,
     IQueryHandler<GetMarinasQuery, IReadOnlyList<MarinaDto>> getMarinasHandler,
-    IQueryHandler<GetMarinaQuery, MarinaDto?> getMarinaHandler) : ControllerBase
+    IQueryHandler<GetMarinaQuery, MarinaDto?> getMarinaHandler,
+    IQueryHandler<GetMarinaHealthTargetsQuery, HealthTargetsDto?> getHealthTargetsHandler) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<MarinaDto>), StatusCodes.Status200OK)]
@@ -53,6 +55,32 @@ public class MarinasController(
                 id, request.Name, request.Address, request.PhoneNumber,
                 request.Email, request.TimeZoneId, request.Website, request.Description);
             await updateHandler.HandleAsync(command, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id:guid}/health-targets")]
+    [ProducesResponseType(typeof(HealthTargetsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHealthTargets(Guid id, CancellationToken ct)
+    {
+        var targets = await getHealthTargetsHandler.HandleAsync(new GetMarinaHealthTargetsQuery(id), ct);
+        return targets is null ? NotFound() : Ok(targets);
+    }
+
+    [HttpPut("{id:guid}/health-targets")]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateHealthTargets(Guid id, [FromBody] HealthTargetsDto request, CancellationToken ct)
+    {
+        try
+        {
+            await updateHealthTargetsHandler.HandleAsync(new UpdateMarinaHealthTargetsCommand(id, request), ct);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
