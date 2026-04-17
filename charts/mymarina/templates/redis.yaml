@@ -1,0 +1,92 @@
+{{- if .Values.redis.enabled }}
+{{- $redisSecretName := include "mymarina.redis.credentialSecret" . }}
+{{- $existing := lookup "v1" "Secret" .Release.Namespace $redisSecretName }}
+{{- $redisPassword := "" }}
+{{- if and $existing $existing.data }}
+{{- $redisPassword = index $existing.data "redis-password" | b64dec }}
+{{- else }}
+{{- $redisPassword = randAlphaNum 32 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $redisSecretName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mymarina.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+type: Opaque
+stringData:
+  redis-password: {{ $redisPassword | quote }}
+  redis-connection-string: {{ printf "%s:6379,password=%s" (include "mymarina.redis.name" .) $redisPassword | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mymarina.redis.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mymarina.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  clusterIP: None
+  ports:
+    - port: 6379
+      name: redis
+  selector:
+    {{- include "mymarina.redis.selectorLabels" . | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mymarina.redis.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mymarina.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  serviceName: {{ include "mymarina.redis.name" . | quote }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mymarina.redis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mymarina.redis.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          command:
+            - redis-server
+            - --requirepass
+            - $(REDIS_PASSWORD)
+            - --appendonly
+            - "yes"
+            - --bind
+            - "0.0.0.0"
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $redisSecretName }}
+                  key: redis-password
+          ports:
+            - containerPort: 6379
+              name: redis
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.redis.storage }}
+{{- end }}

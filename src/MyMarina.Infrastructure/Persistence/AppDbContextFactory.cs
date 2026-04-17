@@ -16,7 +16,9 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(
                 "Host=localhost;Port=5432;Database=mymarina;Username=mymarina;Password=mymarina;SSL Mode=Disable",
-                npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
+                npgsql => npgsql
+                    .MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
+                    .MigrationsHistoryTable("__EFMigrationsHistory", "mymarina"))
             .Options;
 
         return new AppDbContext(options, new DesignTimeTenantContext());

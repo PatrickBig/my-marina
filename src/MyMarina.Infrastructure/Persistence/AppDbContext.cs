@@ -34,6 +34,7 @@ public class AppDbContext(
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.HasDefaultSchema("mymarina");
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         ApplyTenantFilters(builder);
         SeedRoles(builder);

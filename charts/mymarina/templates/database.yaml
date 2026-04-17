@@ -1,0 +1,45 @@
+{{- if .Values.database.enabled }}
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ include "mymarina.database.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mymarina.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  postgresVersion: {{ .Values.database.postgresVersion }}
+  port: 5432
+  instances:
+    - name: instance1
+      replicas: 1
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.database.storage }}
+  databaseInitSQL:
+    name: {{ include "mymarina.database.name" . }}-init-sql
+    key: init.sql
+  users:
+    - name: mymarina
+      databases:
+        - mymarina
+      options: NOSUPERUSER NOCREATEDB NOCREATEROLE
+  backups:
+    pgbackrest:
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 3 * * 0"
+            differential: "0 3 * * 1-6"
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              storageClassName: {{ .Values.database.storageClassName }}
+              resources:
+                requests:
+                  storage: {{ .Values.database.backupStorage }}
+{{- end }}
