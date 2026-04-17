@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Search, UserX } from "lucide-react";
+import { Plus, Search, UserX, Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { getCustomers, createCustomer, deactivateCustomer } from "@/api/api";
+import { getCustomers, createCustomer, deactivateCustomer, inviteCustomer } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +24,18 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
+const inviteSchema = z.object({
+  email: z.string().email("Invalid email"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+type InviteFormValues = z.infer<typeof inviteSchema>;
+
 export function CustomersPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
@@ -37,6 +46,10 @@ export function CustomersPage() {
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
+  });
+
+  const { register: registerInvite, handleSubmit: handleInviteSubmit, reset: resetInvite, formState: { errors: inviteErrors, isSubmitting: inviteSubmitting } } = useForm<InviteFormValues>({
+    resolver: zodResolver(inviteSchema),
   });
 
   const createMut = useMutation({
@@ -65,6 +78,29 @@ export function CustomersPage() {
       toast.success("Customer deactivated");
     },
     onError: () => toast.error("Failed to deactivate customer"),
+  });
+
+  const inviteMut = useMutation({
+    mutationFn: (values: InviteFormValues) => {
+      if (!selectedCustomerId) throw new Error("No customer selected");
+      return inviteCustomer(selectedCustomerId, {
+        email: values.email,
+        firstName: values.firstName,
+        lastName: values.lastName,
+      });
+    },
+    onSuccess: (data) => {
+      toast.success(`Invitation sent. Temporary password: ${data.temporaryPassword}`);
+      setInviteOpen(false);
+      setSelectedCustomerId(null);
+      resetInvite();
+    },
+    onError: (error: any) => {
+      const message = error.response?.status === 409
+        ? "This email is already registered"
+        : "Failed to send invitation";
+      toast.error(message);
+    },
   });
 
   const filtered = customers.filter((c) => {
@@ -123,11 +159,18 @@ export function CustomersPage() {
                   <Badge variant={c.isActive ? "success" : "secondary"}>{c.isActive ? "Active" : "Inactive"}</Badge>
                 </TableCell>
                 <TableCell>
-                  {c.isActive && (
-                    <Button size="icon" variant="ghost" onClick={() => deactivateMut.mutate(c.id)} title="Deactivate" className="text-muted-foreground">
-                      <UserX className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    {c.isActive && (
+                      <>
+                        <Button size="icon" variant="ghost" onClick={() => { setSelectedCustomerId(c.id); setInviteOpen(true); resetInvite(); }} title="Invite member" className="text-muted-foreground">
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => deactivateMut.mutate(c.id)} title="Deactivate" className="text-muted-foreground">
+                          <UserX className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -171,6 +214,36 @@ export function CustomersPage() {
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Saving…" : "Add Customer"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Invite Customer Member</DialogTitle></DialogHeader>
+          <form onSubmit={handleInviteSubmit((v) => inviteMut.mutate(v))} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Email</Label>
+              <Input type="email" {...registerInvite("email")} />
+              {inviteErrors.email && <p className="text-xs text-destructive">{inviteErrors.email.message}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>First Name</Label>
+                <Input {...registerInvite("firstName")} />
+                {inviteErrors.firstName && <p className="text-xs text-destructive">{inviteErrors.firstName.message}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Last Name</Label>
+                <Input {...registerInvite("lastName")} />
+                {inviteErrors.lastName && <p className="text-xs text-destructive">{inviteErrors.lastName.message}</p>}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={inviteSubmitting}>{inviteSubmitting ? "Sending…" : "Send Invitation"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
