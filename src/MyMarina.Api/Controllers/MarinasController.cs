@@ -15,7 +15,8 @@ public class MarinasController(
     ICommandHandler<UpdateMarinaHealthTargetsCommand> updateHealthTargetsHandler,
     IQueryHandler<GetMarinasQuery, IReadOnlyList<MarinaDto>> getMarinasHandler,
     IQueryHandler<GetMarinaQuery, MarinaDto?> getMarinaHandler,
-    IQueryHandler<GetMarinaHealthTargetsQuery, HealthTargetsDto?> getHealthTargetsHandler) : ControllerBase
+    IQueryHandler<GetMarinaHealthTargetsQuery, HealthTargetsDto?> getHealthTargetsHandler,
+    IQueryHandler<GetMarinaMetricsQuery, MarinaMetricsDto?> getMetricsHandler) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<MarinaDto>), StatusCodes.Status200OK)]
@@ -87,6 +88,15 @@ public class MarinasController(
         {
             return NotFound(new { message = ex.Message });
         }
+    }
+
+    [HttpGet("{id:guid}/metrics")]
+    [ProducesResponseType(typeof(MarinaMetricsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMetrics(Guid id, CancellationToken ct)
+    {
+        var metrics = await getMetricsHandler.HandleAsync(new GetMarinaMetricsQuery(id), ct);
+        return metrics is null ? NotFound() : Ok(metrics);
     }
 }
 

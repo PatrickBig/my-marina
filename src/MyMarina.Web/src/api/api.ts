@@ -14,6 +14,8 @@ export type BoatDto = components["schemas"]["BoatDto"];
 export type SlipAssignmentDto = components["schemas"]["SlipAssignmentDto"];
 export type AddressDto = components["schemas"]["AddressDto"];
 export type InviteStaffResult = components["schemas"]["InviteStaffResult"];
+export type HealthTargetsDto = components["schemas"]["HealthTargetsDto"];
+export type MarinaMetricsDto = components["schemas"]["MarinaMetricsDto"];
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +55,15 @@ export const updateMarina = (id: string, data: {
   name: string; address: AddressDto; phoneNumber: string; email: string;
   timeZoneId: string; website?: string | null; description?: string | null;
 }) => apiClient.put(`/marinas/${id}`, data);
+
+export const getMarinaHealthTargets = (marinaId: string) =>
+  apiClient.get<HealthTargetsDto>(`/marinas/${marinaId}/health-targets`).then((r) => r.data);
+
+export const updateMarinaHealthTargets = (marinaId: string, data: HealthTargetsDto) =>
+  apiClient.put(`/marinas/${marinaId}/health-targets`, data);
+
+export const getMarinaMetrics = (marinaId: string) =>
+  apiClient.get<MarinaMetricsDto>(`/marinas/${marinaId}/metrics`).then((r) => r.data);
 
 // ─── Docks ───────────────────────────────────────────────────────────────────
 

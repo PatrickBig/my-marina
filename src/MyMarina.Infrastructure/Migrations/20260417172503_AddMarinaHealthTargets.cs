@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using MyMarina.Domain.ValueObjects;
 
 #nullable disable
 
@@ -11,11 +10,26 @@ namespace MyMarina.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<HealthTargets>(
+            // Add column as nullable first to backfill existing rows
+            migrationBuilder.AddColumn<string>(
                 name: "HealthTargets",
                 table: "Marinas",
                 type: "jsonb",
-                nullable: false);
+                nullable: true);
+
+            // Set default values for existing rows (70% occupancy, 30 day AR threshold)
+            migrationBuilder.Sql(
+                @"UPDATE ""Marinas"" SET ""HealthTargets"" = '{""occupancyRateTarget"": 70, ""overdueARThresholdDays"": 30}'::jsonb WHERE ""HealthTargets"" IS NULL");
+
+            // Now enforce NOT NULL
+            migrationBuilder.AlterColumn<string>(
+                name: "HealthTargets",
+                table: "Marinas",
+                type: "jsonb",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "jsonb",
+                oldNullable: true);
         }
 
         /// <inheritdoc />
