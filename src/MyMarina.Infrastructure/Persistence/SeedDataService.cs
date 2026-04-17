@@ -91,8 +91,17 @@ public class SeedDataService(
             db.Tenants.Add(tenant);
             await db.SaveChangesAsync();
             tenantId = tenant.Id;
+        }
+        else
+        {
+            tenantId = existingTenant.Id;
+        }
 
-            var marina = new Marina
+        // Check for the specific test marina
+        var marina = await db.Marinas.FirstOrDefaultAsync(m => m.TenantId == tenantId && m.Name == "Test Marina Location");
+        if (marina == null)
+        {
+            marina = new Marina
             {
                 Id = Guid.CreateVersion7(),
                 TenantId = tenantId,
@@ -111,36 +120,8 @@ public class SeedDataService(
 
             db.Marinas.Add(marina);
             await db.SaveChangesAsync();
-            marinaId = marina.Id;
         }
-        else
-        {
-            tenantId = existingTenant.Id;
-            var marina = await db.Marinas.FirstOrDefaultAsync(m => m.TenantId == tenantId);
-            if (marina == null)
-            {
-                // Tenant exists but marina doesn't; create it
-                marina = new Marina
-                {
-                    Id = Guid.CreateVersion7(),
-                    TenantId = tenantId,
-                    Name = "Test Marina Location",
-                    Address = new Address(
-                        Street: "123 Dock Street",
-                        City: "Coastal Town",
-                        State: "CA",
-                        Zip: "90001",
-                        Country: "USA"),
-                    PhoneNumber = "555-0100",
-                    Email = "marina@mymarina.org",
-                    TimeZoneId = "America/New_York",
-                    CreatedAt = DateTimeOffset.UtcNow,
-                };
-                db.Marinas.Add(marina);
-                await db.SaveChangesAsync();
-            }
-            marinaId = marina.Id;
-        }
+        marinaId = marina.Id;
 
         // Tenant Owner
         await SeedUserWithContextAsync(
