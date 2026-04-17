@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Application.Abstractions;
@@ -33,8 +34,18 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
         if (user.MarinaId.HasValue)
             claims.Add(new Claim("marina_id", user.MarinaId.Value.ToString()));
 
-        if (user.CustomerAccountId.HasValue)
+        if (user.CustomerAccountIds?.Count > 0)
+        {
+            var idsJson = JsonSerializer.Serialize(user.CustomerAccountIds);
+            claims.Add(new Claim("customer_account_ids", idsJson));
+        }
+        else if (user.CustomerAccountId.HasValue)
+        {
+            // Backward compatibility: if only single CustomerAccountId is set, emit both old and new claim formats
             claims.Add(new Claim("customer_account_id", user.CustomerAccountId.Value.ToString()));
+            var idsJson = JsonSerializer.Serialize(new[] { user.CustomerAccountId.Value });
+            claims.Add(new Claim("customer_account_ids", idsJson));
+        }
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);

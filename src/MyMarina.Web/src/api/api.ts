@@ -210,11 +210,10 @@ export const inviteStaff = (data: {
   marinaId: string; email: string; firstName: string; lastName: string; role: number;
 }) => apiClient.post<InviteStaffResult>("/staff/invite", data).then((r) => r.data);
 
-export const inviteCustomer = (customerAccountId: string, data: {
-  email: string; firstName: string; lastName: string;
-}) => apiClient.post<{ userId: string; temporaryPassword: string }>(
-  `/customers/${customerAccountId}/invite`, data
-).then((r) => r.data);
+export const inviteCustomer = (customerAccountId: string) =>
+  apiClient.post<{ userId: string; temporaryPassword: string }>(
+    `/customers/${customerAccountId}/invite`
+  ).then((r) => r.data);
 
 // ─── Portal (Customer self-service) ──────────────────────────────────────────
 

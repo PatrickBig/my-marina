@@ -85,11 +85,11 @@ public class CustomersController(
     [ProducesResponseType(typeof(InviteCustomerResult), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Invite(Guid id, [FromBody] InviteCustomerRequest request, CancellationToken ct)
+    public async Task<IActionResult> Invite(Guid id, CancellationToken ct)
     {
         try
         {
-            var command = new InviteCustomerCommand(id, request.Email, request.FirstName, request.LastName);
+            var command = new InviteCustomerCommand(id);
             var result = await inviteHandler.HandleAsync(command, ct);
             return StatusCode(StatusCodes.Status201Created, result);
         }
@@ -99,9 +99,7 @@ public class CustomersController(
         }
         catch (InvalidOperationException ex)
         {
-            return ex.Message.Contains("already exists")
-                ? Conflict(new { message = ex.Message })
-                : BadRequest(new { message = ex.Message });
+            return Conflict(new { message = ex.Message });
         }
     }
 }
@@ -114,8 +112,3 @@ public sealed record UpdateCustomerRequest(
     string? EmergencyContactName,
     string? EmergencyContactPhone,
     string? Notes);
-
-public sealed record InviteCustomerRequest(
-    string Email,
-    string FirstName,
-    string LastName);

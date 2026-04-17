@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Domain.Enums;
 
@@ -36,7 +37,8 @@ public static class TestJwtHelper
         UserRole role,
         Guid? tenantId = null,
         Guid? marinaId = null,
-        Guid? customerAccountId = null)
+        Guid? customerAccountId = null,
+        IReadOnlyList<Guid>? customerAccountIds = null)
     {
         var claims = new List<Claim>
         {
@@ -52,8 +54,22 @@ public static class TestJwtHelper
             claims.Add(new Claim("tenant_id", tenantId.Value.ToString()));
         if (marinaId.HasValue)
             claims.Add(new Claim("marina_id", marinaId.Value.ToString()));
-        if (customerAccountId.HasValue)
+
+        // Emit both old (single account) and new (multiple accounts) claim formats for compatibility
+        if (customerAccountIds?.Count > 0)
+        {
+            var idsJson = JsonSerializer.Serialize(customerAccountIds);
+            claims.Add(new Claim("customer_account_ids", idsJson));
+            // Also set the old claim format for backward compatibility
+            claims.Add(new Claim("customer_account_id", customerAccountIds[0].ToString()));
+        }
+        else if (customerAccountId.HasValue)
+        {
             claims.Add(new Claim("customer_account_id", customerAccountId.Value.ToString()));
+            // Also emit the new format
+            var idsJson = JsonSerializer.Serialize(new[] { customerAccountId.Value });
+            claims.Add(new Claim("customer_account_ids", idsJson));
+        }
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
         var token = new JwtSecurityToken(

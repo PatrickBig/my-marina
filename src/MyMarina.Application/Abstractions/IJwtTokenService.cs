@@ -23,4 +23,5 @@ public sealed record UserTokenInfo(
     UserRole Role,
     Guid? TenantId,
     Guid? MarinaId,
-    Guid? CustomerAccountId = null);
+    Guid? CustomerAccountId = null,
+    IReadOnlyList<Guid>? CustomerAccountIds = null);

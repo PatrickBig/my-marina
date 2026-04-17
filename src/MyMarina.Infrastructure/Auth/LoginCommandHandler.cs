@@ -28,15 +28,22 @@ public class LoginCommandHandler(
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userManager.UpdateAsync(user);
 
-        // For customer users, include their CustomerAccountId in the token so portal
+        // For customer users, include all their CustomerAccountIds in the token so portal
         // endpoints can scope queries without an extra DB lookup per request.
         Guid? customerAccountId = null;
+        IReadOnlyList<Guid>? customerAccountIds = null;
         if (user.Role == UserRole.Customer && user.TenantId.HasValue)
         {
-            customerAccountId = await db.CustomerAccountMembers
+            var accountIds = await db.CustomerAccountMembers
                 .Where(m => m.UserId == user.Id && m.TenantId == user.TenantId.Value)
-                .Select(m => (Guid?)m.CustomerAccountId)
-                .FirstOrDefaultAsync(ct);
+                .Select(m => m.CustomerAccountId)
+                .ToListAsync(ct);
+
+            if (accountIds.Count > 0)
+            {
+                customerAccountIds = accountIds.AsReadOnly();
+                customerAccountId = accountIds[0]; // For backward compatibility
+            }
         }
 
         var tokenInfo = new UserTokenInfo(
@@ -47,7 +54,8 @@ public class LoginCommandHandler(
             Role: user.Role,
             TenantId: user.TenantId,
             MarinaId: user.MarinaId,
-            CustomerAccountId: customerAccountId);
+            CustomerAccountId: customerAccountId,
+            CustomerAccountIds: customerAccountIds);
 
         var token = jwtTokenService.GenerateToken(tokenInfo);
 
