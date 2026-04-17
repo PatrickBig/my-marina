@@ -9,7 +9,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("marinas/{marinaId:guid}/announcements")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class AnnouncementsController(
     ICommandHandler<CreateAnnouncementCommand, Guid> createHandler,
     ICommandHandler<UpdateAnnouncementCommand> updateHandler,

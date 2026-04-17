@@ -1,5 +1,3 @@
-using MyMarina.Domain.Enums;
-
 namespace MyMarina.Application.Abstractions;
 
 /// <summary>
@@ -20,7 +18,9 @@ public sealed record UserTokenInfo(
     string Email,
     string FirstName,
     string LastName,
-    UserRole Role,
+    string? Role,
     Guid? TenantId,
     Guid? MarinaId,
-    Guid? CustomerAccountId = null);
+    Guid? CustomerAccountId = null,
+    IReadOnlyList<Guid>? CustomerAccountIds = null,
+    bool HasMultipleContexts = false);

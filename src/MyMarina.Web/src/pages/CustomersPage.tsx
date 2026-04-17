@@ -24,12 +24,6 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-const inviteSchema = z.object({
-  email: z.string().email("Invalid email"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-});
-type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export function CustomersPage() {
   const qc = useQueryClient();
@@ -48,9 +42,6 @@ export function CustomersPage() {
     resolver: zodResolver(schema),
   });
 
-  const { register: registerInvite, handleSubmit: handleInviteSubmit, reset: resetInvite, formState: { errors: inviteErrors, isSubmitting: inviteSubmitting } } = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteSchema),
-  });
 
   const createMut = useMutation({
     mutationFn: (values: FormValues) => createCustomer({
@@ -81,23 +72,21 @@ export function CustomersPage() {
   });
 
   const inviteMut = useMutation({
-    mutationFn: (values: InviteFormValues) => {
+    mutationFn: () => {
       if (!selectedCustomerId) throw new Error("No customer selected");
-      return inviteCustomer(selectedCustomerId, {
-        email: values.email,
-        firstName: values.firstName,
-        lastName: values.lastName,
-      });
+      return inviteCustomer(selectedCustomerId);
     },
     onSuccess: (data) => {
       toast.success(`Invitation sent. Temporary password: ${data.temporaryPassword}`);
+      qc.invalidateQueries({ queryKey: ["customers"] });
       setInviteOpen(false);
       setSelectedCustomerId(null);
-      resetInvite();
     },
     onError: (error: any) => {
       const message = error.response?.status === 409
-        ? "This email is already registered"
+        ? "This customer already has a login"
+        : error.response?.status === 404
+        ? "Customer not found"
         : "Failed to send invitation";
       toast.error(message);
     },
@@ -162,7 +151,7 @@ export function CustomersPage() {
                   <div className="flex gap-2">
                     {c.isActive && (
                       <>
-                        <Button size="icon" variant="ghost" onClick={() => { setSelectedCustomerId(c.id); setInviteOpen(true); resetInvite(); }} title="Invite member" className="text-muted-foreground">
+                        <Button size="icon" variant="ghost" onClick={() => { setSelectedCustomerId(c.id); setInviteOpen(true); }} title="Invite member" className="text-muted-foreground">
                           <Mail className="h-4 w-4" />
                         </Button>
                         <Button size="icon" variant="ghost" onClick={() => deactivateMut.mutate(c.id)} title="Deactivate" className="text-muted-foreground">
@@ -222,30 +211,21 @@ export function CustomersPage() {
       {/* Invite Dialog */}
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Invite Customer Member</DialogTitle></DialogHeader>
-          <form onSubmit={handleInviteSubmit((v) => inviteMut.mutate(v))} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Email</Label>
-              <Input type="email" {...registerInvite("email")} />
-              {inviteErrors.email && <p className="text-xs text-destructive">{inviteErrors.email.message}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>First Name</Label>
-                <Input {...registerInvite("firstName")} />
-                {inviteErrors.firstName && <p className="text-xs text-destructive">{inviteErrors.firstName.message}</p>}
+          <DialogHeader><DialogTitle>Invite Customer to Create Login</DialogTitle></DialogHeader>
+          {selectedCustomerId && customers.find((c) => c.id === selectedCustomerId) && (
+            <div className="space-y-4">
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <p className="text-sm text-muted-foreground">You are about to send an invitation to:</p>
+                <p className="font-semibold text-base">{customers.find((c) => c.id === selectedCustomerId)?.displayName}</p>
+                <p className="text-sm text-muted-foreground">{customers.find((c) => c.id === selectedCustomerId)?.billingEmail}</p>
               </div>
-              <div className="space-y-1.5">
-                <Label>Last Name</Label>
-                <Input {...registerInvite("lastName")} />
-                {inviteErrors.lastName && <p className="text-xs text-destructive">{inviteErrors.lastName.message}</p>}
-              </div>
+              <p className="text-sm text-muted-foreground">They will receive a temporary password to access the customer portal.</p>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+                <Button type="button" onClick={() => inviteMut.mutate()} disabled={inviteMut.isPending}>{inviteMut.isPending ? "Sending…" : "Send Invitation"}</Button>
+              </DialogFooter>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={inviteSubmitting}>{inviteSubmitting ? "Sending…" : "Send Invitation"}</Button>
-            </DialogFooter>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

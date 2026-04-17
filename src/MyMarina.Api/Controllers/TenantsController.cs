@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("tenants")]
-[Authorize(Roles = nameof(UserRole.PlatformOperator))]
+[Authorize(Roles = "PlatformAdmin")]
 public class TenantsController(
     ICommandHandler<CreateTenantCommand, CreateTenantResult> createHandler,
     ICommandHandler<UpdateTenantCommand> updateHandler,

@@ -11,7 +11,7 @@ namespace MyMarina.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("portal")]
-[Authorize(Roles = nameof(UserRole.Customer))]
+[Authorize(Roles = "Customer")]
 public class PortalController(
     IQueryHandler<GetPortalMeQuery, PortalMeDto?> meHandler,
     IQueryHandler<GetPortalSlipQuery, PortalSlipAssignmentDto?> slipHandler,

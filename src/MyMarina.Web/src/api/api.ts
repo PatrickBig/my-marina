@@ -1,7 +1,11 @@
 import { apiClient } from "./client";
 import type { components } from "./schema";
 
-export type LoginResult = components["schemas"]["LoginResult"];
+type BaseLoginResult = components["schemas"]["LoginResult"];
+
+export type LoginResult = BaseLoginResult & {
+  availableContexts?: AvailableContext[];
+};
 export type MarinaDto = components["schemas"]["MarinaDto"];
 export type DockDto = components["schemas"]["DockDto"];
 export type SlipDto = components["schemas"]["SlipDto"];
@@ -13,8 +17,24 @@ export type InviteStaffResult = components["schemas"]["InviteStaffResult"];
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+export type AvailableContext = {
+  displayName: string;
+  role: number;
+  tenantId: string;
+  marinaId?: string | null;
+  customerAccountId?: string | null;
+};
+
+export type ContextToken = {
+  token: string;
+  expiresAt: string;
+};
+
 export const login = (email: string, password: string) =>
   apiClient.post<LoginResult>("/auth/login", { email, password }).then((r) => r.data);
+
+export const chooseContext = (userId: string, context: AvailableContext) =>
+  apiClient.post<ContextToken>("/auth/choose-context", { userId, context }).then((r) => r.data);
 
 // ─── Marinas ─────────────────────────────────────────────────────────────────
 
@@ -210,11 +230,10 @@ export const inviteStaff = (data: {
   marinaId: string; email: string; firstName: string; lastName: string; role: number;
 }) => apiClient.post<InviteStaffResult>("/staff/invite", data).then((r) => r.data);
 
-export const inviteCustomer = (customerAccountId: string, data: {
-  email: string; firstName: string; lastName: string;
-}) => apiClient.post<{ userId: string; temporaryPassword: string }>(
-  `/customers/${customerAccountId}/invite`, data
-).then((r) => r.data);
+export const inviteCustomer = (customerAccountId: string) =>
+  apiClient.post<{ userId: string; temporaryPassword: string }>(
+    `/customers/${customerAccountId}/invite`
+  ).then((r) => r.data);
 
 // ─── Portal (Customer self-service) ──────────────────────────────────────────
 

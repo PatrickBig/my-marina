@@ -8,7 +8,8 @@ namespace MyMarina.Infrastructure.Invoices;
 
 public class CreateInvoiceCommandHandler(
     AppDbContext db,
-    ITenantContext tenantContext) : ICommandHandler<CreateInvoiceCommand, Guid>
+    ITenantContext tenantContext,
+    IMarinaContext marinaContext) : ICommandHandler<CreateInvoiceCommand, Guid>
 {
     public async Task<Guid> HandleAsync(CreateInvoiceCommand command, CancellationToken ct = default)
     {
@@ -18,11 +19,28 @@ public class CreateInvoiceCommandHandler(
         if (!customerExists)
             throw new KeyNotFoundException($"Customer account {command.CustomerAccountId} not found.");
 
+        var marinaId = command.MarinaId ?? marinaContext.MarinaId;
+
+        if (marinaId == null || marinaId == Guid.Empty)
+        {
+            var firstMarina = await db.Marinas
+                .Where(m => m.TenantId == tenantContext.TenantId)
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => m.Id)
+                .FirstOrDefaultAsync(ct);
+
+            if (firstMarina == Guid.Empty)
+                throw new InvalidOperationException("No marina found for this tenant.");
+
+            marinaId = firstMarina;
+        }
+
         var invoiceNumber = await GenerateInvoiceNumberAsync(ct);
 
         var invoice = new Invoice
         {
             TenantId         = tenantContext.TenantId,
+            MarinaId         = marinaId.Value,
             CustomerAccountId = command.CustomerAccountId,
             InvoiceNumber    = invoiceNumber,
             IssuedDate       = command.IssuedDate,

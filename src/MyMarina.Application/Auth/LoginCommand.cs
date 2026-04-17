@@ -1,19 +1,20 @@
 using MyMarina.Application.Abstractions;
-using MyMarina.Domain.Enums;
 
 namespace MyMarina.Application.Auth;
 
 public sealed record LoginCommand(string Email, string Password);
 
 public sealed record LoginResult(
-    string Token,
+    string? Token,
     DateTimeOffset ExpiresAt,
     Guid UserId,
     string Email,
     string FirstName,
     string LastName,
-    UserRole Role,
+    string? Role,
     Guid? TenantId,
-    Guid? MarinaId);
+    Guid? MarinaId,
+    List<AvailableContext> AvailableContexts = null!);
+    // If multiple contexts exist, Token is null and client must call ChooseContext endpoint
 
 public interface ILoginCommandHandler : ICommandHandler<LoginCommand, LoginResult>;

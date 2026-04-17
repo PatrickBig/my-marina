@@ -3,13 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Common;
 using MyMarina.Application.Marinas;
-using MyMarina.Domain.Enums;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("marinas")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class MarinasController(
     ICommandHandler<CreateMarinaCommand, Guid> createHandler,
     ICommandHandler<UpdateMarinaCommand> updateHandler,
@@ -34,7 +33,7 @@ public class MarinasController(
     }
 
     [HttpPost]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateMarinaCommand command, CancellationToken ct)
     {
@@ -43,7 +42,7 @@ public class MarinasController(
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateMarinaRequest request, CancellationToken ct)

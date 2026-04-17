@@ -30,13 +30,10 @@ public interface IDeactivateCustomerAccountCommandHandler : ICommandHandler<Deac
 
 /// <summary>
 /// Creates a portal user linked to an existing CustomerAccount.
+/// The account must exist and not yet have a user. Email/name come from CustomerAccount.
 /// Returns a temporary password the marina operator shares out-of-band.
 /// </summary>
-public sealed record InviteCustomerCommand(
-    Guid CustomerAccountId,
-    string Email,
-    string FirstName,
-    string LastName);
+public sealed record InviteCustomerCommand(Guid CustomerAccountId);
 
 public sealed record InviteCustomerResult(Guid UserId, string TemporaryPassword);
 

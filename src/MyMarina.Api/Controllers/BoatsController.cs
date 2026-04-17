@@ -7,7 +7,7 @@ using MyMarina.Domain.Enums;
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class BoatsController(
     ICommandHandler<CreateBoatCommand, Guid> createHandler,
     ICommandHandler<UpdateBoatCommand> updateHandler,
@@ -57,7 +57,7 @@ public class BoatsController(
     }
 
     [HttpDelete("boats/{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)

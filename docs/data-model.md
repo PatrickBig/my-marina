@@ -9,6 +9,12 @@ All entities use **UUID v7** (`Guid.CreateVersion7()`, available in .NET 9+) as 
 ## Entity Relationship Overview
 
 ```
+User  (authentication identity — can have multiple roles)
+  │
+  └── UserContext []  (junction: User + Role + Tenant + Marina|null + CustomerAccount|null)
+        │
+        └── Role (defines permissions)
+
 Tenant  (corporate/billing entity; may own multiple marinas)
   │
   ├── Marina []
@@ -20,15 +26,15 @@ Tenant  (corporate/billing entity; may own multiple marinas)
   │     │     └── SlipAssignment [] ──────────────────────┐ │
   │     │                                                 │ │
   │     ├── Announcement []                               │ │
-  │     └── Staff (User with MarinaId set) []             │ │
-  │                                                       │ │
-  ├── CustomerAccount []  ◄──────────────────────────────── ┘
-  │     ├── CustomerAccountMember []  (1+ Users per account)
-  │     ├── Boat []
-  │     │     └── (linked to SlipAssignment)
-  │     ├── Invoice []
+  │     ├── Invoice []  ◄─────────────────────────────────┼─┘
   │     │     ├── InvoiceLineItem []
   │     │     └── Payment []
+  │     └── OperatingExpense []  (non-billable costs)      │
+  │                                                       │
+  ├── CustomerAccount []  ◄─────────────────────────────────┘
+  │     ├── CustomerAccountMember []  (1+ Users per account, linked via UserContext)
+  │     ├── Boat []
+  │     │     └── (linked to SlipAssignment)
   │     └── MaintenanceRequest []
   │           └── WorkOrder (1:1, created by marina operator)
   │
@@ -42,14 +48,23 @@ Tenant  (corporate/billing entity; may own multiple marinas)
 Two levels of data isolation are applied:
 
 1. **Tenant-level** — EF Core global query filters enforce `TenantId = @currentTenantId` on every tenant-scoped entity. No query escapes this filter unless the caller is a platform operator.
-2. **Marina-level** — Users may be scoped to a single Marina within a Tenant (staff) or have no marina restriction (corporate operators). A `IMarinaContext` service (alongside `ITenantContext`) provides the currently active `MarinaId`.
+2. **Marina-level** — Users may be scoped to a single Marina within a Tenant (staff) or have no marina restriction (corporate operators). Marina-scoping is determined by `UserContext.MarinaId`:
+   - If `MarinaId = null` → user is **tenant-level** (sees all marinas in tenant)
+   - If `MarinaId = set` → user is **marina-level** (sees only that marina)
 
-| User type | `TenantId` | `MarinaId` | Access |
-| --- | --- | --- | --- |
-| Platform Operator | null | null | Cross-tenant (bypass filter) |
-| Corporate Operator | set | null | All marinas under the Tenant |
-| Marina Owner / Staff | set | set | Only their assigned Marina |
-| Customer | set | null | Their CustomerAccount data only |
+**Key Design:** A single User can have multiple **UserContext** records, each representing a different role/marina combination. Users choose which context to use at login; marina-level users can switch contexts.
+
+| User type | UserContext.TenantId | UserContext.MarinaId | UserContext.RoleId | Access |
+| --- | --- | --- | --- | --- |
+| Platform Operator | varies | null | PlatformAdmin | Cross-tenant (bypass filter) |
+| Tenant Owner | set | null | TenantOwner | All marinas under the Tenant |
+| Marina Manager | set | set | MarinaManager | Only their assigned Marina; can have multiple contexts to manage multiple marinas |
+| Marina Staff | set | set | MarinaStaff | Only their assigned Marina |
+| Customer | set | null | Customer | Their CustomerAccount data only (not marina-scoped) |
+
+**Context Switching:**
+- **Operators** (Marina Manager, Marina Staff, Tenant Owner, Platform Admin): Switch contexts at login if they have multiple UserContext records
+- **Customers**: No context switching (single CustomerAccount per tenant with access to all boats across all marinas)
 
 ---
 
@@ -155,7 +170,7 @@ Links a slip to a customer account and boat for a period of time.
 
 ### User
 
-Authentication and identity record. Shared across all personas. Users can belong to a Tenant and optionally be scoped to a specific Marina.
+Authentication and identity record. A User is a human who can have multiple roles across different tenants and marinas via `UserContext` records. Users do not directly hold a role or tenant/marina assignment.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -165,12 +180,57 @@ Authentication and identity record. Shared across all personas. Users can belong
 | FirstName | string | |
 | LastName | string | |
 | PhoneNumber | string? | |
-| Role | enum | PlatformOperator, MarinaOwner, MarinaStaff, Customer |
-| TenantId | UUID v7? | Null for platform operators |
-| MarinaId | UUID v7? | Set for marina-scoped staff; null = access to all marinas in the tenant |
 | IsActive | bool | |
 | CreatedAt | DateTimeOffset | |
 | LastLoginAt | DateTimeOffset? | |
+
+---
+
+### UserContext
+
+A junction table linking a User to a specific role within a specific tenant and optionally marina. A single User can have multiple UserContext records, each representing a different role/tenant/marina combination. At login, the user selects which context to use; the JWT is scoped to that context.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| Id | UUID v7 | PK |
+| UserId | UUID v7 | FK → User |
+| RoleId | UUID v7 | FK → Role |
+| TenantId | UUID v7 | FK → Tenant |
+| MarinaId | UUID v7? | FK → Marina; null = tenant-level access (sees all marinas in tenant); set = marina-level access (sees only this marina) |
+| CustomerAccountId | UUID v7? | FK → CustomerAccount; populated for customers only |
+| CreatedAt | DateTimeOffset | |
+
+**Usage:**
+
+- **Platform Operator:** RoleId = PlatformAdmin, TenantId & MarinaId = null, no CustomerAccountId (can switch between any tenant)
+- **Tenant Owner:** RoleId = TenantOwner, TenantId = set, MarinaId = null (sees all marinas in tenant)
+- **Marina Manager:** RoleId = MarinaManager, TenantId & MarinaId = set (may have multiple contexts for multiple marinas)
+- **Marina Staff:** RoleId = MarinaStaff, TenantId & MarinaId = set
+- **Customer:** RoleId = Customer, TenantId = set, MarinaId = null, CustomerAccountId = set (unified view across marinas)
+
+---
+
+### Role
+
+An authorization role. Defines what actions are available to a user in a given context.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| Id | UUID v7 | PK |
+| Name | string | e.g., "PlatformAdmin", "TenantOwner", "MarinaManager", "MarinaStaff", "Customer" |
+| Description | string? | Human-readable purpose |
+
+---
+
+### Permission
+
+An authorization permission (capability). Roles can have multiple permissions; evaluation is role-based (no granular permission assignments to users).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| Id | UUID v7 | PK |
+| Name | string | e.g., "CreateInvoice", "ManageStaff", "ViewAnnouncements" |
+| Description | string? | |
 
 ---
 
@@ -244,12 +304,13 @@ A vessel registered to a CustomerAccount. A CustomerAccount may have multiple bo
 
 ### Invoice
 
-A billing record issued to a CustomerAccount.
+A billing record issued to a CustomerAccount for charges at a specific Marina.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | Id | UUID v7 | PK |
 | TenantId | UUID v7 | Global query filter |
+| MarinaId | UUID v7 | FK → Marina (scopes invoice to a specific marina for reporting) |
 | CustomerAccountId | UUID v7 | FK → CustomerAccount |
 | InvoiceNumber | string | Human-readable, sequential per tenant |
 | Status | enum | Draft, Sent, PartiallyPaid, Paid, Overdue, Voided |
@@ -296,6 +357,26 @@ A payment applied to an invoice. Supports manual recording in MVP; payment provi
 | PaymentProviderId | string? | Reserved for future payment processor integration |
 | PaymentProviderReference | string? | External transaction ID |
 | RecordedByUserId | UUID v7 | FK → User |
+| CreatedAt | DateTimeOffset | |
+
+---
+
+### OperatingExpense
+
+A non-billable cost incurred by the marina (e.g., maintenance labor, supplies, fuel). Unlike `Invoice` charges (passed to customers), operating expenses are the marina's own costs. Scoped to a specific marina for cost tracking and profitability analysis.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| Id | UUID v7 | PK |
+| TenantId | UUID v7 | Global query filter |
+| MarinaId | UUID v7 | FK → Marina (ties cost to specific marina) |
+| Category | string | e.g., "Labor", "Supplies", "Fuel", "Utilities", "Maintenance" |
+| Description | string | |
+| Amount | decimal | |
+| IncurredDate | DateOnly | When the expense occurred |
+| RelatedEntityType | string? | e.g., "WorkOrder", "Slip" (optional link to what triggered it) |
+| RelatedEntityId | UUID v7? | e.g., WorkOrder ID |
+| RecordedByUserId | UUID v7 | FK → User (who recorded it) |
 | CreatedAt | DateTimeOffset | |
 
 ---

@@ -38,6 +38,14 @@ public class PortalTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
 
         var owner = factory.CreateMarinaOwnerClient(tenant!.TenantId);
 
+        var marinaResp = await owner.PostAsJsonAsync("/marinas", new
+        {
+            Name = "Portal Marina", Address = new { Street = "1 Portal St", City = "Port", State = "FL", Zip = "33000", Country = "US" },
+            PhoneNumber = "555-0010", Email = "marina@portal.io", TimeZoneId = "America/New_York",
+            Website = (string?)null, Description = (string?)null,
+        });
+        marinaResp.StatusCode.Should().Be(HttpStatusCode.Created);
+
         var custResp = await owner.PostAsJsonAsync("/customers", new
         {
             DisplayName = "Portal Customer",

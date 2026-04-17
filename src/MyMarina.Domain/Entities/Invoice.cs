@@ -4,10 +4,11 @@ using MyMarina.Domain.Enums;
 namespace MyMarina.Domain.Entities;
 
 /// <summary>
-/// A billing record issued to a CustomerAccount.
+/// A billing record issued to a CustomerAccount for charges at a specific Marina.
 /// </summary>
 public class Invoice : TenantEntity
 {
+    public required Guid MarinaId { get; init; }
     public Guid CustomerAccountId { get; init; }
 
     /// <summary>Human-readable invoice number, sequential per tenant.</summary>
