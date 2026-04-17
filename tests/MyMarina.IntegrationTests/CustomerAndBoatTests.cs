@@ -183,7 +183,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
 
         var loginResult = await loginResp.Content.ReadFromJsonAsync<LoginResult>();
         loginResult.Should().NotBeNull();
-        loginResult!.Role.Should().Be(UserRole.Customer);
+        loginResult!.Role.Should().Be("Customer");
         loginResult.Email.Should().Be(customer.BillingEmail);
     }
 
@@ -204,7 +204,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
 
         // Create a customer client using TestJwtHelper
         var customerClient = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(userId, customer.BillingEmail, UserRole.Customer, tenantId, null, custId));
+            TestJwtHelper.GenerateToken(userId, customer.BillingEmail, "Customer", tenantId, null, custId));
 
         // Customer should be able to access their portal data
         var meResp = await customerClient.GetAsync("/portal/me");
@@ -240,11 +240,11 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
 
         // Create client for customer 1
         var customer1Client = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(user1Id, customer1.BillingEmail, UserRole.Customer, tenantId, null, cust1Id));
+            TestJwtHelper.GenerateToken(user1Id, customer1.BillingEmail, "Customer", tenantId, null, cust1Id));
 
         // Create client for customer 2
         var customer2Client = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(user2Id, customer2.BillingEmail, UserRole.Customer, tenantId, null, cust2Id));
+            TestJwtHelper.GenerateToken(user2Id, customer2.BillingEmail, "Customer", tenantId, null, cust2Id));
 
         // Each customer should only see their own data
         var me1Resp = await customer1Client.GetAsync("/portal/me");

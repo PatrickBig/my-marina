@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyMarina.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415015059_Phase3_Billing")]
-    partial class Phase3_Billing
+    [Migration("20260417120723_SeedRoles")]
+    partial class SeedRoles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -136,7 +136,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -161,7 +162,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -169,6 +171,8 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MarinaId");
+
+                    b.HasIndex("TenantId", "MarinaId", "PublishedAt");
 
                     b.ToTable("Announcements");
                 });
@@ -429,6 +433,9 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<DateOnly>("IssuedDate")
                         .HasColumnType("date");
 
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
@@ -456,6 +463,8 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerAccountId");
+
+                    b.HasIndex("MarinaId");
 
                     b.HasIndex("TenantId", "InvoiceNumber")
                         .IsUnique();
@@ -519,7 +528,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
@@ -541,7 +551,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -602,6 +613,57 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("Marinas");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.OperatingExpense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateOnly>("IncurredDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RecordedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RelatedEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarinaId");
+
+                    b.HasIndex("TenantId", "MarinaId", "IncurredDate");
+
+                    b.ToTable("OperatingExpenses");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -653,6 +715,84 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("InvoiceId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Permission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Permissions");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("AuthorizationRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000001-0000-0000-0000-000000000001"),
+                            Description = "System administrator with cross-tenant access",
+                            Name = "PlatformAdmin"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000002-0000-0000-0000-000000000001"),
+                            Description = "Owns a tenant and sees all marinas within it",
+                            Name = "TenantOwner"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000001"),
+                            Description = "Manages a specific marina",
+                            Name = "MarinaManager"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000004-0000-0000-0000-000000000001"),
+                            Description = "Staff member at a specific marina",
+                            Name = "MarinaStaff"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000005-0000-0000-0000-000000000001"),
+                            Description = "Boat owner with portal access",
+                            Name = "Customer"
+                        });
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Slip", b =>
@@ -821,6 +961,39 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("Tenants");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.UserContext", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CustomerAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId", "TenantId", "MarinaId");
+
+                    b.ToTable("UserContexts");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.WorkOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -838,13 +1011,15 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<Guid?>("MaintenanceRequestId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
@@ -860,7 +1035,8 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1142,6 +1318,12 @@ namespace MyMarina.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MyMarina.Domain.Entities.Marina", null)
+                        .WithMany()
+                        .HasForeignKey("MarinaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("CustomerAccount");
                 });
 
@@ -1222,6 +1404,15 @@ namespace MyMarina.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.OperatingExpense", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Marina", null)
+                        .WithMany()
+                        .HasForeignKey("MarinaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.Payment", b =>
                 {
                     b.HasOne("MyMarina.Domain.Entities.Invoice", "Invoice")
@@ -1277,11 +1468,23 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Slip");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.UserContext", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Role", "Role")
+                        .WithMany("UserContexts")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.WorkOrder", b =>
                 {
                     b.HasOne("MyMarina.Domain.Entities.MaintenanceRequest", "MaintenanceRequest")
                         .WithOne("WorkOrder")
-                        .HasForeignKey("MyMarina.Domain.Entities.WorkOrder", "MaintenanceRequestId");
+                        .HasForeignKey("MyMarina.Domain.Entities.WorkOrder", "MaintenanceRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("MaintenanceRequest");
                 });
@@ -1323,6 +1526,11 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Docks");
 
                     b.Navigation("Slips");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Role", b =>
+                {
+                    b.Navigation("UserContexts");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Slip", b =>

@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("staff")]
-[Authorize(Roles = nameof(UserRole.MarinaOwner))]
+[Authorize(Roles = "TenantOwner,MarinaManager")]
 public class StaffController(
     ICommandHandler<InviteStaffCommand, InviteStaffResult> inviteHandler) : ControllerBase
 {

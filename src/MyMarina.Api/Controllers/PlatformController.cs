@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("platform")]
-[Authorize(Roles = nameof(UserRole.PlatformOperator))]
+[Authorize(Roles = "PlatformAdmin")]
 public class PlatformController(
     IQueryHandler<GetPlatformUsersQuery, IReadOnlyList<PlatformUserDto>> getUsersHandler,
     IQueryHandler<GetPlatformUserQuery, PlatformUserDto?> getUserHandler,

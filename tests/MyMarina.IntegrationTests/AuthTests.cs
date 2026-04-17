@@ -29,7 +29,7 @@ public class AuthTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebA
         body.Should().NotBeNull();
         body!.Token.Should().NotBeNullOrWhiteSpace();
         body.Email.Should().Be(ApiWebApplicationFactory.PlatformOperatorEmail);
-        body.Role.Should().Be(MyMarina.Domain.Enums.UserRole.PlatformOperator);
+        body.Role.Should().Be("PlatformAdmin");
         body.ExpiresAt.Should().BeAfter(DateTimeOffset.UtcNow);
     }
 

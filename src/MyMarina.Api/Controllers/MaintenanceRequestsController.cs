@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("maintenance-requests")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class MaintenanceRequestsController(
     ICommandHandler<UpdateMaintenanceStatusCommand> updateStatusHandler,
     IQueryHandler<GetMaintenanceRequestsQuery, IReadOnlyList<MaintenanceRequestDto>> getListHandler,

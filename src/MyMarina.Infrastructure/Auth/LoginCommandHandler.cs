@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Auth;
-using MyMarina.Domain.Enums;
+using MyMarina.Domain.Entities;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
@@ -28,46 +28,125 @@ public class LoginCommandHandler(
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userManager.UpdateAsync(user);
 
-        // For customer users, include all their CustomerAccountIds in the token so portal
-        // endpoints can scope queries without an extra DB lookup per request.
-        Guid? customerAccountId = null;
-        IReadOnlyList<Guid>? customerAccountIds = null;
-        if (user.Role == UserRole.Customer && user.TenantId.HasValue)
-        {
-            var accountIds = await db.CustomerAccountMembers
-                .Where(m => m.UserId == user.Id && m.TenantId == user.TenantId.Value)
-                .Select(m => m.CustomerAccountId)
-                .ToListAsync(ct);
+        var contexts = await GetAvailableContextsAsync(user, ct);
+        if (contexts.Count == 0)
+            throw new UnauthorizedAccessException("User has no available contexts.");
 
-            if (accountIds.Count > 0)
-            {
-                customerAccountIds = accountIds.AsReadOnly();
-                customerAccountId = accountIds[0]; // For backward compatibility
-            }
+        // If only one context, issue token immediately
+        if (contexts.Count == 1)
+        {
+            var context = contexts[0];
+            var tokenInfo = BuildTokenInfo(user, context, hasMultipleContexts: false);
+            var token = jwtTokenService.GenerateToken(tokenInfo);
+
+            return new LoginResult(
+                Token: token,
+                ExpiresAt: DateTimeOffset.UtcNow.AddHours(1),
+                UserId: user.Id,
+                Email: user.Email!,
+                FirstName: user.FirstName,
+                LastName: user.LastName,
+                Role: context.Role,
+                TenantId: context.TenantId,
+                MarinaId: context.MarinaId,
+                AvailableContexts: contexts);
         }
 
-        var tokenInfo = new UserTokenInfo(
-            UserId: user.Id,
-            Email: user.Email!,
-            FirstName: user.FirstName,
-            LastName: user.LastName,
-            Role: user.Role,
-            TenantId: user.TenantId,
-            MarinaId: user.MarinaId,
-            CustomerAccountId: customerAccountId,
-            CustomerAccountIds: customerAccountIds);
-
-        var token = jwtTokenService.GenerateToken(tokenInfo);
-
+        // Multiple contexts: return them for user to choose
         return new LoginResult(
-            Token: token,
+            Token: null,
             ExpiresAt: DateTimeOffset.UtcNow.AddHours(1),
             UserId: user.Id,
             Email: user.Email!,
             FirstName: user.FirstName,
             LastName: user.LastName,
-            Role: user.Role,
-            TenantId: user.TenantId,
-            MarinaId: user.MarinaId);
+            Role: null,
+            TenantId: null,
+            MarinaId: null,
+            AvailableContexts: contexts);
+    }
+
+    private async Task<List<AvailableContext>> GetAvailableContextsAsync(ApplicationUser user, CancellationToken ct)
+    {
+        var userContexts = await db.UserContexts
+            .Where(uc => uc.UserId == user.Id)
+            .Include(uc => uc.Role)
+            .ToListAsync(ct);
+
+        var contexts = new List<AvailableContext>();
+
+        foreach (var userContext in userContexts)
+        {
+            var displayName = await BuildDisplayNameAsync(userContext, ct);
+
+            contexts.Add(new AvailableContext(
+                DisplayName: displayName,
+                Role: userContext.Role?.Name ?? "Unknown",
+                TenantId: userContext.TenantId,
+                MarinaId: userContext.MarinaId,
+                CustomerAccountId: userContext.CustomerAccountId));
+        }
+
+        return contexts;
+    }
+
+    private async Task<string> BuildDisplayNameAsync(UserContext userContext, CancellationToken ct)
+    {
+        var roleName = userContext.Role?.Name ?? "Unknown";
+
+        // Platform admin sees all tenants
+        if (roleName == "PlatformAdmin")
+        {
+            var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == userContext.TenantId, ct);
+            return $"{roleName} @ {tenant?.Name ?? "Unknown"}";
+        }
+
+        // Tenant owner sees tenant name
+        if (roleName == "TenantOwner")
+        {
+            var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == userContext.TenantId, ct);
+            return tenant?.Name ?? "Unknown Tenant";
+        }
+
+        // Marina-scoped staff sees marina name
+        if (userContext.MarinaId.HasValue)
+        {
+            var marina = await db.Marinas.FirstOrDefaultAsync(m => m.Id == userContext.MarinaId.Value, ct);
+            return $"{roleName} @ {marina?.Name ?? "Unknown Marina"}";
+        }
+
+        // Customer sees account name
+        if (roleName == "Customer" && userContext.CustomerAccountId.HasValue)
+        {
+            var account = await db.CustomerAccounts.FirstOrDefaultAsync(
+                a => a.Id == userContext.CustomerAccountId.Value, ct);
+            return $"Customer @ {account?.DisplayName ?? "Unknown Account"}";
+        }
+
+        return roleName;
+    }
+
+    private UserTokenInfo BuildTokenInfo(ApplicationUser user, AvailableContext context, bool hasMultipleContexts)
+    {
+        Guid? customerAccountId = null;
+        IReadOnlyList<Guid>? customerAccountIds = null;
+
+        if (context.Role == "Customer" && context.CustomerAccountId.HasValue)
+        {
+            customerAccountId = context.CustomerAccountId.Value;
+            customerAccountIds = new[] { context.CustomerAccountId.Value }.AsReadOnly();
+        }
+
+        return new UserTokenInfo(
+            UserId: user.Id,
+            Email: user.Email!,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
+            Role: context.Role,
+            TenantId: context.TenantId,
+            MarinaId: context.MarinaId,
+            CustomerAccountId: customerAccountId,
+            CustomerAccountIds: customerAccountIds,
+            HasMultipleContexts: hasMultipleContexts);
     }
 }

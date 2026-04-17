@@ -7,7 +7,7 @@ using MyMarina.Domain.Enums;
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class SlipsController(
     ICommandHandler<CreateSlipCommand, Guid> createHandler,
     ICommandHandler<UpdateSlipCommand> updateHandler,
@@ -40,7 +40,7 @@ public class SlipsController(
     }
 
     [HttpPost("marinas/{marinaId:guid}/slips")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(Guid marinaId, [FromBody] CreateSlipRequest request, CancellationToken ct)
     {
@@ -55,7 +55,7 @@ public class SlipsController(
     }
 
     [HttpPut("slips/{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSlipRequest request, CancellationToken ct)
@@ -78,7 +78,7 @@ public class SlipsController(
     }
 
     [HttpDelete("slips/{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)

@@ -1,6 +1,6 @@
 import { Outlet, Link, useRouter } from "@tanstack/react-router";
 import {
-  Shield, Building2, Users, ScrollText, LogOut, ChevronDown,
+  Shield, Building2, Users, ScrollText, LogOut, ChevronDown, Repeat,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@tanstack/react-router";
+import { hasMultipleContexts } from "@/lib/jwt";
 
 const navItems = [
   { to: "/platform/tenants", label: "Tenants", icon: Building2 },
@@ -18,7 +19,7 @@ const navItems = [
 ];
 
 export function PlatformLayout() {
-  const { user, logout } = useAuthStore();
+  const { user, token, logout } = useAuthStore();
   const router = useRouter();
   const location = useLocation();
 
@@ -26,6 +27,13 @@ export function PlatformLayout() {
     logout();
     router.navigate({ to: "/login" });
   };
+
+  const handleSwitchContext = () => {
+    logout();
+    router.navigate({ to: "/login" });
+  };
+
+  const showSwitchContext = token && hasMultipleContexts(token);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -82,6 +90,15 @@ export function PlatformLayout() {
             <DropdownMenuContent align="start" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground">{user?.email}</div>
               <DropdownMenuSeparator />
+              {showSwitchContext && (
+                <>
+                  <DropdownMenuItem onClick={handleSwitchContext}>
+                    <Repeat className="h-4 w-4" />
+                    Switch Context
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                 <LogOut className="h-4 w-4" />
                 Sign out

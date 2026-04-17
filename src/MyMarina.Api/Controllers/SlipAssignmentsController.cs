@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("slip-assignments")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class SlipAssignmentsController(
     ICommandHandler<CreateSlipAssignmentCommand, Guid> createHandler,
     ICommandHandler<EndSlipAssignmentCommand> endHandler,

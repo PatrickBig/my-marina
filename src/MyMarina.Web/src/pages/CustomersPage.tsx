@@ -24,10 +24,6 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-const inviteSchema = z.object({
-  // No form fields - customer data comes from the selected account
-});
-type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export function CustomersPage() {
   const qc = useQueryClient();
@@ -46,9 +42,6 @@ export function CustomersPage() {
     resolver: zodResolver(schema),
   });
 
-  const { register: registerInvite, handleSubmit: handleInviteSubmit, reset: resetInvite, formState: { errors: inviteErrors, isSubmitting: inviteSubmitting } } = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteSchema),
-  });
 
   const createMut = useMutation({
     mutationFn: (values: FormValues) => createCustomer({
@@ -88,7 +81,6 @@ export function CustomersPage() {
       qc.invalidateQueries({ queryKey: ["customers"] });
       setInviteOpen(false);
       setSelectedCustomerId(null);
-      resetInvite();
     },
     onError: (error: any) => {
       const message = error.response?.status === 409
@@ -159,7 +151,7 @@ export function CustomersPage() {
                   <div className="flex gap-2">
                     {c.isActive && (
                       <>
-                        <Button size="icon" variant="ghost" onClick={() => { setSelectedCustomerId(c.id); setInviteOpen(true); resetInvite(); }} title="Invite member" className="text-muted-foreground">
+                        <Button size="icon" variant="ghost" onClick={() => { setSelectedCustomerId(c.id); setInviteOpen(true); }} title="Invite member" className="text-muted-foreground">
                           <Mail className="h-4 w-4" />
                         </Button>
                         <Button size="icon" variant="ghost" onClick={() => deactivateMut.mutate(c.id)} title="Deactivate" className="text-muted-foreground">

@@ -24,8 +24,9 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new(ClaimTypes.Role, user.Role.ToString()),
+            new(ClaimTypes.Role, user.Role ?? "Unknown"),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("has_multiple_contexts", user.HasMultipleContexts.ToString().ToLower()),
         };
 
         if (user.TenantId.HasValue)
@@ -38,6 +39,8 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
         {
             var idsJson = JsonSerializer.Serialize(user.CustomerAccountIds);
             claims.Add(new Claim("customer_account_ids", idsJson));
+            // Always emit the singular claim for backward compatibility with portal queries
+            claims.Add(new Claim("customer_account_id", user.CustomerAccountIds[0].ToString()));
         }
         else if (user.CustomerAccountId.HasValue)
         {

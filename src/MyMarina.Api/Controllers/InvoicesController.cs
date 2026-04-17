@@ -9,7 +9,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("invoices")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class InvoicesController(
     ICommandHandler<CreateInvoiceCommand, Guid> createHandler,
     ICommandHandler<UpdateInvoiceDraftCommand> updateDraftHandler,
@@ -109,7 +109,7 @@ public class InvoicesController(
     }
 
     [HttpPost("{id:guid}/void")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

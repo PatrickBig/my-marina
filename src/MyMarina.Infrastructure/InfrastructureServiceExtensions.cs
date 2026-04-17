@@ -82,6 +82,9 @@ public static class InfrastructureServiceExtensions
         // --- JWT token service ---
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
+        // --- Seed data service ---
+        services.AddScoped<SeedDataService>();
+
         // --- Command and query handlers (auto-registered via Scrutor) ---
         services.Scan(scan => scan
             .FromAssemblyOf<JwtTokenService>()

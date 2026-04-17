@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
-using MyMarina.Domain.Enums;
 
 namespace MyMarina.IntegrationTests;
 
@@ -19,22 +18,22 @@ public static class TestJwtHelper
     public const string Audience = "mymarina-clients";
 
     public static string PlatformOperatorToken()
-        => GenerateToken(Guid.NewGuid(), "platform@mymarina.io", UserRole.PlatformOperator);
+        => GenerateToken(Guid.NewGuid(), "platform@mymarina.io", "PlatformAdmin");
 
     public static string MarinaOwnerToken(Guid tenantId, Guid? marinaId = null)
-        => GenerateToken(Guid.NewGuid(), "owner@marina.io", UserRole.MarinaOwner, tenantId, marinaId);
+        => GenerateToken(Guid.NewGuid(), "owner@marina.io", "TenantOwner", tenantId, marinaId);
 
     public static string MarinaStaffToken(Guid tenantId, Guid marinaId)
-        => GenerateToken(Guid.NewGuid(), "staff@marina.io", UserRole.MarinaStaff, tenantId, marinaId);
+        => GenerateToken(Guid.NewGuid(), "staff@marina.io", "MarinaStaff", tenantId, marinaId);
 
     public static string CustomerToken(Guid tenantId, Guid customerAccountId)
-        => GenerateToken(Guid.NewGuid(), "customer@portal.io", UserRole.Customer, tenantId,
+        => GenerateToken(Guid.NewGuid(), "customer@portal.io", "Customer", tenantId,
             customerAccountId: customerAccountId);
 
     public static string GenerateToken(
         Guid userId,
         string email,
-        UserRole role,
+        string role,
         Guid? tenantId = null,
         Guid? marinaId = null,
         Guid? customerAccountId = null,
@@ -46,7 +45,7 @@ public static class TestJwtHelper
             new(JwtRegisteredClaimNames.Email, email),
             new(JwtRegisteredClaimNames.GivenName, "Test"),
             new(JwtRegisteredClaimNames.FamilyName, "Customer"),
-            new(ClaimTypes.Role, role.ToString()),
+            new(ClaimTypes.Role, role),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 

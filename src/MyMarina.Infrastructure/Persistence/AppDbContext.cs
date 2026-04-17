@@ -26,12 +26,17 @@ public class AppDbContext(
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<UserContext> UserContexts => Set<UserContext>();
+    public DbSet<Role> AuthorizationRoles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<OperatingExpense> OperatingExpenses => Set<OperatingExpense>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         ApplyTenantFilters(builder);
+        SeedRoles(builder);
     }
 
     private void ApplyTenantFilters(ModelBuilder builder)
@@ -52,5 +57,20 @@ public class AppDbContext(
         builder.Entity<MaintenanceRequest>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
         builder.Entity<WorkOrder>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
         builder.Entity<Announcement>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+        builder.Entity<OperatingExpense>().HasQueryFilter(e => tenantContext.IsPlatformOperator || e.TenantId == tenantContext.TenantId);
+    }
+
+    private void SeedRoles(ModelBuilder builder)
+    {
+        var roles = new[]
+        {
+            new Role { Id = Guid.Parse("00000001-0000-0000-0000-000000000001"), Name = "PlatformAdmin", Description = "System administrator with cross-tenant access" },
+            new Role { Id = Guid.Parse("00000002-0000-0000-0000-000000000001"), Name = "TenantOwner", Description = "Owns a tenant and sees all marinas within it" },
+            new Role { Id = Guid.Parse("00000003-0000-0000-0000-000000000001"), Name = "MarinaManager", Description = "Manages a specific marina" },
+            new Role { Id = Guid.Parse("00000004-0000-0000-0000-000000000001"), Name = "MarinaStaff", Description = "Staff member at a specific marina" },
+            new Role { Id = Guid.Parse("00000005-0000-0000-0000-000000000001"), Name = "Customer", Description = "Boat owner with portal access" },
+        };
+
+        builder.Entity<Role>().HasData(roles);
     }
 }

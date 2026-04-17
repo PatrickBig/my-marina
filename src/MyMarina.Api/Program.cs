@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Domain.Entities;
-using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
@@ -83,59 +82,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- Dev seed ---
+// --- Dev seed (test users with multi-context scenarios) ---
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var db          = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    // 1. Platform operator
-    const string adminEmail = "admin@mymarina.org";
-    if (await userManager.FindByEmailAsync(adminEmail) is null)
-    {
-        var admin = new ApplicationUser
-        {
-            UserName  = adminEmail,
-            Email     = adminEmail,
-            FirstName = "Platform",
-            LastName  = "Admin",
-            Role      = UserRole.PlatformOperator,
-        };
-        var r = await userManager.CreateAsync(admin, "Admin@Marina123!");
-        if (!r.Succeeded)
-            throw new InvalidOperationException(
-                $"Dev seed (platform operator) failed: {string.Join(", ", r.Errors.Select(e => e.Description))}");
-    }
-
-    // 2. Demo marina tenant + owner (lets you log in and test the full operator workflow)
-    const string ownerEmail = "owner@demo-marina.com";
-    if (await userManager.FindByEmailAsync(ownerEmail) is null)
-    {
-        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Slug == "demo-marina");
-        if (tenant is null)
-        {
-            tenant = new Tenant { Name = "Demo Marina", Slug = "demo-marina", SubscriptionTier = SubscriptionTier.Free };
-            db.Tenants.Add(tenant);
-            await db.SaveChangesAsync();
-        }
-
-        var owner = new ApplicationUser
-        {
-            UserName  = ownerEmail,
-            Email     = ownerEmail,
-            FirstName = "Demo",
-            LastName  = "Owner",
-            Role      = UserRole.MarinaOwner,
-            TenantId  = tenant.Id,
-        };
-        var r = await userManager.CreateAsync(owner, "Owner@Marina123!");
-        if (!r.Succeeded)
-            throw new InvalidOperationException(
-                $"Dev seed (marina owner) failed: {string.Join(", ", r.Errors.Select(e => e.Description))}");
-    }
+    var seedService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
+    await seedService.SeedAsync();
 }
-
 // --- Middleware pipeline ---
 if (app.Environment.IsDevelopment())
 {
@@ -147,7 +100,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

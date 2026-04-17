@@ -19,6 +19,11 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         // BalanceDue is a computed property — not persisted
         builder.Ignore(e => e.BalanceDue);
 
+        builder.HasOne<Marina>()
+            .WithMany()
+            .HasForeignKey(e => e.MarinaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(e => e.LineItems).WithOne(li => li.Invoice)
             .HasForeignKey(li => li.InvoiceId);
         builder.HasMany(e => e.Payments).WithOne(p => p.Invoice)

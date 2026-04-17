@@ -47,17 +47,47 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      api-setup:
+        condition: service_completed_successfully
 
   web:
     build:
       context: src/MyMarina.Web
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: "http://api:8080"
+        VITE_API_BASE_URL: "http://localhost:5000"
     ports:
       - "5173:8080"
     depends_on:
       - api
+  
+  api-setup:
+    command:
+      - "--setup"
+    build:
+      context: .
+      dockerfile: src/MyMarina.Api/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=mymarina;Username=mymarina;Password=mymarina;SSL Mode=Disable;GSS Encryption Mode=Disable"
+      ConnectionStrings__Redis: "redis:6379"
+      Jwt__Key: "dev-only-change-me-in-production-min-32ch"
+      Jwt__Issuer: "mymarina-api"
+      Jwt__Audience: "mymarina-clients"
+      Cors__AllowedOrigins__0: "http://localhost:5173"
+      Setup__PlatformOperator__Email: "platform@mymarina.org"
+      Setup__PlatformOperator__Password: "Testpassword1!"
+      Setup__InitialMarina__TenantName: "Localhost Marina"
+      Setup__InitialMarina__TenantSlug: "localhost-marina"
+      Setup__InitialMarina__OwnerEmail: "marina@mymarina.org"
+      Setup__InitialMarina__OwnerPassword: "Testpassword1!"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

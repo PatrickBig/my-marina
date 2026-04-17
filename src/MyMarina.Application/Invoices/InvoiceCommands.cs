@@ -7,7 +7,8 @@ public sealed record CreateInvoiceCommand(
     Guid CustomerAccountId,
     DateOnly IssuedDate,
     DateOnly DueDate,
-    string? Notes);
+    string? Notes,
+    Guid? MarinaId = null);
 
 public sealed record UpdateInvoiceDraftCommand(
     Guid InvoiceId,

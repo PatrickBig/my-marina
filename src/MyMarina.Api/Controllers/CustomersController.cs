@@ -9,7 +9,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("customers")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class CustomersController(
     ICommandHandler<CreateCustomerAccountCommand, Guid> createHandler,
     ICommandHandler<UpdateCustomerAccountCommand> updateHandler,
@@ -64,7 +64,7 @@ public class CustomersController(
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
@@ -81,7 +81,7 @@ public class CustomersController(
     }
 
     [HttpPost("{id:guid}/invite")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(typeof(InviteCustomerResult), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

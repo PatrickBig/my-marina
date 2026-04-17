@@ -80,6 +80,19 @@ namespace MyMarina.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuthorizationRoles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuthorizationRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CustomerAccounts",
                 columns: table => new
                 {
@@ -95,6 +108,7 @@ namespace MyMarina.Infrastructure.Migrations
                     EmergencyContactName = table.Column<string>(type: "text", nullable: true),
                     EmergencyContactPhone = table.Column<string>(type: "text", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
@@ -102,6 +116,19 @@ namespace MyMarina.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CustomerAccounts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Permissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Permissions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -227,6 +254,29 @@ namespace MyMarina.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserContexts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MarinaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CustomerAccountId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserContexts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserContexts_AuthorizationRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AuthorizationRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Boats",
                 columns: table => new
                 {
@@ -285,36 +335,6 @@ namespace MyMarina.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Invoices",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CustomerAccountId = table.Column<Guid>(type: "uuid", nullable: false),
-                    InvoiceNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    IssuedDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    DueDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    SubTotal = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
-                    AmountPaid = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
-                    Notes = table.Column<string>(type: "text", nullable: true),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Invoices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Invoices_CustomerAccounts_CustomerAccountId",
-                        column: x => x.CustomerAccountId,
-                        principalTable: "CustomerAccounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "MaintenanceRequests",
                 columns: table => new
                 {
@@ -322,8 +342,8 @@ namespace MyMarina.Infrastructure.Migrations
                     CustomerAccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     SlipId = table.Column<Guid>(type: "uuid", nullable: true),
                     BoatId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Priority = table.Column<int>(type: "integer", nullable: false),
                     SubmittedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -375,72 +395,19 @@ namespace MyMarina.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InvoiceLineItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Quantity = table.Column<decimal>(type: "numeric", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    LineTotal = table.Column<decimal>(type: "numeric", nullable: false),
-                    SlipAssignmentId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InvoiceLineItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_InvoiceLineItems_Invoices_InvoiceId",
-                        column: x => x.InvoiceId,
-                        principalTable: "Invoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Payments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    PaidOn = table.Column<DateOnly>(type: "date", nullable: false),
-                    Method = table.Column<int>(type: "integer", nullable: false),
-                    ReferenceNumber = table.Column<string>(type: "text", nullable: true),
-                    Notes = table.Column<string>(type: "text", nullable: true),
-                    PaymentProviderId = table.Column<string>(type: "text", nullable: true),
-                    PaymentProviderReference = table.Column<string>(type: "text", nullable: true),
-                    RecordedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Payments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Payments_Invoices_InvoiceId",
-                        column: x => x.InvoiceId,
-                        principalTable: "Invoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "WorkOrders",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     MaintenanceRequestId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     AssignedToUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Priority = table.Column<int>(type: "integer", nullable: false),
                     ScheduledDate = table.Column<DateOnly>(type: "date", nullable: true),
                     CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Notes = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
@@ -452,7 +419,8 @@ namespace MyMarina.Infrastructure.Migrations
                         name: "FK_WorkOrders_MaintenanceRequests_MaintenanceRequestId",
                         column: x => x.MaintenanceRequestId,
                         principalTable: "MaintenanceRequests",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -461,8 +429,8 @@ namespace MyMarina.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     MarinaId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Body = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Body = table.Column<string>(type: "character varying(20000)", maxLength: 20000, nullable: false),
                     PublishedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsPinned = table.Column<bool>(type: "boolean", nullable: false),
@@ -507,6 +475,70 @@ namespace MyMarina.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Invoices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MarinaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerAccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    IssuedDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    DueDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    AmountPaid = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_CustomerAccounts_CustomerAccountId",
+                        column: x => x.CustomerAccountId,
+                        principalTable: "CustomerAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Marinas_MarinaId",
+                        column: x => x.MarinaId,
+                        principalTable: "Marinas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OperatingExpenses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MarinaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    IncurredDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    RelatedEntityType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    RelatedEntityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RecordedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperatingExpenses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OperatingExpenses_Marinas_MarinaId",
+                        column: x => x.MarinaId,
+                        principalTable: "Marinas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Slips",
                 columns: table => new
                 {
@@ -545,6 +577,59 @@ namespace MyMarina.Infrastructure.Migrations
                         name: "FK_Slips_Marinas_MarinaId",
                         column: x => x.MarinaId,
                         principalTable: "Marinas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoiceLineItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Quantity = table.Column<decimal>(type: "numeric(12,4)", precision: 12, scale: 4, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    LineTotal = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    SlipAssignmentId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceLineItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceLineItems_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
+                    PaidOn = table.Column<DateOnly>(type: "date", nullable: false),
+                    Method = table.Column<int>(type: "integer", nullable: false),
+                    ReferenceNumber = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    PaymentProviderId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PaymentProviderReference = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    RecordedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payments_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -593,6 +678,11 @@ namespace MyMarina.Infrastructure.Migrations
                 name: "IX_Announcements_MarinaId",
                 table: "Announcements",
                 column: "MarinaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Announcements_TenantId_MarinaId_PublishedAt",
+                table: "Announcements",
+                columns: new[] { "TenantId", "MarinaId", "PublishedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -647,6 +737,12 @@ namespace MyMarina.Infrastructure.Migrations
                 column: "Timestamp");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuthorizationRoles_Name",
+                table: "AuthorizationRoles",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Boats_CustomerAccountId",
                 table: "Boats",
                 column: "CustomerAccountId");
@@ -672,6 +768,11 @@ namespace MyMarina.Infrastructure.Migrations
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Invoices_MarinaId",
+                table: "Invoices",
+                column: "MarinaId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Invoices_TenantId_InvoiceNumber",
                 table: "Invoices",
                 columns: new[] { "TenantId", "InvoiceNumber" },
@@ -688,9 +789,25 @@ namespace MyMarina.Infrastructure.Migrations
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OperatingExpenses_MarinaId",
+                table: "OperatingExpenses",
+                column: "MarinaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OperatingExpenses_TenantId_MarinaId_IncurredDate",
+                table: "OperatingExpenses",
+                columns: new[] { "TenantId", "MarinaId", "IncurredDate" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payments_InvoiceId",
                 table: "Payments",
                 column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permissions_Name",
+                table: "Permissions",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SlipAssignments_BoatId",
@@ -716,6 +833,16 @@ namespace MyMarina.Infrastructure.Migrations
                 name: "IX_Slips_MarinaId",
                 table: "Slips",
                 column: "MarinaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserContexts_RoleId",
+                table: "UserContexts",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserContexts_UserId_TenantId_MarinaId",
+                table: "UserContexts",
+                columns: new[] { "UserId", "TenantId", "MarinaId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkOrders_MaintenanceRequestId",
@@ -755,10 +882,19 @@ namespace MyMarina.Infrastructure.Migrations
                 name: "InvoiceLineItems");
 
             migrationBuilder.DropTable(
+                name: "OperatingExpenses");
+
+            migrationBuilder.DropTable(
                 name: "Payments");
 
             migrationBuilder.DropTable(
+                name: "Permissions");
+
+            migrationBuilder.DropTable(
                 name: "SlipAssignments");
+
+            migrationBuilder.DropTable(
+                name: "UserContexts");
 
             migrationBuilder.DropTable(
                 name: "WorkOrders");
@@ -777,6 +913,9 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Slips");
+
+            migrationBuilder.DropTable(
+                name: "AuthorizationRoles");
 
             migrationBuilder.DropTable(
                 name: "MaintenanceRequests");

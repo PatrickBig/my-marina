@@ -8,7 +8,7 @@ namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("work-orders")]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class WorkOrdersController(
     ICommandHandler<CreateWorkOrderCommand, Guid> createHandler,
     ICommandHandler<UpdateWorkOrderCommand> updateHandler,

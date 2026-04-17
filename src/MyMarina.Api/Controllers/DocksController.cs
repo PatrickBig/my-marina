@@ -7,7 +7,7 @@ using MyMarina.Domain.Enums;
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = $"{nameof(UserRole.MarinaOwner)},{nameof(UserRole.MarinaStaff)}")]
+[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
 public class DocksController(
     ICommandHandler<CreateDockCommand, Guid> createHandler,
     ICommandHandler<UpdateDockCommand> updateHandler,
@@ -23,7 +23,7 @@ public class DocksController(
     }
 
     [HttpPost("marinas/{marinaId:guid}/docks")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(Guid marinaId, [FromBody] CreateDockRequest request, CancellationToken ct)
     {
@@ -33,7 +33,7 @@ public class DocksController(
     }
 
     [HttpPut("docks/{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDockRequest request, CancellationToken ct)
@@ -51,7 +51,7 @@ public class DocksController(
     }
 
     [HttpDelete("docks/{id:guid}")]
-    [Authorize(Roles = nameof(UserRole.MarinaOwner))]
+    [Authorize(Roles = "TenantOwner,MarinaManager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
