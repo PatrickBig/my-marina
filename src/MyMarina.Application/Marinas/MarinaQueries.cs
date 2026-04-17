@@ -5,6 +5,7 @@ namespace MyMarina.Application.Marinas;
 
 public sealed record GetMarinasQuery;
 public sealed record GetMarinaQuery(Guid MarinaId);
+public sealed record GetMarinaHealthTargetsQuery(Guid MarinaId);
 
 public sealed record MarinaDto(
     Guid Id,
@@ -18,5 +19,11 @@ public sealed record MarinaDto(
     string? Description,
     DateTimeOffset CreatedAt);
 
+public sealed record HealthTargetsDto(
+    decimal? OccupancyRateTarget,
+    int? OverdueARThresholdDays,
+    decimal? TargetMonthlyRevenue);
+
 public interface IGetMarinasQueryHandler : IQueryHandler<GetMarinasQuery, IReadOnlyList<MarinaDto>>;
 public interface IGetMarinaQueryHandler : IQueryHandler<GetMarinaQuery, MarinaDto?>;
+public interface IGetMarinaHealthTargetsQueryHandler : IQueryHandler<GetMarinaHealthTargetsQuery, HealthTargetsDto?>;

@@ -22,5 +22,10 @@ public sealed record UpdateMarinaCommand(
     string? Website,
     string? Description);
 
+public sealed record UpdateMarinaHealthTargetsCommand(
+    Guid MarinaId,
+    HealthTargetsDto HealthTargets);
+
 public interface ICreateMarinaCommandHandler : ICommandHandler<CreateMarinaCommand, Guid>;
 public interface IUpdateMarinaCommandHandler : ICommandHandler<UpdateMarinaCommand>;
+public interface IUpdateMarinaHealthTargetsCommandHandler : ICommandHandler<UpdateMarinaHealthTargetsCommand>;

@@ -143,4 +143,87 @@ public class MarinaTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
         marina.PhoneNumber.Should().Be("555-9999");
         marina.Description.Should().Be("Updated description");
     }
+
+    [Fact]
+    public async Task Get_health_targets_returns_default_targets_for_new_marina()
+    {
+        var (_, ownerClient) = await CreateTenantAsync();
+
+        var createResp = await ownerClient.PostAsJsonAsync("/marinas", new
+        {
+            Name        = "Health Marina",
+            Address     = new { Street = "5 Health Ave", City = "Wellness", State = "OR", Zip = "97201", Country = "US" },
+            PhoneNumber = "555-0104",
+            Email       = "health@marina.io",
+            TimeZoneId  = "America/Los_Angeles",
+            Website     = (string?)null,
+            Description = (string?)null,
+        });
+        var id = await createResp.Content.ReadFromJsonAsync<Guid>();
+
+        var targets = await ownerClient.GetFromJsonAsync<HealthTargetsDto>($"/marinas/{id}/health-targets");
+        targets.Should().NotBeNull();
+        targets!.OccupancyRateTarget.Should().Be(70m);
+        targets.OverdueARThresholdDays.Should().Be(30);
+        targets.TargetMonthlyRevenue.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Update_health_targets_returns_204_and_persists_changes()
+    {
+        var (_, ownerClient) = await CreateTenantAsync();
+
+        var createResp = await ownerClient.PostAsJsonAsync("/marinas", new
+        {
+            Name        = "Custom Health Marina",
+            Address     = new { Street = "6 Custom Ln", City = "Target", State = "WA", Zip = "98101", Country = "US" },
+            PhoneNumber = "555-0105",
+            Email       = "custom@marina.io",
+            TimeZoneId  = "America/Los_Angeles",
+            Website     = (string?)null,
+            Description = (string?)null,
+        });
+        var id = await createResp.Content.ReadFromJsonAsync<Guid>();
+
+        var updateResp = await ownerClient.PutAsJsonAsync($"/marinas/{id}/health-targets", new
+        {
+            OccupancyRateTarget = 50m,
+            OverdueARThresholdDays = 45,
+            TargetMonthlyRevenue = 100000m,
+        });
+
+        updateResp.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var targets = await ownerClient.GetFromJsonAsync<HealthTargetsDto>($"/marinas/{id}/health-targets");
+        targets.Should().NotBeNull();
+        targets!.OccupancyRateTarget.Should().Be(50m);
+        targets.OverdueARThresholdDays.Should().Be(45);
+        targets.TargetMonthlyRevenue.Should().Be(100000m);
+    }
+
+    [Fact]
+    public async Task Update_health_targets_returns_404_for_nonexistent_marina()
+    {
+        var (_, ownerClient) = await CreateTenantAsync();
+        var fakeId = Guid.NewGuid();
+
+        var updateResp = await ownerClient.PutAsJsonAsync($"/marinas/{fakeId}/health-targets", new
+        {
+            OccupancyRateTarget = 50m,
+            OverdueARThresholdDays = 45,
+            TargetMonthlyRevenue = (decimal?)null,
+        });
+
+        updateResp.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Get_health_targets_returns_404_for_nonexistent_marina()
+    {
+        var (_, ownerClient) = await CreateTenantAsync();
+        var fakeId = Guid.NewGuid();
+
+        var getResp = await ownerClient.GetAsync($"/marinas/{fakeId}/health-targets");
+        getResp.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }
