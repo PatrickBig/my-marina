@@ -1,0 +1,118 @@
+# Creates the service account and RBAC for GitHub Actions Helm deployments.
+# The SA lives in mymarina-system and is granted a Role in each workload namespace.
+#
+# Apply once:
+#   kubectl apply -f k8s/github-deploy-rbac.yaml
+#
+# Then follow k8s/github-deploy-kubeconfig.md to extract the kubeconfig.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mymarina-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mymarina-prod
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mymarina-staging
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: github-deploy
+  namespace: mymarina-system
+---
+# Long-lived token (k8s 1.24+ requires explicit Secret for persistent SA tokens)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-deploy-token
+  namespace: mymarina-system
+  annotations:
+    kubernetes.io/service-account.name: github-deploy
+type: kubernetes.io/service-account-token
+---
+# Role granted in mymarina-prod
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: helm-deploy
+  namespace: mymarina-prod
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets", "services", "serviceaccounts", "pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["postgres-operator.crunchydata.com"]
+    resources: ["postgresclusters"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Role granted in mymarina-staging (identical rules, different namespace)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: helm-deploy
+  namespace: mymarina-staging
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets", "services", "serviceaccounts", "pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["postgres-operator.crunchydata.com"]
+    resources: ["postgresclusters"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-deploy
+  namespace: mymarina-prod
+subjects:
+  - kind: ServiceAccount
+    name: github-deploy
+    namespace: mymarina-system
+roleRef:
+  kind: Role
+  name: helm-deploy
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-deploy
+  namespace: mymarina-staging
+subjects:
+  - kind: ServiceAccount
+    name: github-deploy
+    namespace: mymarina-system
+roleRef:
+  kind: Role
+  name: helm-deploy
+  apiGroup: rbac.authorization.k8s.io

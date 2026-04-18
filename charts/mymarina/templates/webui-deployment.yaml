@@ -28,6 +28,9 @@ spec:
             - name: http
               containerPort: {{ .Values.webui.port }}
               protocol: TCP
+          env:
+            - name: API_BASE_URL
+              value: "https://{{ .Values.ingress.apiHost }}"
           livenessProbe:
             httpGet:
               path: /

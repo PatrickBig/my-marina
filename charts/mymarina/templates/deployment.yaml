@@ -67,7 +67,7 @@ spec:
                   name: {{ include "mymarina.database.credentialSecret" . }}
                   key: password
             - name: ConnectionStrings__Postgres
-              value: "Host=$(DB_HOST);Port=$(DB_PORT);Database=$(DB_NAME);Username=$(DB_USER);Password='$(DB_PASSWORD)';SSL Mode={{ .Values.database.sslMode }};GSS Encryption Mode=Disable"
+              value: "Host=$(DB_HOST);Port=$(DB_PORT);Database=$(DB_NAME);Username=$(DB_USER);Password='$(DB_PASSWORD)';GSS Encryption Mode=Disable"
             - name: ConnectionStrings__Redis
               valueFrom:
                 secretKeyRef:

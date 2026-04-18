@@ -11,8 +11,8 @@ import { useAuthStore } from '@/store/authStore'
  * to regenerate src/api/schema.d.ts after backend changes.
  */
 // In dev, Vite proxies /api → localhost:5222 (see vite.config.ts).
-// In production, VITE_API_BASE_URL is set to https://api.mymarina.org at build time.
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+// In production, API_BASE_URL is injected at container startup via envsubst into config.js.
+const baseURL = (window as any).__CONFIG__?.apiBaseUrl ?? '/api'
 
 export const apiClient = axios.create({
   baseURL,

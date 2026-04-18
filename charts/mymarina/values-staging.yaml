@@ -1,0 +1,43 @@
+ingress:
+  appHost: app-staging.mymarina.org
+  apiHost: api-staging.mymarina.org
+  tlsSecretName: mymarina-staging-tls
+
+api:
+  env:
+    corsAllowedOrigin: https://app-staging.mymarina.org
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+webui:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+redis:
+  storage: 1Gi
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+database:
+  storage: 2Gi
+  backupStorage: 2Gi
+
+setupJob:
+  initialMarina:
+    tenantName: "Bigler Point Marina (Staging)"
+    tenantSlug: "bigler-point"
