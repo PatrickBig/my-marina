@@ -133,6 +133,8 @@ jobs:
           fi
           helm upgrade --install mymarina-staging ./charts/mymarina \
             --namespace mymarina-staging \
+            --create-namespace \
+            -f charts/mymarina/values.yaml \
             -f charts/mymarina/values-staging.yaml \
             --set api.image.tag="$IMAGE_TAG" \
             --set webui.image.tag="$IMAGE_TAG" \
