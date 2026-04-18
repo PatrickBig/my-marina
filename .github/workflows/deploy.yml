@@ -14,7 +14,7 @@ env:
   REGISTRY: ghcr.io
   API_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/api
   WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/web
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   build-api:
@@ -133,7 +133,6 @@ jobs:
           fi
           helm upgrade --install mymarina-staging ./charts/mymarina \
             --namespace mymarina-staging \
-            --create-namespace \
             -f charts/mymarina/values.yaml \
             -f charts/mymarina/values-staging.yaml \
             --set api.image.tag="$IMAGE_TAG" \
