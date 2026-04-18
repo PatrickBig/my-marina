@@ -26,7 +26,7 @@ spec:
       initContainers:
         {{- include "mymarina.initContainers.waitForDatabase" . | nindent 8 }}
       containers:
-        - name: api
+        - name: setup
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
           args: ["--setup"]

@@ -137,7 +137,6 @@ jobs:
             -f charts/mymarina/values-staging.yaml \
             --set api.image.tag="$IMAGE_TAG" \
             --set webui.image.tag="$IMAGE_TAG" \
-            --debug \
             --rollback-on-failure \
             --timeout 15m \
             --history-max 10

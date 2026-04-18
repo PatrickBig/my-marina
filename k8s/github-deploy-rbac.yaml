@@ -44,6 +44,12 @@ metadata:
   name: helm-deploy
   namespace: mymarina-prod
 rules:
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log", "pods/status", "events"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps", "secrets", "services", "serviceaccounts", "pods"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
@@ -70,6 +76,12 @@ metadata:
   name: helm-deploy
   namespace: mymarina-staging
 rules:
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log", "pods/status", "events"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps", "secrets", "services", "serviceaccounts", "pods"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

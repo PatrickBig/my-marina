@@ -165,6 +165,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
         var custResp = await owner.PostAsJsonAsync("/customers", CustomerPayload("Portal Access"));
         var custId = await custResp.Content.ReadFromJsonAsync<Guid>();
         var customer = await owner.GetFromJsonAsync<CustomerAccountDto>($"/customers/{custId}");
+        customer.Should().NotBeNull();
 
         // Invite customer
         var inviteResp = await owner.PostAsync($"/customers/{custId}/invite", null);
@@ -176,7 +177,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
         // but we're testing that the user exists and can authenticate)
         var loginResp = await factory.CreateClient().PostAsJsonAsync("/auth/login", new
         {
-            Email = customer.BillingEmail,
+            Email = customer!.BillingEmail,
             Password = tempPassword,
         });
         loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -196,6 +197,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
         var custResp = await owner.PostAsJsonAsync("/customers", CustomerPayload("My Portal"));
         var custId = await custResp.Content.ReadFromJsonAsync<Guid>();
         var customer = await owner.GetFromJsonAsync<CustomerAccountDto>($"/customers/{custId}");
+        customer.Should().NotBeNull();
 
         // Invite customer
         var inviteResp = await owner.PostAsync($"/customers/{custId}/invite", null);
@@ -204,7 +206,7 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
 
         // Create a customer client using TestJwtHelper
         var customerClient = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(userId, customer.BillingEmail, "Customer", tenantId, null, custId));
+            TestJwtHelper.GenerateToken(userId, customer!.BillingEmail, "Customer", tenantId, null, custId));
 
         // Customer should be able to access their portal data
         var meResp = await customerClient.GetAsync("/portal/me");
@@ -224,10 +226,12 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
         var cust1Resp = await owner.PostAsJsonAsync("/customers", CustomerPayload("Customer 1"));
         var cust1Id = await cust1Resp.Content.ReadFromJsonAsync<Guid>();
         var customer1 = await owner.GetFromJsonAsync<CustomerAccountDto>($"/customers/{cust1Id}");
+        customer1.Should().NotBeNull();
 
         var cust2Resp = await owner.PostAsJsonAsync("/customers", CustomerPayload("Customer 2"));
         var cust2Id = await cust2Resp.Content.ReadFromJsonAsync<Guid>();
         var customer2 = await owner.GetFromJsonAsync<CustomerAccountDto>($"/customers/{cust2Id}");
+        customer2.Should().NotBeNull();
 
         // Invite both customers
         var invite1Resp = await owner.PostAsync($"/customers/{cust1Id}/invite", null);
@@ -240,11 +244,11 @@ public class CustomerAndBoatTests(ApiWebApplicationFactory factory) : IClassFixt
 
         // Create client for customer 1
         var customer1Client = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(user1Id, customer1.BillingEmail, "Customer", tenantId, null, cust1Id));
+            TestJwtHelper.GenerateToken(user1Id, customer1!.BillingEmail, "Customer", tenantId, null, cust1Id));
 
         // Create client for customer 2
         var customer2Client = factory.CreateClientWithToken(
-            TestJwtHelper.GenerateToken(user2Id, customer2.BillingEmail, "Customer", tenantId, null, cust2Id));
+            TestJwtHelper.GenerateToken(user2Id, customer2!.BillingEmail, "Customer", tenantId, null, cust2Id));
 
         // Each customer should only see their own data
         var me1Resp = await customer1Client.GetAsync("/portal/me");
