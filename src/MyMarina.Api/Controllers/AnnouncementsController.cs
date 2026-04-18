@@ -51,7 +51,7 @@ public class AnnouncementsController(
     public async Task<IActionResult> Create(
         Guid marinaId, [FromBody] CreateAnnouncementRequest request, CancellationToken ct)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userIdStr = User.FindFirstValue("sub");
         if (!Guid.TryParse(userIdStr, out var userId))
             return Unauthorized();
 

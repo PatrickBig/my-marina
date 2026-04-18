@@ -45,7 +45,7 @@ public static class TestJwtHelper
             new(JwtRegisteredClaimNames.Email, email),
             new(JwtRegisteredClaimNames.GivenName, "Test"),
             new(JwtRegisteredClaimNames.FamilyName, "Customer"),
-            new(ClaimTypes.Role, role),
+            new("role", role),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
