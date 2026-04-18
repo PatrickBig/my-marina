@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Tenants;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("tenants")]
-[Authorize(Roles = "PlatformAdmin")]
+[Authorize(Roles = Roles.PlatformAdmin)]
 public class TenantsController(
     ICommandHandler<CreateTenantCommand, CreateTenantResult> createHandler,
     ICommandHandler<UpdateTenantCommand> updateHandler,

@@ -6,7 +6,7 @@ export interface AuthUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: number;
+  role: string;
   tenantId: string | null;
   marinaId: string | null;
 }

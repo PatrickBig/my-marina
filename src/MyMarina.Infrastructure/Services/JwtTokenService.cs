@@ -24,7 +24,7 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new(ClaimTypes.Role, user.Role ?? "Unknown"),
+            new("role", user.Role ?? "Unknown"),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new("has_multiple_contexts", user.HasMultipleContexts.ToString().ToLower()),
         };

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Auth;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
@@ -95,14 +96,11 @@ public class LoginCommandHandler(
         var roleName = userContext.Role?.Name ?? "Unknown";
 
         // Platform admin sees all tenants
-        if (roleName == "PlatformAdmin")
-        {
-            var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == userContext.TenantId, ct);
-            return $"{roleName} @ {tenant?.Name ?? "Unknown"}";
-        }
+        if (roleName == Roles.PlatformAdmin)
+            return "Platform Admin";
 
         // Tenant owner sees tenant name
-        if (roleName == "TenantOwner")
+        if (roleName == Roles.TenantOwner)
         {
             var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == userContext.TenantId, ct);
             return tenant?.Name ?? "Unknown Tenant";
@@ -116,7 +114,7 @@ public class LoginCommandHandler(
         }
 
         // Customer sees account name
-        if (roleName == "Customer" && userContext.CustomerAccountId.HasValue)
+        if (roleName == Roles.Customer && userContext.CustomerAccountId.HasValue)
         {
             var account = await db.CustomerAccounts.FirstOrDefaultAsync(
                 a => a.Id == userContext.CustomerAccountId.Value, ct);
@@ -131,7 +129,7 @@ public class LoginCommandHandler(
         Guid? customerAccountId = null;
         IReadOnlyList<Guid>? customerAccountIds = null;
 
-        if (context.Role == "Customer" && context.CustomerAccountId.HasValue)
+        if (context.Role == Roles.Customer && context.CustomerAccountId.HasValue)
         {
             customerAccountId = context.CustomerAccountId.Value;
             customerAccountIds = new[] { context.CustomerAccountId.Value }.AsReadOnly();

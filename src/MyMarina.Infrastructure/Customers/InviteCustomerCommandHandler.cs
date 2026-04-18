@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Customers;
 using MyMarina.Domain.Entities;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
@@ -48,16 +49,13 @@ public class InviteCustomerCommandHandler(
             throw new InvalidOperationException($"Failed to create customer user: {errors}");
         }
 
-        var customerRoleId = Guid.Parse("00000005-0000-0000-0000-000000000001");
+        var customerRole = await db.AuthorizationRoles.FirstAsync(r => r.Name == Roles.Customer, ct);
         var userContext = new UserContext
         {
-            Id = Guid.CreateVersion7(),
             UserId = user.Id,
-            RoleId = customerRoleId,
+            RoleId = customerRole.Id,
             TenantId = tenantContext.TenantId,
-            MarinaId = null,
             CustomerAccountId = account.Id,
-            CreatedAt = DateTimeOffset.UtcNow,
         };
         db.UserContexts.Add(userContext);
 

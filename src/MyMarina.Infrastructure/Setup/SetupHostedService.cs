@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
@@ -41,7 +42,7 @@ public sealed class SetupHostedService(
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             await ApplyMigrationsAsync(db, cancellationToken);
-            await SeedPlatformOperatorAsync(userManager, cancellationToken);
+            await SeedPlatformOperatorAsync(db, userManager, cancellationToken);
             await SeedInitialMarinaAsync(db, userManager, cancellationToken);
             ConfigureRecurringJobs();
 
@@ -89,7 +90,15 @@ public sealed class SetupHostedService(
         logger.LogInformation("Migrations applied.");
     }
 
+    private static async Task<Guid> RequireRoleIdAsync(AppDbContext db, string roleName, CancellationToken ct)
+    {
+        var role = await db.AuthorizationRoles.FirstOrDefaultAsync(r => r.Name == roleName, ct)
+            ?? throw new InvalidOperationException($"Role '{roleName}' not found. Ensure migrations have run.");
+        return role.Id;
+    }
+
     private async Task SeedPlatformOperatorAsync(
+        AppDbContext db,
         UserManager<ApplicationUser> userManager,
         CancellationToken ct)
     {
@@ -106,31 +115,50 @@ public sealed class SetupHostedService(
             throw new InvalidOperationException("Setup:PlatformOperator:Password is required.");
 
         var existing = await userManager.FindByEmailAsync(cfg.Email);
-        if (existing is not null)
+        if (existing is null)
         {
-            logger.LogInformation("Platform operator '{Email}' already exists — skipping.", cfg.Email);
-            return;
+            logger.LogInformation("Creating platform operator '{Email}'…", cfg.Email);
+
+            var user = new ApplicationUser
+            {
+                UserName  = cfg.Email,
+                Email     = cfg.Email,
+                FirstName = cfg.FirstName,
+                LastName  = cfg.LastName,
+                Role      = UserRole.PlatformOperator,
+            };
+
+            var result = await userManager.CreateAsync(user, cfg.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create platform operator: {errors}");
+            }
+
+            existing = user;
+            logger.LogInformation("Platform operator '{Email}' created (id={Id}).", cfg.Email, user.Id);
+        }
+        else
+        {
+            logger.LogInformation("Platform operator '{Email}' already exists — skipping user creation.", cfg.Email);
         }
 
-        logger.LogInformation("Creating platform operator '{Email}'…", cfg.Email);
+        var platformAdminRoleId = await RequireRoleIdAsync(db, Roles.PlatformAdmin, ct);
 
-        var user = new ApplicationUser
-        {
-            UserName  = cfg.Email,
-            Email     = cfg.Email,
-            FirstName = cfg.FirstName,
-            LastName  = cfg.LastName,
-            Role      = UserRole.PlatformOperator,
-        };
+        var existingContext = await db.UserContexts
+            .FirstOrDefaultAsync(uc => uc.UserId == existing.Id && uc.RoleId == platformAdminRoleId, ct);
 
-        var result = await userManager.CreateAsync(user, cfg.Password);
-        if (!result.Succeeded)
+        if (existingContext is null)
         {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Failed to create platform operator: {errors}");
+            db.UserContexts.Add(new UserContext
+            {
+                UserId   = existing.Id,
+                RoleId   = platformAdminRoleId,
+                TenantId = Guid.Empty,
+            });
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("UserContext created for platform operator '{Email}'.", cfg.Email);
         }
-
-        logger.LogInformation("Platform operator '{Email}' created (id={Id}).", cfg.Email, user.Id);
     }
 
     private async Task SeedInitialMarinaAsync(
@@ -176,31 +204,50 @@ public sealed class SetupHostedService(
 
         // Marina owner — idempotent on email
         var existingOwner = await userManager.FindByEmailAsync(cfg.OwnerEmail);
-        if (existingOwner is not null)
+        if (existingOwner is null)
         {
-            logger.LogInformation("Marina owner '{Email}' already exists — skipping.", cfg.OwnerEmail);
-            return;
+            logger.LogInformation("Creating marina owner '{Email}'…", cfg.OwnerEmail);
+
+            var owner = new ApplicationUser
+            {
+                UserName  = cfg.OwnerEmail,
+                Email     = cfg.OwnerEmail,
+                FirstName = cfg.OwnerFirstName,
+                LastName  = cfg.OwnerLastName,
+                Role      = UserRole.MarinaOwner,
+                TenantId  = tenant.Id,
+            };
+
+            var result = await userManager.CreateAsync(owner, cfg.OwnerPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create marina owner: {errors}");
+            }
+
+            existingOwner = owner;
+            logger.LogInformation("Marina owner '{Email}' created (id={Id}).", cfg.OwnerEmail, owner.Id);
+        }
+        else
+        {
+            logger.LogInformation("Marina owner '{Email}' already exists — skipping user creation.", cfg.OwnerEmail);
         }
 
-        logger.LogInformation("Creating marina owner '{Email}'…", cfg.OwnerEmail);
+        var tenantOwnerRoleId = await RequireRoleIdAsync(db, Roles.TenantOwner, ct);
 
-        var owner = new ApplicationUser
-        {
-            UserName  = cfg.OwnerEmail,
-            Email     = cfg.OwnerEmail,
-            FirstName = cfg.OwnerFirstName,
-            LastName  = cfg.OwnerLastName,
-            Role      = UserRole.MarinaOwner,
-            TenantId  = tenant.Id,
-        };
+        var existingOwnerContext = await db.UserContexts
+            .FirstOrDefaultAsync(uc => uc.UserId == existingOwner.Id && uc.RoleId == tenantOwnerRoleId, ct);
 
-        var result = await userManager.CreateAsync(owner, cfg.OwnerPassword);
-        if (!result.Succeeded)
+        if (existingOwnerContext is null)
         {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Failed to create marina owner: {errors}");
+            db.UserContexts.Add(new UserContext
+            {
+                UserId   = existingOwner.Id,
+                RoleId   = tenantOwnerRoleId,
+                TenantId = tenant.Id,
+            });
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("UserContext created for marina owner '{Email}'.", cfg.OwnerEmail);
         }
-
-        logger.LogInformation("Marina owner '{Email}' created (id={Id}).", cfg.OwnerEmail, owner.Id);
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
+using RoleNames = MyMarina.Domain.Common.Roles;
 using MyMarina.Domain.Entities;
 using MyMarina.Infrastructure.Identity;
 
@@ -65,11 +66,11 @@ public class AppDbContext(
     {
         var roles = new[]
         {
-            new Role { Id = Guid.Parse("00000001-0000-0000-0000-000000000001"), Name = "PlatformAdmin", Description = "System administrator with cross-tenant access" },
-            new Role { Id = Guid.Parse("00000002-0000-0000-0000-000000000001"), Name = "TenantOwner", Description = "Owns a tenant and sees all marinas within it" },
-            new Role { Id = Guid.Parse("00000003-0000-0000-0000-000000000001"), Name = "MarinaManager", Description = "Manages a specific marina" },
-            new Role { Id = Guid.Parse("00000004-0000-0000-0000-000000000001"), Name = "MarinaStaff", Description = "Staff member at a specific marina" },
-            new Role { Id = Guid.Parse("00000005-0000-0000-0000-000000000001"), Name = "Customer", Description = "Boat owner with portal access" },
+            new Role { Id = Guid.Parse("00000001-0000-0000-0000-000000000001"), Name = RoleNames.PlatformAdmin, Description = "System administrator with cross-tenant access" },
+            new Role { Id = Guid.Parse("00000002-0000-0000-0000-000000000001"), Name = RoleNames.TenantOwner,   Description = "Owns a tenant and sees all marinas within it" },
+            new Role { Id = Guid.Parse("00000003-0000-0000-0000-000000000001"), Name = RoleNames.MarinaManager, Description = "Manages a specific marina" },
+            new Role { Id = Guid.Parse("00000004-0000-0000-0000-000000000001"), Name = RoleNames.MarinaStaff,   Description = "Staff member at a specific marina" },
+            new Role { Id = Guid.Parse("00000005-0000-0000-0000-000000000001"), Name = RoleNames.Customer,      Description = "Boat owner with portal access" },
         };
 
         builder.Entity<Role>().HasData(roles);

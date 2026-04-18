@@ -46,7 +46,7 @@ export function LoginPage() {
 
       // Single context or immediate token available
       const token = result.token || "";
-      const role = (result.role as unknown) as number;
+      const role = result.role ?? "";
       storeLogin(token, {
         userId: result.userId,
         email: result.email,
@@ -57,8 +57,8 @@ export function LoginPage() {
         marinaId: result.marinaId ?? null,
       });
       // Route by role: platform operators → /platform, customers → /portal, operators → /
-      if (role === 0) router.navigate({ to: "/platform/tenants" });
-      else if (role === 3) router.navigate({ to: "/portal" });
+      if (role === "PlatformAdmin") router.navigate({ to: "/platform/tenants" });
+      else if (role === "Customer") router.navigate({ to: "/portal" });
       else router.navigate({ to: "/" });
     } catch {
       toast.error("Invalid email or password");
@@ -70,7 +70,7 @@ export function LoginPage() {
     setSelectingContext(true);
     try {
       const tokenResult = await chooseContext(contextSelection.userId, context);
-      const role = context.role as number;
+      const role = context.role;
       storeLogin(tokenResult.token, {
         userId: contextSelection.userId,
         email: "", // Not available in context selection
@@ -81,8 +81,8 @@ export function LoginPage() {
         marinaId: context.marinaId ?? null,
       });
       // Route by role
-      if (role === 0) router.navigate({ to: "/platform/tenants" });
-      else if (role === 3) router.navigate({ to: "/portal" });
+      if (role === "PlatformAdmin") router.navigate({ to: "/platform/tenants" });
+      else if (role === "Customer") router.navigate({ to: "/portal" });
       else router.navigate({ to: "/" });
     } catch {
       toast.error("Failed to select context");

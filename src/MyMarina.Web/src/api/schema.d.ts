@@ -3509,7 +3509,7 @@ export interface components {
             displayName: string;
             role: null | string;
             /** Format: uuid */
-            tenantId: string;
+            tenantId: null | string;
             /** Format: uuid */
             marinaId: null | string;
             /** Format: uuid */

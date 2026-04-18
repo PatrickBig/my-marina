@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Portal;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Api.Controllers;
@@ -11,7 +12,7 @@ namespace MyMarina.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("portal")]
-[Authorize(Roles = "Customer")]
+[Authorize(Roles = Roles.Customer)]
 public class PortalController(
     IQueryHandler<GetPortalMeQuery, PortalMeDto?> meHandler,
     IQueryHandler<GetPortalSlipQuery, PortalSlipAssignmentDto?> slipHandler,

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.ValueObjects;
 using MyMarina.Infrastructure.Identity;
@@ -14,11 +15,12 @@ public class SeedDataService(
     AppDbContext db,
     UserManager<ApplicationUser> userManager)
 {
-    private static readonly Guid PlatformAdminRoleId = Guid.Parse("00000001-0000-0000-0000-000000000001");
-    private static readonly Guid TenantOwnerRoleId = Guid.Parse("00000002-0000-0000-0000-000000000001");
-    private static readonly Guid MarinaManagerRoleId = Guid.Parse("00000003-0000-0000-0000-000000000001");
-    private static readonly Guid MarinaStaffRoleId = Guid.Parse("00000004-0000-0000-0000-000000000001");
-    private static readonly Guid CustomerRoleId = Guid.Parse("00000005-0000-0000-0000-000000000001");
+    private async Task<Guid> RoleIdAsync(string roleName)
+    {
+        var role = await db.AuthorizationRoles.FirstOrDefaultAsync(r => r.Name == roleName)
+            ?? throw new InvalidOperationException($"Role '{roleName}' not found.");
+        return role.Id;
+    }
 
     public async Task SeedAsync()
     {
@@ -48,24 +50,19 @@ public class SeedDataService(
                 throw new InvalidOperationException($"Failed to create platform admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
 
-        // Always ensure a UserContext exists for platform admin
+        var platformAdminRoleId = await RoleIdAsync(Roles.PlatformAdmin);
+
         var existingContext = await db.UserContexts.FirstOrDefaultAsync(
-            uc => uc.UserId == user.Id && uc.RoleId == PlatformAdminRoleId);
+            uc => uc.UserId == user.Id && uc.RoleId == platformAdminRoleId);
 
         if (existingContext == null)
         {
-            var context = new UserContext
+            db.UserContexts.Add(new UserContext
             {
-                Id = Guid.CreateVersion7(),
-                UserId = user.Id,
-                RoleId = PlatformAdminRoleId,
+                UserId   = user.Id,
+                RoleId   = platformAdminRoleId,
                 TenantId = Guid.Empty,
-                MarinaId = null,
-                CustomerAccountId = null,
-                CreatedAt = DateTimeOffset.UtcNow,
-            };
-
-            db.UserContexts.Add(context);
+            });
             await db.SaveChangesAsync();
         }
     }
@@ -128,7 +125,7 @@ public class SeedDataService(
             "owner@mymarina.org",
             "Marina",
             "Owner",
-            TenantOwnerRoleId,
+            await RoleIdAsync(Roles.TenantOwner),
             tenantId,
             null,
             null);
@@ -138,7 +135,7 @@ public class SeedDataService(
             "manager@mymarina.org",
             "Marina",
             "Manager",
-            MarinaManagerRoleId,
+            await RoleIdAsync(Roles.MarinaManager),
             tenantId,
             marinaId,
             null);
@@ -148,7 +145,7 @@ public class SeedDataService(
             "staff@mymarina.org",
             "Marina",
             "Staff",
-            MarinaStaffRoleId,
+            await RoleIdAsync(Roles.MarinaStaff),
             tenantId,
             marinaId,
             null);
@@ -200,7 +197,7 @@ public class SeedDataService(
             {
                 Id = Guid.CreateVersion7(),
                 UserId = customerUser.Id,
-                RoleId = CustomerRoleId,
+                RoleId = await RoleIdAsync(Roles.Customer),
                 TenantId = tenantId,
                 MarinaId = null,
                 CustomerAccountId = customerAccountId,

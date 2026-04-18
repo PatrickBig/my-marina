@@ -209,7 +209,7 @@ public class InvoicesController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RecordPayment(Guid id, [FromBody] RecordPaymentRequest request, CancellationToken ct)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userIdStr = User.FindFirstValue("sub");
         if (!Guid.TryParse(userIdStr, out var userId))
             return Unauthorized();
 

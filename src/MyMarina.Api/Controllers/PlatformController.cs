@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Platform;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("platform")]
-[Authorize(Roles = "PlatformAdmin")]
+[Authorize(Roles = Roles.PlatformAdmin)]
 public class PlatformController(
     IQueryHandler<GetPlatformUsersQuery, IReadOnlyList<PlatformUserDto>> getUsersHandler,
     IQueryHandler<GetPlatformUserQuery, PlatformUserDto?> getUserHandler,

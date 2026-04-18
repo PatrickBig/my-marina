@@ -6,9 +6,6 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
-# Build — VITE_API_BASE_URL is injected at build time via ARG
-ARG VITE_API_BASE_URL=/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 COPY . .
 RUN npm run build
 
@@ -16,18 +13,22 @@ RUN npm run build
 FROM nginx:1.27-alpine AS runtime
 EXPOSE 8080
 
-# Use non-root port (8080) in nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# envsubst (from gettext) stamps API_BASE_URL into config.js at container start
+RUN apk add --no-cache gettext
 
-# Copy built assets
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# nginx runs as nginx user by default; adjust to allow binding port 8080
-RUN chown -R nginx:nginx /usr/share/nginx/html \
+# config.js starts as the template; entrypoint replaces ${API_BASE_URL} before nginx starts
+COPY config.js.template /usr/share/nginx/html/config.js
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh \
+ && chown -R nginx:nginx /usr/share/nginx/html \
  && chown -R nginx:nginx /var/cache/nginx \
  && chown -R nginx:nginx /var/log/nginx \
  && touch /var/run/nginx.pid \
  && chown nginx:nginx /var/run/nginx.pid
 
 USER nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]

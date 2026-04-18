@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using MyMarina.Application.Abstractions;
+using MyMarina.Domain.Common;
 
 namespace MyMarina.Infrastructure.MultiTenancy;
 
@@ -22,9 +23,9 @@ public class HttpTenantContext : ITenantContext, IMarinaContext, ICustomerContex
         if (user?.Identity?.IsAuthenticated != true)
             return;
 
-        var roleStr = user.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-        IsPlatformOperator = roleStr == "PlatformAdmin";
-        IsCustomer = roleStr == "Customer";
+        var roleStr = user.FindFirstValue("role") ?? string.Empty;
+        IsPlatformOperator = roleStr == Roles.PlatformAdmin;
+        IsCustomer = roleStr == Roles.Customer;
 
         if (!IsPlatformOperator)
         {
