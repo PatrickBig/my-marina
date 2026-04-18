@@ -17,7 +17,7 @@ public class SeedDataService(
 {
     private async Task<Guid> RoleIdAsync(string roleName)
     {
-        var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName)
+        var role = await db.AuthorizationRoles.FirstOrDefaultAsync(r => r.Name == roleName)
             ?? throw new InvalidOperationException($"Role '{roleName}' not found.");
         return role.Id;
     }
@@ -59,11 +59,9 @@ public class SeedDataService(
         {
             db.UserContexts.Add(new UserContext
             {
-                Id = Guid.CreateVersion7(),
-                UserId = user.Id,
-                RoleId = platformAdminRoleId,
+                UserId   = user.Id,
+                RoleId   = platformAdminRoleId,
                 TenantId = Guid.Empty,
-                CreatedAt = DateTimeOffset.UtcNow,
             });
             await db.SaveChangesAsync();
         }

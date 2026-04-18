@@ -23,7 +23,7 @@ public class HttpTenantContext : ITenantContext, IMarinaContext, ICustomerContex
         if (user?.Identity?.IsAuthenticated != true)
             return;
 
-        var roleStr = user.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        var roleStr = user.FindFirstValue("role") ?? string.Empty;
         IsPlatformOperator = roleStr == Roles.PlatformAdmin;
         IsCustomer = roleStr == Roles.Customer;
 

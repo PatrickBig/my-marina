@@ -21,7 +21,7 @@ export type MarinaMetricsDto = components["schemas"]["MarinaMetricsDto"];
 
 export type AvailableContext = {
   displayName: string;
-  role: number;
+  role: string;
   tenantId: string;
   marinaId?: string | null;
   customerAccountId?: string | null;

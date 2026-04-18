@@ -48,6 +48,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -56,8 +57,49 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            RoleClaimType = "role",
+            NameClaimType = "sub",
         };
+
+        if (builder.Environment.IsDevelopment())
+        {
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = ctx =>
+                {
+                    var log = ctx.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtAuth");
+                    log.LogWarning("JWT authentication failed for {Path}: {Error}",
+                        ctx.HttpContext.Request.Path, ctx.Exception.Message);
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = ctx =>
+                {
+                    var log = ctx.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtAuth");
+                    if (log.IsEnabled(LogLevel.Debug))
+                    {
+                        var claims = ctx.Principal?.Claims.Select(c => $"{c.Type}={c.Value}");
+                        log.LogDebug("JWT validated for {Path}. Claims: {Claims}",
+                            ctx.HttpContext.Request.Path, string.Join(", ", claims ?? []));
+                    }
+                    return Task.CompletedTask;
+                },
+                OnForbidden = ctx =>
+                {
+                    var log = ctx.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtAuth");
+                    var role = ctx.HttpContext.User.FindFirst("role")?.Value ?? "(none)";
+                    log.LogWarning("403 Forbidden for {Path}. role claim={Role}",
+                        ctx.HttpContext.Request.Path, role);
+                    return Task.CompletedTask;
+                },
+            };
+        }
     });
 
 builder.Services.AddAuthorization();

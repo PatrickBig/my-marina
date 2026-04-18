@@ -97,10 +97,7 @@ public class LoginCommandHandler(
 
         // Platform admin sees all tenants
         if (roleName == Roles.PlatformAdmin)
-        {
-            var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == userContext.TenantId, ct);
-            return $"{roleName} @ {tenant?.Name ?? "Unknown"}";
-        }
+            return "Platform Admin";
 
         // Tenant owner sees tenant name
         if (roleName == Roles.TenantOwner)

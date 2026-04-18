@@ -49,7 +49,9 @@ const operatorRoute = createRoute({
     const { token, user } = useAuthStore.getState();
     if (!token) throw redirect({ to: "/login" });
     // Customers belong in the portal, not the operator shell
-    if (user?.role === 3) throw redirect({ to: "/portal" });
+    if (user?.role === "Customer") throw redirect({ to: "/portal" });
+    // Platform operators have their own shell
+    if (user?.role === "PlatformAdmin") throw redirect({ to: "/platform/tenants" });
   },
 });
 
@@ -62,7 +64,7 @@ const portalRoute = createRoute({
     const { token, user } = useAuthStore.getState();
     if (!token) throw redirect({ to: "/login" });
     // Only customers can access the portal; operators go to dashboard
-    if (user?.role !== 3) throw redirect({ to: "/" });
+    if (user?.role !== "Customer") throw redirect({ to: "/" });
   },
 });
 
@@ -153,7 +155,7 @@ const platformRoute = createRoute({
   beforeLoad: () => {
     const { token, user } = useAuthStore.getState();
     if (!token) throw redirect({ to: "/login" });
-    if (user?.role !== 0) throw redirect({ to: "/" });
+    if (user?.role !== "PlatformAdmin") throw redirect({ to: "/" });
   },
 });
 

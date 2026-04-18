@@ -152,9 +152,9 @@ public sealed class SetupHostedService(
         {
             db.UserContexts.Add(new UserContext
             {
-                UserId    = existing.Id,
-                RoleId    = platformAdminRoleId,
-                TenantId  = Guid.Empty,
+                UserId   = existing.Id,
+                RoleId   = platformAdminRoleId,
+                TenantId = Guid.Empty,
             });
             await db.SaveChangesAsync(ct);
             logger.LogInformation("UserContext created for platform operator '{Email}'.", cfg.Email);
