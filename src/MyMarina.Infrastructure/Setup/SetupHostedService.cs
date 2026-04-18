@@ -92,7 +92,7 @@ public sealed class SetupHostedService(
 
     private static async Task<Guid> RequireRoleIdAsync(AppDbContext db, string roleName, CancellationToken ct)
     {
-        var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, ct)
+        var role = await db.AuthorizationRoles.FirstOrDefaultAsync(r => r.Name == roleName, ct)
             ?? throw new InvalidOperationException($"Role '{roleName}' not found. Ensure migrations have run.");
         return role.Id;
     }

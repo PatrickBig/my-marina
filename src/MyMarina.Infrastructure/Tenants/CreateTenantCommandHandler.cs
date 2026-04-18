@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Tenants;
 using MyMarina.Domain.Entities;
+using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
@@ -45,6 +46,15 @@ public class CreateTenantCommandHandler(
             var errors = string.Join("; ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Failed to create marina owner: {errors}");
         }
+
+        var tenantOwnerRole = await db.AuthorizationRoles.FirstAsync(r => r.Name == Roles.TenantOwner, ct);
+        db.UserContexts.Add(new UserContext
+        {
+            UserId = owner.Id,
+            RoleId = tenantOwnerRole.Id,
+            TenantId = tenant.Id,
+        });
+        await db.SaveChangesAsync(ct);
 
         return new CreateTenantResult(tenant.Id, owner.Id);
     }
