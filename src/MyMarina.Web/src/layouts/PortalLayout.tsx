@@ -1,6 +1,6 @@
 import { Outlet, Link, useRouter } from "@tanstack/react-router";
 import {
-  Anchor, LayoutDashboard, Ship, Sailboat, FileText, Wrench, Megaphone, LogOut, ChevronDown,
+  Anchor, LayoutDashboard, Ship, Sailboat, FileText, Wrench, Megaphone, LogOut, ChevronDown, UserCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -86,6 +86,13 @@ export function PortalLayout() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground">{user?.email}</div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                  <UserCircle className="h-4 w-4" />
+                  My Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                 <LogOut className="h-4 w-4" />

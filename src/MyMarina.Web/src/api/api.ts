@@ -550,3 +550,24 @@ export const getAuditLogs = (params?: {
   tenantId?: string; userId?: string; action?: string; entityType?: string;
   from?: string; to?: string; page?: number; pageSize?: number;
 }) => apiClient.get<PagedResult<AuditLogDto>>("/platform/audit-logs", { params }).then((r) => r.data);
+
+// ─── Profile ──────────────────────────────────────────────────────────────────
+
+export interface ProfileDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string | null;
+}
+
+export const getProfile = () =>
+  apiClient.get<ProfileDto>("/profile").then((r) => r.data);
+
+export const updateProfile = (data: { firstName: string; lastName: string; phoneNumber?: string | null }) =>
+  apiClient.put<ProfileDto>("/profile", data).then((r) => r.data);
+
+export const changeEmail = (data: { newEmail: string; currentPassword: string }) =>
+  apiClient.post("/profile/change-email", data);
+
+export const changePassword = (data: { currentPassword: string; newPassword: string }) =>
+  apiClient.post("/profile/change-password", data);

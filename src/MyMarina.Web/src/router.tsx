@@ -28,6 +28,7 @@ import { TenantsPage } from "./pages/platform/TenantsPage";
 import { TenantDetailPage } from "./pages/platform/TenantDetailPage";
 import { UsersPage } from "./pages/platform/UsersPage";
 import { AuditLogPage } from "./pages/platform/AuditLogPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -147,6 +148,17 @@ const workOrdersRoute = createRoute({
   component: WorkOrdersPage,
 });
 
+// ─── Profile (shared across all authenticated layouts) ───────────────────────
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/profile",
+  component: ProfilePage,
+  beforeLoad: () => {
+    const { token } = useAuthStore.getState();
+    if (!token) throw redirect({ to: "/login" });
+  },
+});
+
 // ─── Platform admin shell ─────────────────────────────────────────────────────
 const platformRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -233,6 +245,7 @@ const portalAnnouncementsRoute = createRoute({
 // ─── Route tree ───────────────────────────────────────────────────────────────
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  profileRoute,
   operatorRoute.addChildren([
     dashboardRoute,
     marinaProfileRoute,
