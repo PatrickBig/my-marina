@@ -31,4 +31,4 @@ RUN chmod +x /entrypoint.sh \
  && chown nginx:nginx /var/run/nginx.pid
 
 USER nginx
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
