@@ -140,16 +140,6 @@ export function MarinaCard({ marina }: MarinaCardProps) {
               <p className="text-xs text-muted-foreground">
                 {occupancyRate.toFixed(1)}% occupied
               </p>
-              {(occupancyWarning != null || occupancyAlert != null) && (
-                <p className="text-xs text-muted-foreground flex gap-2">
-                  {occupancyWarning != null && (
-                    <span className="text-amber-600">⚠ {occupancyWarning}%</span>
-                  )}
-                  {occupancyAlert != null && (
-                    <span className="text-red-600">✕ {occupancyAlert}%</span>
-                  )}
-                </p>
-              )}
             </div>
           </div>
 
