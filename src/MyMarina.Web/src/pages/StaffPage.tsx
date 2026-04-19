@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
 import { UserPlus, Copy, Check } from "lucide-react";
+import { useParams } from "@tanstack/react-router";
 import { getMarinas, inviteStaff, type InviteStaffResult } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +30,9 @@ export function StaffPage() {
   const [result, setResult] = useState<InviteStaffResult | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const { marinaId } = useParams({ strict: false });
   const { data: marinas } = useQuery({ queryKey: ["marinas"], queryFn: getMarinas });
-  const marina = marinas?.[0];
+  const marina = marinas?.find(m => m.id === marinaId);
 
   const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<FormValues, any, FormValues>({
     resolver: zodResolver(schema) as any,
@@ -39,7 +41,7 @@ export function StaffPage() {
 
   const inviteMut = useMutation({
     mutationFn: (v: FormValues) => inviteStaff({
-      marinaId: marina!.id, email: v.email, firstName: v.firstName, lastName: v.lastName, role: v.role,
+      marinaId: marinaId!, email: v.email, firstName: v.firstName, lastName: v.lastName, role: v.role,
     }),
     onSuccess: (data) => {
       setResult(data);
@@ -56,13 +58,13 @@ export function StaffPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!marina) return <div className="p-8 text-muted-foreground">No marina configured yet.</div>;
+  if (!marinaId) return <div className="p-8 text-muted-foreground">No marina selected.</div>;
 
   return (
     <div className="p-8 max-w-lg space-y-6">
       <h1 className="text-2xl font-bold">Invite Staff</h1>
       <p className="text-muted-foreground text-sm">
-        Invite a staff member to access <strong>{marina.name}</strong>. A temporary password will be generated — share it with them securely.
+        Invite a staff member to access <strong>{marina?.name ?? "this marina"}</strong>. A temporary password will be generated — share it with them securely.
       </p>
 
       <Card>

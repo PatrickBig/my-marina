@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { useParams } from "@tanstack/react-router";
 import { getMarinas, updateMarina, createMarina, type MarinaDto } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,8 +37,9 @@ function marinaToForm(m: MarinaDto): FormValues {
 
 export function MarinaProfilePage() {
   const qc = useQueryClient();
+  const { marinaId } = useParams({ strict: false });
   const { data: marinas, isLoading } = useQuery({ queryKey: ["marinas"], queryFn: getMarinas });
-  const marina = marinas?.[0];
+  const marina = marinas?.find(m => m.id === marinaId);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),

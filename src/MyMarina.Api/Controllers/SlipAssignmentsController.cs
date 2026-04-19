@@ -19,11 +19,12 @@ public class SlipAssignmentsController(
     public async Task<IActionResult> GetAll(
         [FromQuery] Guid? slipId,
         [FromQuery] Guid? customerAccountId,
+        [FromQuery] Guid? marinaId,
         [FromQuery] bool activeOnly = false,
         CancellationToken ct = default)
     {
         var assignments = await getHandler.HandleAsync(
-            new GetSlipAssignmentsQuery(slipId, customerAccountId, activeOnly), ct);
+            new GetSlipAssignmentsQuery(slipId, customerAccountId, marinaId, activeOnly), ct);
         return Ok(assignments);
     }
 

@@ -1,5 +1,5 @@
 import type { MarinaDto, HealthTargetsDto } from "@/api/api";
-import { updateMarinaHealthTargets } from "@/api/api";
+import { getMarinaHealthTargets, updateMarinaHealthTargets } from "@/api/api";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 interface HealthTargetsDialogProps {
@@ -20,25 +20,52 @@ interface HealthTargetsDialogProps {
   onClose: () => void;
 }
 
-export function HealthTargetsDialog({
-  marina,
-  onClose,
-}: HealthTargetsDialogProps) {
+type FormValues = {
+  occupancyWarningThreshold: number | null;
+  occupancyAlertThreshold: number | null;
+  overdueWarningDays: number | null;
+  overdueAlertDays: number | null;
+};
+
+export function HealthTargetsDialog({ marina, onClose }: HealthTargetsDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<HealthTargetsDto>({
-    defaultValues: {
-      occupancyRateTarget: 70,
-      overdueARThresholdDays: 30,
-      targetMonthlyRevenue: undefined,
-    },
+  const { data: existing, isLoading } = useQuery<HealthTargetsDto | undefined>({
+    queryKey: ["marina-health-targets", marina.id],
+    queryFn: () => getMarinaHealthTargets(marina.id),
+  });
+
+  const toNum = (v: null | number | string | undefined) =>
+    v == null ? null : typeof v === "string" ? parseFloat(v) : v;
+
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+    values: existing
+      ? {
+          occupancyWarningThreshold: toNum(existing.occupancyWarningThreshold),
+          occupancyAlertThreshold: toNum(existing.occupancyAlertThreshold),
+          overdueWarningDays: toNum(existing.overdueWarningDays),
+          overdueAlertDays: toNum(existing.overdueAlertDays),
+        }
+      : {
+          occupancyWarningThreshold: null,
+          occupancyAlertThreshold: null,
+          overdueWarningDays: null,
+          overdueAlertDays: null,
+        },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: HealthTargetsDto) => updateMarinaHealthTargets(marina.id, data),
+    mutationFn: (data: FormValues) =>
+      updateMarinaHealthTargets(marina.id, {
+        occupancyWarningThreshold: data.occupancyWarningThreshold,
+        occupancyAlertThreshold: data.occupancyAlertThreshold,
+        overdueWarningDays: data.overdueWarningDays,
+        overdueAlertDays: data.overdueAlertDays,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["marina-metrics", marina.id] });
+      queryClient.invalidateQueries({ queryKey: ["marina-health-targets", marina.id] });
       onClose();
     },
     onError: (err: any) => {
@@ -46,102 +73,96 @@ export function HealthTargetsDialog({
     },
   });
 
-  const onSubmit = async (data: HealthTargetsDto) => {
+  const onSubmit = (data: FormValues) => {
     setError(null);
     mutation.mutate(data);
   };
+
+  const numericField = (name: keyof FormValues, label: string, hint: string, placeholder: string, min: number, max?: number) => (
+    <div className="space-y-1">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
+        type="number"
+        min={min}
+        max={max}
+        step="1"
+        placeholder={placeholder}
+        {...register(name, {
+          setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
+          min: { value: min, message: `Must be ${min} or higher` },
+          ...(max != null ? { max: { value: max, message: `Must be ${max} or lower` } } : {}),
+        })}
+      />
+      {errors[name] && <p className="text-xs text-red-600">{errors[name]!.message}</p>}
+      <p className="text-xs text-muted-foreground">{hint}</p>
+    </div>
+  );
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Health Targets for {marina.name}</DialogTitle>
+          <DialogTitle>Edit Health Thresholds — {marina.name}</DialogTitle>
           <DialogDescription>
-            Set performance goals that matter to your marina. These targets help track
-            occupancy and billing health.
+            Set explicit warning and alert thresholds for each metric. The marina badge will reflect the worst-case state.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="occupancy">
-              Target Occupancy Rate (%)
-            </Label>
-            <Input
-              id="occupancy"
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              placeholder="70"
-              {...register("occupancyRateTarget", {
-                valueAsNumber: true,
-                min: { value: 0, message: "Must be 0 or higher" },
-                max: { value: 100, message: "Must be 100 or lower" },
-              })}
-            />
-            {errors.occupancyRateTarget && (
-              <p className="text-sm text-red-600">{errors.occupancyRateTarget.message}</p>
+        {isLoading ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">Loading…</div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {error && (
+              <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Alert if occupancy drops below 50% of this target
-            </p>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="threshold">
-              Overdue AR Threshold (days)
-            </Label>
-            <Input
-              id="threshold"
-              type="number"
-              min="1"
-              placeholder="30"
-              {...register("overdueARThresholdDays", {
-                valueAsNumber: true,
-                min: { value: 1, message: "Must be 1 or higher" },
-              })}
-            />
-            {errors.overdueARThresholdDays && (
-              <p className="text-sm text-red-600">{errors.overdueARThresholdDays.message}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Alert if invoices are overdue beyond this duration
-            </p>
-          </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Occupancy (%)</h4>
+              {numericField(
+                "occupancyWarningThreshold",
+                "Warning below",
+                "Shows amber warning when occupancy drops below this value.",
+                "e.g. 60",
+                0, 100,
+              )}
+              {numericField(
+                "occupancyAlertThreshold",
+                "Alert below",
+                "Shows red alert when occupancy drops below this value. Must be lower than the warning threshold.",
+                "e.g. 35",
+                0, 100,
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="revenue">
-              Target Monthly Revenue (optional)
-            </Label>
-            <Input
-              id="revenue"
-              type="number"
-              min="0"
-              step="100"
-              placeholder="50000"
-              {...register("targetMonthlyRevenue", {
-                valueAsNumber: true,
-              })}
-            />
-            <p className="text-xs text-muted-foreground">
-              For future analytics and reporting
-            </p>
-          </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Overdue Invoices (days)</h4>
+              {numericField(
+                "overdueWarningDays",
+                "Warning after",
+                "Shows amber warning when the oldest overdue invoice exceeds this many days.",
+                "e.g. 30",
+                1,
+              )}
+              {numericField(
+                "overdueAlertDays",
+                "Alert after",
+                "Shows red alert when the oldest overdue invoice exceeds this many days.",
+                "e.g. 60",
+                1,
+              )}
+            </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose} disabled={mutation.isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button variant="outline" onClick={onClose} disabled={mutation.isPending}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

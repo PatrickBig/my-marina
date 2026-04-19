@@ -53,13 +53,12 @@ public class GetMarinaMetricsQueryHandler(AppDbContext db) : IQueryHandler<GetMa
             ? (int)(today.ToDateTime(TimeOnly.MinValue) - oldestOverdueDate.Value.ToDateTime(TimeOnly.MinValue)).TotalDays
             : 0;
 
-        // Load health targets and calculate status
-        var healthTargets = marina.HealthTargets;
         var healthStatus = HealthStatusCalculator.CalculateStatus(
             new HealthTargetsDto(
-                healthTargets.OccupancyRateTarget,
-                healthTargets.OverdueARThresholdDays,
-                healthTargets.TargetMonthlyRevenue),
+                marina.OccupancyWarningThreshold,
+                marina.OccupancyAlertThreshold,
+                marina.OverdueWarningDays,
+                marina.OverdueAlertDays),
             occupancyRate,
             oldestOverdueDays > 0,
             oldestOverdueDays);

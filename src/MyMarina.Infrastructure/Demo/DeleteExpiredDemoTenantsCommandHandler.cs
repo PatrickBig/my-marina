@@ -14,14 +14,9 @@ public class DeleteExpiredDemoTenantsCommandHandler(AppDbContext db)
 {
     public async Task HandleAsync(DeleteExpiredDemoTenantsCommand command, CancellationToken ct = default)
     {
-        var expired = await db.Tenants
+        await db.Tenants
             .IgnoreQueryFilters()
             .Where(t => t.IsDemo && t.DemoExpiresAt != null && t.DemoExpiresAt < DateTimeOffset.UtcNow)
-            .ToListAsync(ct);
-
-        if (expired.Count == 0) return;
-
-        db.Tenants.RemoveRange(expired);
-        await db.SaveChangesAsync(ct);
+            .ExecuteDeleteAsync(ct);
     }
 }

@@ -7,11 +7,17 @@ namespace MyMarina.Application.Invoices;
 /// <param name="Status">Filter by status. Null = all statuses.</param>
 /// <param name="IssuedFrom">Inclusive lower bound on IssuedDate.</param>
 /// <param name="IssuedTo">Inclusive upper bound on IssuedDate.</param>
+/// <param name="MarinaId">Filter to a specific marina. Null = all marinas in tenant.</param>
+/// <param name="SortBy">"issuedDate" (default) or "dueDate".</param>
+/// <param name="SortDescending">True = newest/latest first. Default true for issuedDate, false for dueDate.</param>
 public sealed record GetInvoicesQuery(
     Guid? CustomerAccountId,
     InvoiceStatus? Status,
     DateOnly? IssuedFrom,
-    DateOnly? IssuedTo);
+    DateOnly? IssuedTo,
+    Guid? MarinaId = null,
+    string? SortBy = null,
+    bool SortDescending = true);
 
 public sealed record GetInvoiceQuery(Guid InvoiceId);
 
@@ -31,7 +37,8 @@ public sealed record InvoiceDto(
     decimal AmountPaid,
     decimal BalanceDue,
     string? Notes,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    Guid MarinaId);
 
 public sealed record InvoiceLineItemDto(
     Guid Id,

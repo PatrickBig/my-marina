@@ -1,4 +1,4 @@
-import { createRouter, createRoute, createRootRoute, redirect } from "@tanstack/react-router";
+import { createRouter, createRoute, createRootRoute, redirect, Outlet } from "@tanstack/react-router";
 import { RootLayout } from "./layouts/RootLayout";
 import { OperatorLayout } from "./layouts/OperatorLayout";
 import { PortalLayout } from "./layouts/PortalLayout";
@@ -49,9 +49,7 @@ const operatorRoute = createRoute({
   beforeLoad: () => {
     const { token, user } = useAuthStore.getState();
     if (!token) throw redirect({ to: "/login" });
-    // Customers belong in the portal, not the operator shell
     if (user?.role === "Customer") throw redirect({ to: "/portal" });
-    // Platform operators have their own shell
     if (user?.role === "PlatformAdmin") throw redirect({ to: "/platform/tenants" });
   },
 });
@@ -64,34 +62,15 @@ const portalRoute = createRoute({
   beforeLoad: () => {
     const { token, user } = useAuthStore.getState();
     if (!token) throw redirect({ to: "/login" });
-    // Only customers can access the portal; operators go to dashboard
     if (user?.role !== "Customer") throw redirect({ to: "/" });
   },
 });
 
-// ─── Pages ───────────────────────────────────────────────────────────────────
+// ─── Tenant-level operator pages ──────────────────────────────────────────────
 const dashboardRoute = createRoute({
   getParentRoute: () => operatorRoute,
   path: "/",
   component: MyMarinasPage,
-});
-
-const marinaProfileRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/marina",
-  component: MarinaProfilePage,
-});
-
-const docksRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/docks",
-  component: DocksPage,
-});
-
-const slipsRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/slips",
-  component: SlipsPage,
 });
 
 const customersRoute = createRoute({
@@ -106,22 +85,23 @@ const customerDetailRoute = createRoute({
   component: CustomerDetailPage,
 });
 
-const assignmentsRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/assignments",
-  component: AssignmentsPage,
-});
-
-const staffRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/staff",
-  component: StaffPage,
-});
-
 const invoicesRoute = createRoute({
   getParentRoute: () => operatorRoute,
   path: "/invoices",
   component: InvoicesPage,
+  validateSearch: (search: Record<string, unknown>): {
+    status?: number;
+    marinaId?: string;
+    sortBy?: string;
+    sortDescending?: boolean;
+  } => {
+    const result: { status?: number; marinaId?: string; sortBy?: string; sortDescending?: boolean } = {};
+    if (search.status !== undefined) result.status = Number(search.status);
+    if (typeof search.marinaId === "string") result.marinaId = search.marinaId;
+    if (typeof search.sortBy === "string") result.sortBy = search.sortBy;
+    if (search.sortDescending !== undefined) result.sortDescending = search.sortDescending !== false && search.sortDescending !== "false";
+    return result;
+  },
 });
 
 const invoiceDetailRoute = createRoute({
@@ -130,21 +110,59 @@ const invoiceDetailRoute = createRoute({
   component: InvoiceDetailPage,
 });
 
-const announcementsRoute = createRoute({
+// ─── Marina-scoped shell (provides $marinaId param to all child pages) ────────
+const marinaRoute = createRoute({
   getParentRoute: () => operatorRoute,
-  path: "/announcements",
+  path: "/marinas/$marinaId",
+  component: () => <Outlet />,
+});
+
+// ─── Marina-scoped pages ──────────────────────────────────────────────────────
+const marinaProfileRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "profile",
+  component: MarinaProfilePage,
+});
+
+const docksRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "docks",
+  component: DocksPage,
+});
+
+const slipsRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "slips",
+  component: SlipsPage,
+});
+
+const assignmentsRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "assignments",
+  component: AssignmentsPage,
+});
+
+const staffRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "staff",
+  component: StaffPage,
+});
+
+const announcementsRoute = createRoute({
+  getParentRoute: () => marinaRoute,
+  path: "announcements",
   component: AnnouncementsPage,
 });
 
 const maintenanceRequestsRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/maintenance",
+  getParentRoute: () => marinaRoute,
+  path: "maintenance",
   component: MaintenanceRequestsPage,
 });
 
 const workOrdersRoute = createRoute({
-  getParentRoute: () => operatorRoute,
-  path: "/work-orders",
+  getParentRoute: () => marinaRoute,
+  path: "work-orders",
   component: WorkOrdersPage,
 });
 
@@ -248,18 +266,20 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   operatorRoute.addChildren([
     dashboardRoute,
-    marinaProfileRoute,
-    docksRoute,
-    slipsRoute,
     customersRoute,
     customerDetailRoute,
-    assignmentsRoute,
-    staffRoute,
     invoicesRoute,
     invoiceDetailRoute,
-    announcementsRoute,
-    maintenanceRequestsRoute,
-    workOrdersRoute,
+    marinaRoute.addChildren([
+      marinaProfileRoute,
+      docksRoute,
+      slipsRoute,
+      assignmentsRoute,
+      staffRoute,
+      announcementsRoute,
+      maintenanceRequestsRoute,
+      workOrdersRoute,
+    ]),
   ]),
   platformRoute.addChildren([
     platformTenantsRoute,

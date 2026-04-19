@@ -4,6 +4,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace MyMarina.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -12,8 +14,12 @@ namespace MyMarina.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "mymarina");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -28,6 +34,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -61,6 +68,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AuditLogs",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -81,6 +89,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AuthorizationRoles",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -94,6 +103,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "CustomerAccounts",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -120,6 +130,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Permissions",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -133,6 +144,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Tenants",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -140,6 +152,8 @@ namespace MyMarina.Infrastructure.Migrations
                     Slug = table.Column<string>(type: "text", nullable: false),
                     SubscriptionTier = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDemo = table.Column<bool>(type: "boolean", nullable: false),
+                    DemoExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -149,6 +163,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -163,6 +178,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -170,6 +186,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -184,6 +201,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -191,6 +209,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
+                schema: "mymarina",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
@@ -204,6 +223,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -211,6 +231,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
+                schema: "mymarina",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -222,12 +243,14 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -235,6 +258,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
+                schema: "mymarina",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -248,6 +272,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "mymarina",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -255,6 +280,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "UserContexts",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -271,6 +297,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_UserContexts_AuthorizationRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "mymarina",
                         principalTable: "AuthorizationRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -278,6 +305,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Boats",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -306,6 +334,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Boats_CustomerAccounts_CustomerAccountId",
                         column: x => x.CustomerAccountId,
+                        principalSchema: "mymarina",
                         principalTable: "CustomerAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -313,6 +342,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "CustomerAccountMembers",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -329,6 +359,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_CustomerAccountMembers_CustomerAccounts_CustomerAccountId",
                         column: x => x.CustomerAccountId,
+                        principalSchema: "mymarina",
                         principalTable: "CustomerAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -336,6 +367,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "MaintenanceRequests",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -358,6 +390,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_MaintenanceRequests_CustomerAccounts_CustomerAccountId",
                         column: x => x.CustomerAccountId,
+                        principalSchema: "mymarina",
                         principalTable: "CustomerAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -365,6 +398,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Marinas",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -379,6 +413,10 @@ namespace MyMarina.Infrastructure.Migrations
                     Website = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     TimeZoneId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    OccupancyWarningThreshold = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
+                    OccupancyAlertThreshold = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
+                    OverdueWarningDays = table.Column<int>(type: "integer", nullable: true),
+                    OverdueAlertDays = table.Column<int>(type: "integer", nullable: true),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
@@ -389,6 +427,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Marinas_Tenants_TenantId",
                         column: x => x.TenantId,
+                        principalSchema: "mymarina",
                         principalTable: "Tenants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -396,6 +435,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "WorkOrders",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -418,6 +458,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_WorkOrders_MaintenanceRequests_MaintenanceRequestId",
                         column: x => x.MaintenanceRequestId,
+                        principalSchema: "mymarina",
                         principalTable: "MaintenanceRequests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
@@ -425,6 +466,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Announcements",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -445,6 +487,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Announcements_Marinas_MarinaId",
                         column: x => x.MarinaId,
+                        principalSchema: "mymarina",
                         principalTable: "Marinas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -452,6 +495,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Docks",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -469,6 +513,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Docks_Marinas_MarinaId",
                         column: x => x.MarinaId,
+                        principalSchema: "mymarina",
                         principalTable: "Marinas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -476,6 +521,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Invoices",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -500,19 +546,22 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Invoices_CustomerAccounts_CustomerAccountId",
                         column: x => x.CustomerAccountId,
+                        principalSchema: "mymarina",
                         principalTable: "CustomerAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Invoices_Marinas_MarinaId",
                         column: x => x.MarinaId,
+                        principalSchema: "mymarina",
                         principalTable: "Marinas",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "OperatingExpenses",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -533,13 +582,15 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_OperatingExpenses_Marinas_MarinaId",
                         column: x => x.MarinaId,
+                        principalSchema: "mymarina",
                         principalTable: "Marinas",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Slips",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -571,11 +622,13 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Slips_Docks_DockId",
                         column: x => x.DockId,
+                        principalSchema: "mymarina",
                         principalTable: "Docks",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Slips_Marinas_MarinaId",
                         column: x => x.MarinaId,
+                        principalSchema: "mymarina",
                         principalTable: "Marinas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -583,6 +636,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "InvoiceLineItems",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -600,6 +654,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_InvoiceLineItems_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
+                        principalSchema: "mymarina",
                         principalTable: "Invoices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -607,6 +662,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Payments",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -629,6 +685,7 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Payments_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
+                        principalSchema: "mymarina",
                         principalTable: "Invoices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -636,6 +693,7 @@ namespace MyMarina.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "SlipAssignments",
+                schema: "mymarina",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -657,195 +715,245 @@ namespace MyMarina.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_SlipAssignments_Boats_BoatId",
                         column: x => x.BoatId,
+                        principalSchema: "mymarina",
                         principalTable: "Boats",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SlipAssignments_CustomerAccounts_CustomerAccountId",
                         column: x => x.CustomerAccountId,
+                        principalSchema: "mymarina",
                         principalTable: "CustomerAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SlipAssignments_Slips_SlipId",
                         column: x => x.SlipId,
+                        principalSchema: "mymarina",
                         principalTable: "Slips",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                schema: "mymarina",
+                table: "AuthorizationRoles",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { new Guid("00000001-0000-0000-0000-000000000001"), "System administrator with cross-tenant access", "PlatformAdmin" },
+                    { new Guid("00000002-0000-0000-0000-000000000001"), "Owns a tenant and sees all marinas within it", "TenantOwner" },
+                    { new Guid("00000003-0000-0000-0000-000000000001"), "Manages a specific marina", "MarinaManager" },
+                    { new Guid("00000004-0000-0000-0000-000000000001"), "Staff member at a specific marina", "MarinaStaff" },
+                    { new Guid("00000005-0000-0000-0000-000000000001"), "Boat owner with portal access", "Customer" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Announcements_MarinaId",
+                schema: "mymarina",
                 table: "Announcements",
                 column: "MarinaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Announcements_TenantId_MarinaId_PublishedAt",
+                schema: "mymarina",
                 table: "Announcements",
                 columns: new[] { "TenantId", "MarinaId", "PublishedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
+                schema: "mymarina",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
+                schema: "mymarina",
                 table: "AspNetRoles",
                 column: "NormalizedName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
+                schema: "mymarina",
                 table: "AspNetUserClaims",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserLogins_UserId",
+                schema: "mymarina",
                 table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
+                schema: "mymarina",
                 table: "AspNetUserRoles",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
+                schema: "mymarina",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
+                schema: "mymarina",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_EntityId",
+                schema: "mymarina",
                 table: "AuditLogs",
                 column: "EntityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_TenantId",
+                schema: "mymarina",
                 table: "AuditLogs",
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_Timestamp",
+                schema: "mymarina",
                 table: "AuditLogs",
                 column: "Timestamp");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuthorizationRoles_Name",
+                schema: "mymarina",
                 table: "AuthorizationRoles",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Boats_CustomerAccountId",
+                schema: "mymarina",
                 table: "Boats",
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CustomerAccountMembers_CustomerAccountId",
+                schema: "mymarina",
                 table: "CustomerAccountMembers",
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Docks_MarinaId",
+                schema: "mymarina",
                 table: "Docks",
                 column: "MarinaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvoiceLineItems_InvoiceId",
+                schema: "mymarina",
                 table: "InvoiceLineItems",
                 column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_CustomerAccountId",
+                schema: "mymarina",
                 table: "Invoices",
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_MarinaId",
+                schema: "mymarina",
                 table: "Invoices",
                 column: "MarinaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_TenantId_InvoiceNumber",
+                schema: "mymarina",
                 table: "Invoices",
                 columns: new[] { "TenantId", "InvoiceNumber" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_MaintenanceRequests_CustomerAccountId",
+                schema: "mymarina",
                 table: "MaintenanceRequests",
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Marinas_TenantId",
+                schema: "mymarina",
                 table: "Marinas",
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OperatingExpenses_MarinaId",
+                schema: "mymarina",
                 table: "OperatingExpenses",
                 column: "MarinaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OperatingExpenses_TenantId_MarinaId_IncurredDate",
+                schema: "mymarina",
                 table: "OperatingExpenses",
                 columns: new[] { "TenantId", "MarinaId", "IncurredDate" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_InvoiceId",
+                schema: "mymarina",
                 table: "Payments",
                 column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Permissions_Name",
+                schema: "mymarina",
                 table: "Permissions",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SlipAssignments_BoatId",
+                schema: "mymarina",
                 table: "SlipAssignments",
                 column: "BoatId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SlipAssignments_CustomerAccountId",
+                schema: "mymarina",
                 table: "SlipAssignments",
                 column: "CustomerAccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SlipAssignments_SlipId",
+                schema: "mymarina",
                 table: "SlipAssignments",
                 column: "SlipId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Slips_DockId",
+                schema: "mymarina",
                 table: "Slips",
                 column: "DockId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Slips_MarinaId",
+                schema: "mymarina",
                 table: "Slips",
                 column: "MarinaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserContexts_RoleId",
+                schema: "mymarina",
                 table: "UserContexts",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserContexts_UserId_TenantId_MarinaId",
+                schema: "mymarina",
                 table: "UserContexts",
                 columns: new[] { "UserId", "TenantId", "MarinaId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkOrders_MaintenanceRequestId",
+                schema: "mymarina",
                 table: "WorkOrders",
                 column: "MaintenanceRequestId",
                 unique: true);
@@ -855,82 +963,108 @@ namespace MyMarina.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Announcements");
+                name: "Announcements",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
+                name: "AspNetRoleClaims",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
+                name: "AspNetUserClaims",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
+                name: "AspNetUserLogins",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
+                name: "AspNetUserRoles",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
+                name: "AspNetUserTokens",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AuditLogs");
+                name: "AuditLogs",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "CustomerAccountMembers");
+                name: "CustomerAccountMembers",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "InvoiceLineItems");
+                name: "InvoiceLineItems",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "OperatingExpenses");
+                name: "OperatingExpenses",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Payments");
+                name: "Payments",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Permissions");
+                name: "Permissions",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "SlipAssignments");
+                name: "SlipAssignments",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "UserContexts");
+                name: "UserContexts",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "WorkOrders");
+                name: "WorkOrders",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "AspNetRoles",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "AspNetUsers",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Invoices");
+                name: "Invoices",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Boats");
+                name: "Boats",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Slips");
+                name: "Slips",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "AuthorizationRoles");
+                name: "AuthorizationRoles",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "MaintenanceRequests");
+                name: "MaintenanceRequests",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Docks");
+                name: "Docks",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "CustomerAccounts");
+                name: "CustomerAccounts",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Marinas");
+                name: "Marinas",
+                schema: "mymarina");
 
             migrationBuilder.DropTable(
-                name: "Tenants");
+                name: "Tenants",
+                schema: "mymarina");
         }
     }
 }

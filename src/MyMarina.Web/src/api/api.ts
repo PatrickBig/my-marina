@@ -143,7 +143,7 @@ export const deleteBoat = (boatId: string) =>
 export type CreateAssignmentData = components["schemas"]["CreateSlipAssignmentCommand"];
 
 export const getAssignments = (params?: {
-  slipId?: string; customerAccountId?: string; activeOnly?: boolean;
+  slipId?: string; customerAccountId?: string; marinaId?: string; activeOnly?: boolean;
 }) => apiClient.get<SlipAssignmentDto[]>("/slip-assignments", { params }).then((r) => r.data);
 
 export const createAssignment = (data: CreateAssignmentData) =>
@@ -172,6 +172,7 @@ export interface InvoiceDto {
   balanceDue: number;
   notes: string | null;
   createdAt: string;
+  marinaId: string;
 }
 
 export interface InvoiceLineItemDto {
@@ -200,7 +201,13 @@ export interface InvoiceDetailDto extends InvoiceDto {
 }
 
 export const getInvoices = (params?: {
-  customerAccountId?: string; status?: InvoiceStatus; issuedFrom?: string; issuedTo?: string;
+  customerAccountId?: string;
+  status?: InvoiceStatus;
+  issuedFrom?: string;
+  issuedTo?: string;
+  marinaId?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
 }) => apiClient.get<InvoiceDto[]>("/invoices", { params }).then((r) => r.data);
 
 export const getInvoice = (id: string) =>

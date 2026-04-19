@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Domain.Enums;
 
@@ -129,7 +130,11 @@ public class DemoTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebA
                 MyMarina.Application.Demo.DeleteExpiredDemoTenantsCommand>>();
         await handler.HandleAsync(new MyMarina.Application.Demo.DeleteExpiredDemoTenantsCommand());
 
-        var stillExists = await db.Tenants.FindAsync(expiredTenant.Id);
+        // ExecuteDeleteAsync bypasses the change tracker, so clear it before re-querying.
+        db.ChangeTracker.Clear();
+        var stillExists = await db.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == expiredTenant.Id);
         stillExists.Should().BeNull();
     }
 

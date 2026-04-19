@@ -3728,11 +3728,13 @@ export interface components {
         HealthStatus: number;
         HealthTargetsDto: {
             /** Format: double */
-            occupancyRateTarget: null | number | string;
-            /** Format: int32 */
-            overdueARThresholdDays: null | number | string;
+            occupancyWarningThreshold: null | number | string;
             /** Format: double */
-            targetMonthlyRevenue: null | number | string;
+            occupancyAlertThreshold: null | number | string;
+            /** Format: int32 */
+            overdueWarningDays: null | number | string;
+            /** Format: int32 */
+            overdueAlertDays: null | number | string;
         };
         InviteCustomerResult: {
             /** Format: uuid */
@@ -3805,6 +3807,8 @@ export interface components {
             notes: null | string;
             /** Format: date-time */
             createdAt: string;
+            /** Format: uuid */
+            marinaId: string;
         };
         InvoiceLineItemDto: {
             /** Format: uuid */

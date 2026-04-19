@@ -18,8 +18,11 @@ public class Marina : TenantEntity
     /// <summary>IANA timezone ID, e.g. "America/New_York".</summary>
     public required string TimeZoneId { get; set; }
 
-    /// <summary>Extensible health targets configuration for this marina.</summary>
-    public HealthTargets HealthTargets { get; set; } = HealthTargets.CreateDefaults();
+    // Health threshold targets — explicit two-level thresholds per metric
+    public decimal? OccupancyWarningThreshold { get; set; }
+    public decimal? OccupancyAlertThreshold { get; set; }
+    public int? OverdueWarningDays { get; set; }
+    public int? OverdueAlertDays { get; set; }
 
     public ICollection<Dock> Docks { get; init; } = [];
     public ICollection<Slip> Slips { get; init; } = [];

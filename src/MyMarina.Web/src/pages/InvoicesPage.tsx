@@ -4,10 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, FileText } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Plus, FileText, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Link, useSearch, useNavigate } from "@tanstack/react-router";
 import {
-  getInvoices, createInvoice, getCustomers,
+  getInvoices, createInvoice, getCustomers, getMarinas,
   type InvoiceDto, type InvoiceStatus,
 } from "@/api/api";
 import { Button } from "@/components/ui/button";
@@ -34,8 +34,9 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
   );
 }
 
-function fmt(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+function fmt(amount: number | string) {
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(num);
 }
 
 const createSchema = z.object({
@@ -46,20 +47,84 @@ const createSchema = z.object({
 });
 type CreateForm = z.infer<typeof createSchema>;
 
+type SortField = "issuedDate" | "dueDate";
+
+function SortHeader({
+  label, field, current, descending, onSort,
+}: {
+  label: string;
+  field: SortField;
+  current: string;
+  descending: boolean;
+  onSort: (field: SortField, desc: boolean) => void;
+}) {
+  const active = current === field;
+  return (
+    <button
+      className="flex items-center gap-1 hover:text-foreground transition-colors"
+      onClick={() => onSort(field, active ? !descending : field === "dueDate" ? false : true)}
+    >
+      {label}
+      {active
+        ? descending
+          ? <ArrowDown className="h-3 w-3" />
+          : <ArrowUp className="h-3 w-3" />
+        : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+    </button>
+  );
+}
+
 export function InvoicesPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const rawSearch = useSearch({ strict: false }) as {
+    status?: number; marinaId?: string; sortBy?: string; sortDescending?: boolean;
+  };
+  const status = rawSearch.status;
+  const marinaId = rawSearch.marinaId;
+  const sortBy = rawSearch.sortBy ?? "issuedDate";
+  const sortDescending = rawSearch.sortDescending ?? true;
 
   const { data: invoices = [], isLoading } = useQuery({
-    queryKey: ["invoices", statusFilter],
-    queryFn: () => getInvoices(statusFilter !== "all" ? { status: Number(statusFilter) as InvoiceStatus } : undefined),
+    queryKey: ["invoices", status, marinaId, sortBy, sortDescending],
+    queryFn: () => getInvoices({
+      status: status as InvoiceStatus | undefined,
+      marinaId,
+      sortBy,
+      sortDescending,
+    }),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ["customers"],
     queryFn: getCustomers,
   });
+
+  const { data: marinas = [] } = useQuery({
+    queryKey: ["marinas"],
+    queryFn: getMarinas,
+  });
+
+  const marinaMap = Object.fromEntries(marinas.map((m) => [m.id, m.name]));
+  const showMarinaColumn = !marinaId && marinas.length > 1;
+
+  function setSearch(patch: { status?: number | undefined; marinaId?: string | undefined; sortBy?: string; sortDescending?: boolean }) {
+    navigate({
+      to: "/invoices",
+      search: {
+        status: "status" in patch ? patch.status : status,
+        marinaId: "marinaId" in patch ? patch.marinaId : marinaId,
+        sortBy: patch.sortBy ?? sortBy,
+        sortDescending: patch.sortDescending ?? sortDescending,
+      },
+    });
+  }
+
+  function handleSort(field: SortField, desc: boolean) {
+    setSearch({ sortBy: field, sortDescending: desc });
+  }
 
   const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<CreateForm>({
     resolver: zodResolver(createSchema),
@@ -93,20 +158,56 @@ export function InvoicesPage() {
         </Button>
       </div>
 
-      {/* Status filter */}
-      <div className="flex items-center gap-3">
-        <Label className="text-sm text-muted-foreground">Status</Label>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => (
-              <SelectItem key={k} value={k}>{v}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm text-muted-foreground">Status</Label>
+          <Select
+            value={status !== undefined ? String(status) : "all"}
+            onValueChange={(v) => setSearch({ status: v === "all" ? undefined : Number(v) })}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {marinas.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-muted-foreground">Marina</Label>
+            <Select
+              value={marinaId ?? "all"}
+              onValueChange={(v) => setSearch({ marinaId: v === "all" ? undefined : v })}
+            >
+              <SelectTrigger className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Marinas</SelectItem>
+                {marinas.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {(status !== undefined || marinaId) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => navigate({ to: "/invoices", search: { status: undefined, marinaId: undefined, sortBy: "issuedDate", sortDescending: true } })}
+          >
+            Clear filters
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -122,8 +223,13 @@ export function InvoicesPage() {
             <TableRow>
               <TableHead>Invoice #</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Issued</TableHead>
-              <TableHead>Due</TableHead>
+              {showMarinaColumn && <TableHead>Marina</TableHead>}
+              <TableHead>
+                <SortHeader label="Issued" field="issuedDate" current={sortBy} descending={sortDescending} onSort={handleSort} />
+              </TableHead>
+              <TableHead>
+                <SortHeader label="Due" field="dueDate" current={sortBy} descending={sortDescending} onSort={handleSort} />
+              </TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Balance Due</TableHead>
               <TableHead>Status</TableHead>
@@ -131,7 +237,7 @@ export function InvoicesPage() {
           </TableHeader>
           <TableBody>
             {invoices.map((inv) => (
-              <InvoiceRow key={inv.id} inv={inv} />
+              <InvoiceRow key={inv.id} inv={inv} marinaName={showMarinaColumn ? marinaMap[inv.marinaId] : undefined} />
             ))}
           </TableBody>
         </Table>
@@ -185,7 +291,8 @@ export function InvoicesPage() {
   );
 }
 
-function InvoiceRow({ inv }: { inv: InvoiceDto }) {
+function InvoiceRow({ inv, marinaName }: { inv: InvoiceDto; marinaName?: string }) {
+  const balanceDue = typeof inv.balanceDue === "string" ? parseFloat(inv.balanceDue) : inv.balanceDue;
   return (
     <TableRow>
       <TableCell>
@@ -202,11 +309,14 @@ function InvoiceRow({ inv }: { inv: InvoiceDto }) {
           {inv.customerDisplayName}
         </Link>
       </TableCell>
+      {marinaName !== undefined && (
+        <TableCell className="text-muted-foreground text-sm">{marinaName}</TableCell>
+      )}
       <TableCell className="text-muted-foreground">{inv.issuedDate}</TableCell>
       <TableCell className="text-muted-foreground">{inv.dueDate}</TableCell>
       <TableCell>{fmt(inv.totalAmount)}</TableCell>
-      <TableCell className={inv.balanceDue > 0 && inv.status !== 5 ? "font-medium" : "text-muted-foreground"}>
-        {fmt(inv.balanceDue)}
+      <TableCell className={balanceDue > 0 && inv.status !== 5 ? "font-medium" : "text-muted-foreground"}>
+        {fmt(balanceDue)}
       </TableCell>
       <TableCell><StatusBadge status={inv.status} /></TableCell>
     </TableRow>

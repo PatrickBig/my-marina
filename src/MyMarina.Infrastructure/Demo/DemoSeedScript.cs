@@ -38,6 +38,11 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
             PhoneNumber = "555-0101", Email = "info@sunsetharbor.demo",
             TimeZoneId = "America/Los_Angeles",
             Address = new Domain.ValueObjects.Address("1 Harbor Way", "Marina Bay", "CA", "94000", "US"),
+            // Occupancy thresholds: warn below 50%, alert below 30% — actual occupancy ~37.5% → Warning
+            OccupancyWarningThreshold = 50m,
+            OccupancyAlertThreshold = 30m,
+            OverdueWarningDays = 20,
+            OverdueAlertDays = 45,
         };
         db.Marinas.Add(marina1);
 
@@ -53,7 +58,7 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
 
         var slips1 = CreateSlips(tenantId, marina1.Id, dock1a.Id, dock1b.Id,
             ("A-01", SlipStatus.Occupied, 45), ("A-02", SlipStatus.Occupied, 40),
-            ("A-03", SlipStatus.Available, 38), ("A-04", SlipStatus.Available, 42),
+            ("A-03", SlipStatus.Occupied, 38), ("A-04", SlipStatus.Occupied, 42),
             ("A-05", SlipStatus.UnderMaintenance, 35), ("B-01", SlipStatus.Occupied, 50),
             ("B-02", SlipStatus.Available, 55), ("B-03", SlipStatus.Available, 30));
         db.Slips.AddRange(slips1);
@@ -61,17 +66,23 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
         var (cust1, boat1a, boat1b) = await CreateCustomerAsync(tenantId, "Chen Family", "chen@demo.mymarina.org", ct);
         var (cust2, boat2a, _)      = await CreateCustomerAsync(tenantId, "Blue Water Charters LLC", "bwc@demo.mymarina.org", ct);
         var (cust3, boat3a, _)      = await CreateCustomerAsync(tenantId, "Rodriguez Sailboats", "rod@demo.mymarina.org", ct);
+        var (cust5, boat5a, _)      = await CreateCustomerAsync(tenantId, "Nguyen Racing Team", "nguyen@demo.mymarina.org", ct);
+        var (cust6, boat6a, _)      = await CreateCustomerAsync(tenantId, "Pacific Whale Watch Tours", "pwwt@demo.mymarina.org", ct);
 
-        // Slip assignments (occupied slips)
+        // Slip assignments — 5/8 slips occupied = 62.5%, above 50% warning → Healthy
         var assign1 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[0].Id, CustomerAccountId = cust1.Id, BoatId = boat1a.Id, AssignmentType = AssignmentType.Annual, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-3)) };
         var assign2 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[1].Id, CustomerAccountId = cust2.Id, BoatId = boat2a.Id, AssignmentType = AssignmentType.Monthly, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)) };
         var assign3 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[5].Id, CustomerAccountId = cust3.Id, BoatId = boat3a.Id, AssignmentType = AssignmentType.Transient, StartDate = DateOnly.FromDateTime(DateTime.UtcNow) };
-        db.SlipAssignments.AddRange(assign1, assign2, assign3);
+        var assign6 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[2].Id, CustomerAccountId = cust5.Id, BoatId = boat5a.Id, AssignmentType = AssignmentType.Annual, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-6)) };
+        var assign7 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[3].Id, CustomerAccountId = cust6.Id, BoatId = boat6a.Id, AssignmentType = AssignmentType.Monthly, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-2)) };
+        db.SlipAssignments.AddRange(assign1, assign2, assign3, assign6, assign7);
 
-        // Invoices
+        // Invoices — all current, no overdue → Healthy from AR perspective
         db.Invoices.AddRange(
             PaidInvoice(tenantId, marina1.Id, cust1.Id, "INV-1001", DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-2)), 1800m),
-            SentInvoice(tenantId, marina1.Id, cust2.Id, "INV-1002", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10)), 950m));
+            SentInvoice(tenantId, marina1.Id, cust2.Id, "INV-1002", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10)), 950m),
+            PaidInvoice(tenantId, marina1.Id, cust5.Id, "INV-1003", DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)), 1500m),
+            SentInvoice(tenantId, marina1.Id, cust6.Id, "INV-1004", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5)), 2100m));
 
         // Maintenance + work order
         var maint1 = new MaintenanceRequest
@@ -119,6 +130,11 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
             PhoneNumber = "555-0202", Email = "yard@baysidemarina.demo",
             TimeZoneId = "America/Los_Angeles",
             Address = new Domain.ValueObjects.Address("22 Boatyard Rd", "Portside", "OR", "97401", "US"),
+            // Occupancy thresholds: warn below 60%, alert below 35% — actual occupancy 40% (2/5) → Warning
+            OccupancyWarningThreshold = 60m,
+            OccupancyAlertThreshold = 35m,
+            OverdueWarningDays = 30,
+            OverdueAlertDays = 60,
         };
         db.Marinas.Add(marina2);
 
@@ -141,7 +157,9 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
 
         db.Invoices.AddRange(
             PaidInvoice(tenantId, marina2.Id, cust4.Id, "INV-2001", DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)), 600m),
-            SentInvoice(tenantId, marina2.Id, cust1.Id, "INV-2002", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5)), 1200m));
+            SentInvoice(tenantId, marina2.Id, cust1.Id, "INV-2002", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5)), 1200m),
+            // Overdue invoice (issued 65 days ago, due 35 days ago) — triggers the AR threshold warning (limit: 30d)
+            OverdueInvoice(tenantId, marina2.Id, cust4.Id, "INV-2003", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-65)), 450m));
 
         var maint2 = new MaintenanceRequest
         {
@@ -280,6 +298,16 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
         Id = Guid.CreateVersion7(), TenantId = tenantId, MarinaId = marinaId,
         CustomerAccountId = custId, InvoiceNumber = number,
         Status = InvoiceStatus.Sent, IssuedDate = issued,
+        DueDate = issued.AddDays(30),
+        SubTotal = amount, TaxAmount = 0, TotalAmount = amount, AmountPaid = 0,
+    };
+
+    private static Invoice OverdueInvoice(Guid tenantId, Guid marinaId, Guid custId,
+        string number, DateOnly issued, decimal amount) => new()
+    {
+        Id = Guid.CreateVersion7(), TenantId = tenantId, MarinaId = marinaId,
+        CustomerAccountId = custId, InvoiceNumber = number,
+        Status = InvoiceStatus.Overdue, IssuedDate = issued,
         DueDate = issued.AddDays(30),
         SubTotal = amount, TaxAmount = 0, TotalAmount = amount, AmountPaid = 0,
     };

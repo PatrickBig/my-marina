@@ -16,7 +16,7 @@ public class OperatingExpenseConfiguration : IEntityTypeConfiguration<OperatingE
         builder.HasOne<Marina>()
             .WithMany()
             .HasForeignKey(e => e.MarinaId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(e => new { e.TenantId, e.MarinaId, e.IncurredDate });
     }
 }
