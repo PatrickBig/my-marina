@@ -1,0 +1,54 @@
+---
+---
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border">
+  <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="/" class="font-bold text-xl text-primary flex items-center gap-2">
+      <span class="text-[var(--brand)]">⚓</span>
+      MyMarina
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+      <li><a href="#features" class="hover:text-foreground transition-colors">Features</a></li>
+      <li><a href="#screenshots" class="hover:text-foreground transition-colors">Screenshots</a></li>
+      <li><a href="#pricing" class="hover:text-foreground transition-colors">Pricing</a></li>
+      <li><a href="#demo" class="hover:text-foreground transition-colors">Demo</a></li>
+      <li><a href="#contact" class="hover:text-foreground transition-colors">Contact</a></li>
+    </ul>
+
+    <a
+      href="#demo"
+      class="hidden md:inline-flex items-center px-4 py-2 rounded-lg bg-[var(--brand)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+    >
+      Try Demo
+    </a>
+
+    <!-- Hamburger (mobile) -->
+    <button
+      id="menu-btn"
+      class="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground"
+      aria-label="Open menu"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-border bg-white px-4 py-4 space-y-3">
+    <a href="#features" class="block text-sm font-medium text-muted-foreground hover:text-foreground">Features</a>
+    <a href="#screenshots" class="block text-sm font-medium text-muted-foreground hover:text-foreground">Screenshots</a>
+    <a href="#pricing" class="block text-sm font-medium text-muted-foreground hover:text-foreground">Pricing</a>
+    <a href="#demo" class="block text-sm font-medium text-muted-foreground hover:text-foreground">Demo</a>
+    <a href="#contact" class="block text-sm font-medium text-muted-foreground hover:text-foreground">Contact</a>
+    <a href="#demo" class="inline-flex items-center px-4 py-2 rounded-lg bg-[var(--brand)] text-white text-sm font-medium">Try Demo</a>
+  </div>
+</header>
+
+<script>
+  document.getElementById('menu-btn')?.addEventListener('click', () => {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+</script>

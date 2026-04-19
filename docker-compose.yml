@@ -42,6 +42,7 @@ services:
       Jwt__Issuer: "mymarina-api"
       Jwt__Audience: "mymarina-clients"
       Cors__AllowedOrigins__0: "http://localhost:5173"
+      Cors__AllowedOrigins__1: "http://localhost:4321"
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,6 +59,19 @@ services:
       - "5173:8080"
     environment:
       API_BASE_URL: "http://localhost:5000"
+    depends_on:
+      - api
+
+  marketing:
+    build:
+      context: src/MyMarina.Marketing
+      dockerfile: Dockerfile
+    environment:
+      - API_BASE_URL=http://localhost:5000
+      - APP_URL=http://localhost:5173
+      - MARKETING_SITE_URL=http://localhost:4321
+    ports:
+      - "4321:8080"
     depends_on:
       - api
   

@@ -1,0 +1,43 @@
+---
+const features = [
+  {
+    icon: '⚓',
+    title: 'Marina Operator Management',
+    description:
+      'Manage slips, docks, assignments, maintenance requests, and work orders from a single dashboard. Track occupancy and health across all your marinas in real time.',
+  },
+  {
+    icon: '🚤',
+    title: 'Customer Self-Service Portal',
+    description:
+      'Give boaters a modern portal to view their slip details, request maintenance, pay invoices, and register boats — reducing operator workload and improving satisfaction.',
+  },
+  {
+    icon: '💡',
+    title: 'Platform Overview & Reporting',
+    description:
+      'Platform-level visibility across all tenants, subscription tier controls, audit logs, and configurable health targets. Built for scale from day one.',
+  },
+];
+---
+
+<section id="features" class="py-20 px-4 sm:px-6 bg-secondary/20">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-bold mb-3">Everything a marina needs</h2>
+      <p class="text-muted-foreground text-lg max-w-xl mx-auto">
+        One platform, every workflow — from slip assignments to customer invoicing.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-8">
+      {features.map(f => (
+        <div class="bg-white rounded-xl p-6 border border-border shadow-sm">
+          <div class="text-3xl mb-4" aria-hidden="true">{f.icon}</div>
+          <h3 class="font-semibold text-lg mb-2">{f.title}</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

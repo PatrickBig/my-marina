@@ -87,6 +87,10 @@ public static class InfrastructureServiceExtensions
         // --- Seed data service ---
         services.AddScoped<SeedDataService>();
 
+        // --- Demo services ---
+        services.AddScoped<Demo.DemoSeedScript>();
+        services.AddSingleton<Demo.DeleteExpiredDemoTenantsJob>();
+
         // --- Command and query handlers (auto-registered via Scrutor) ---
         services.Scan(scan => scan
             .FromAssemblyOf<JwtTokenService>()

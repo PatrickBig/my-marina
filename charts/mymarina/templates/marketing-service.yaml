@@ -1,0 +1,16 @@
+{{- if .Values.marketing.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mymarina.marketing.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mymarina.labels" . | nindent 4 }}
+    app.kubernetes.io/component: marketing
+spec:
+  selector:
+    {{- include "mymarina.marketing.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: 80
+      targetPort: {{ .Values.marketing.port }}
+{{- end }}

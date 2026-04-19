@@ -18,6 +18,10 @@ spec:
     - hosts:
         - {{ .Values.ingress.appHost | quote }}
         - {{ .Values.ingress.apiHost | quote }}
+        {{- if .Values.marketing.enabled }}
+        - {{ .Values.ingress.marketingHost | quote }}
+        - {{ printf "www.%s" .Values.ingress.marketingHost | quote }}
+        {{- end }}
       secretName: {{ .Values.ingress.tlsSecretName }}
   rules:
     - host: {{ .Values.ingress.appHost | quote }}
@@ -40,4 +44,26 @@ spec:
                 name: {{ include "mymarina.api.name" . }}
                 port:
                   number: {{ .Values.api.port }}
+    {{- if .Values.marketing.enabled }}
+    - host: {{ .Values.ingress.marketingHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "mymarina.marketing.name" . }}
+                port:
+                  number: 80
+    - host: {{ printf "www.%s" .Values.ingress.marketingHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "mymarina.marketing.name" . }}
+                port:
+                  number: 80
+    {{- end }}
 {{- end }}

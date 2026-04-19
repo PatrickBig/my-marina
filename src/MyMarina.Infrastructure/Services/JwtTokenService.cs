@@ -27,7 +27,11 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             new("role", user.Role ?? "Unknown"),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new("has_multiple_contexts", user.HasMultipleContexts.ToString().ToLower()),
+            new("subscription_tier", user.SubscriptionTier.ToString()),
         };
+
+        if (user.IsDemo)
+            claims.Add(new Claim("is_demo", "true"));
 
         if (user.TenantId.HasValue)
             claims.Add(new Claim("tenant_id", user.TenantId.Value.ToString()));

@@ -14,6 +14,7 @@ env:
   REGISTRY: ghcr.io
   API_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/api
   WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/web
+  MARKETING_IMAGE: ghcr.io/${{ github.repository_owner }}/my-marina/marketing
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
@@ -101,13 +102,56 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  build-marketing:
+    name: Build Marketing image
+    if: ${{ !inputs.image_tag }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.MARKETING_IMAGE }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: src/MyMarina.Marketing
+          file: src/MyMarina.Marketing/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   deploy-staging:
     name: Deploy — staging
-    needs: [build-api, build-web]
+    needs: [build-api, build-web, build-marketing]
     if: |
       always() &&
       (needs.build-api.result == 'success' || needs.build-api.result == 'skipped') &&
-      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped')
+      (needs.build-web.result == 'success' || needs.build-web.result == 'skipped') &&
+      (needs.build-marketing.result == 'success' || needs.build-marketing.result == 'skipped')
     runs-on: arc-runner-set
     environment: staging
     permissions:
@@ -137,6 +181,7 @@ jobs:
             -f charts/mymarina/values-staging.yaml \
             --set api.image.tag="$IMAGE_TAG" \
             --set webui.image.tag="$IMAGE_TAG" \
+            --set marketing.image.tag="$IMAGE_TAG" \
             --rollback-on-failure \
             --timeout 15m \
             --history-max 10
@@ -172,6 +217,7 @@ jobs:
             -f charts/mymarina/values-prod.yaml \
             --set api.image.tag="$IMAGE_TAG" \
             --set webui.image.tag="$IMAGE_TAG" \
+            --set marketing.image.tag="$IMAGE_TAG" \
             --rollback-on-failure \
             --timeout 15m \
             --history-max 10

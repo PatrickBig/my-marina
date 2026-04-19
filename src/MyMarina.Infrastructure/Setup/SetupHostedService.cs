@@ -9,6 +9,7 @@ using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
+using MyMarina.Infrastructure.Demo;
 using MyMarina.Infrastructure.Jobs;
 using MyMarina.Infrastructure.Persistence;
 
@@ -68,6 +69,11 @@ public sealed class SetupHostedService(
             "mark-overdue-invoices",
             job => job.ExecuteAsync(),
             Cron.Daily);
+
+        recurringJobs.AddOrUpdate<DeleteExpiredDemoTenantsJob>(
+            "delete-expired-demo-tenants",
+            job => job.ExecuteAsync(),
+            "*/15 * * * *"); // every 15 minutes
 
         logger.LogInformation("Recurring jobs configured.");
     }

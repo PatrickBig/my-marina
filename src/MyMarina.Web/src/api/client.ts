@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/store/authStore'
+import { useAuthStore, DEMO_TOKEN_KEY } from '@/store/authStore'
 
 /**
  * Base Axios instance. All API calls go through here so auth headers,
@@ -21,9 +21,9 @@ export const apiClient = axios.create({
   },
 })
 
-// Attach JWT Bearer token from localStorage on every request
+// Attach JWT Bearer token — demo sessions use sessionStorage, regular sessions use localStorage
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = sessionStorage.getItem(DEMO_TOKEN_KEY) ?? localStorage.getItem('access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -35,9 +35,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const wasDemo = useAuthStore.getState().isDemo
       useAuthStore.getState().logout()
-      toast.error('Your session has expired. Please log in again.')
-      window.location.href = '/login'
+      if (wasDemo) {
+        const marketingSiteUrl = (window as any).__CONFIG__?.marketingSiteUrl ?? 'https://mymarina.org'
+        window.location.href = `${marketingSiteUrl}?expired=1`
+      } else {
+        toast.error('Your session has expired. Please log in again.')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }
