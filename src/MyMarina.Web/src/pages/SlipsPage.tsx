@@ -5,7 +5,8 @@ import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { getMarinas, getDocks, getSlips, createSlip, updateSlip, deleteSlip, getAvailableSlips, type SlipDto, type DockDto } from "@/api/api";
+import { useParams } from "@tanstack/react-router";
+import { getDocks, getSlips, createSlip, updateSlip, deleteSlip, getAvailableSlips, type SlipDto, type DockDto } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,8 +63,7 @@ export function SlipsPage() {
   const [availOpen, setAvailOpen] = useState(false);
   const [availResults, setAvailResults] = useState<SlipDto[] | null>(null);
 
-  const { data: marinas } = useQuery({ queryKey: ["marinas"], queryFn: getMarinas });
-  const marinaId = marinas?.[0]?.id;
+  const { marinaId } = useParams({ strict: false });
 
   const { data: docks = [] } = useQuery<DockDto[]>({
     queryKey: ["docks", marinaId],

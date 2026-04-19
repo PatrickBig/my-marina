@@ -5,8 +5,9 @@ import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Megaphone, Pin, Globe, FileX } from "lucide-react";
+import { useParams } from "@tanstack/react-router";
 import {
-  getMarinas, getAnnouncements, createAnnouncement, updateAnnouncement,
+  getAnnouncements, createAnnouncement, updateAnnouncement,
   publishAnnouncement, unpublishAnnouncement, deleteAnnouncement,
   type AnnouncementDto,
 } from "@/api/api";
@@ -43,8 +44,7 @@ export function AnnouncementsPage() {
   const [editing, setEditing] = useState<AnnouncementDto | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AnnouncementDto | null>(null);
 
-  const { data: marinas } = useQuery({ queryKey: ["marinas"], queryFn: getMarinas });
-  const marinaId = marinas?.[0]?.id;
+  const { marinaId } = useParams({ strict: false });
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["announcements", marinaId],

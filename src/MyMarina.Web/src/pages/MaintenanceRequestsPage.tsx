@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Wrench, ExternalLink } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import {
   getMaintenanceRequests, updateMaintenanceStatus, createWorkOrder,
   type MaintenanceRequestDto, type MaintenanceStatus, type Priority,
@@ -39,6 +39,7 @@ function fmtDate(iso: string | null) {
 
 export function MaintenanceRequestsPage() {
   const qc = useQueryClient();
+  const { marinaId } = useParams({ strict: false });
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selected, setSelected] = useState<MaintenanceRequestDto | null>(null);
@@ -230,8 +231,12 @@ export function MaintenanceRequestsPage() {
                 <ExternalLink className="h-4 w-4 mr-1" /> Create Work Order
               </Button>
             )}
-            {selected?.workOrderId && (
-              <Link to="/work-orders" className="text-sm text-primary underline self-center">
+            {selected?.workOrderId && marinaId && (
+              <Link
+                to="/marinas/$marinaId/work-orders"
+                params={{ marinaId }}
+                className="text-sm text-primary underline self-center"
+              >
                 View Work Order
               </Link>
             )}

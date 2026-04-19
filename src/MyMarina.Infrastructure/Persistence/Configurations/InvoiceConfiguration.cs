@@ -22,7 +22,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasOne<Marina>()
             .WithMany()
             .HasForeignKey(e => e.MarinaId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.LineItems).WithOne(li => li.Invoice)
             .HasForeignKey(li => li.InvoiceId);

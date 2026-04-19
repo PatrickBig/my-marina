@@ -143,7 +143,7 @@ export const deleteBoat = (boatId: string) =>
 export type CreateAssignmentData = components["schemas"]["CreateSlipAssignmentCommand"];
 
 export const getAssignments = (params?: {
-  slipId?: string; customerAccountId?: string; activeOnly?: boolean;
+  slipId?: string; customerAccountId?: string; marinaId?: string; activeOnly?: boolean;
 }) => apiClient.get<SlipAssignmentDto[]>("/slip-assignments", { params }).then((r) => r.data);
 
 export const createAssignment = (data: CreateAssignmentData) =>

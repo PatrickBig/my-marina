@@ -5,8 +5,9 @@ import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, StopCircle } from "lucide-react";
+import { useParams } from "@tanstack/react-router";
 import {
-  getMarinas, getSlips, getCustomers, getBoats, getAssignments, createAssignment, endAssignment,
+  getSlips, getCustomers, getBoats, getAssignments, createAssignment, endAssignment,
   type SlipAssignmentDto,
 } from "@/api/api";
 import { Button } from "@/components/ui/button";
@@ -44,8 +45,7 @@ export function AssignmentsPage() {
   const [activeOnly, setActiveOnly] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
 
-  const { data: marinas } = useQuery({ queryKey: ["marinas"], queryFn: getMarinas });
-  const marinaId = marinas?.[0]?.id;
+  const { marinaId } = useParams({ strict: false });
 
   const { data: slips = [] } = useQuery({
     queryKey: ["slips", marinaId],
@@ -65,8 +65,8 @@ export function AssignmentsPage() {
   });
 
   const { data: assignments = [], isLoading } = useQuery({
-    queryKey: ["assignments", activeOnly],
-    queryFn: () => getAssignments({ activeOnly }),
+    queryKey: ["assignments", marinaId, activeOnly],
+    queryFn: () => getAssignments({ marinaId: marinaId ?? undefined, activeOnly }),
   });
 
   const createForm = useForm<CreateForm, any, CreateForm>({ resolver: zodResolver(createSchema) as any });

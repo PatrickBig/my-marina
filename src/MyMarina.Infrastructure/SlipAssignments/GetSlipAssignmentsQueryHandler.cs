@@ -18,6 +18,7 @@ public class GetSlipAssignmentsQueryHandler(AppDbContext db) : IQueryHandler<Get
             .Where(a =>
                 (query.SlipId == null || a.SlipId == query.SlipId) &&
                 (query.CustomerAccountId == null || a.CustomerAccountId == query.CustomerAccountId) &&
+                (query.MarinaId == null || a.Slip.MarinaId == query.MarinaId) &&
                 (!query.ActiveOnly || a.EndDate == null || a.EndDate >= today))
             .OrderByDescending(a => a.StartDate)
             .Select(a => new SlipAssignmentDto(

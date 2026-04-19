@@ -128,7 +128,7 @@ export function MarinaCard({ marina }: MarinaCardProps) {
             <Button
               size="sm"
               className="flex-1"
-              onClick={() => navigate({ to: "/marina" })}
+              onClick={() => navigate({ to: "/marinas/$marinaId/profile", params: { marinaId: marina.id } })}
             >
               View
               <ArrowRight className="h-3 w-3 ml-1" />
