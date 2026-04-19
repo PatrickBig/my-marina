@@ -1,0 +1,5 @@
+window.__CONFIG__ = {
+  apiBaseUrl: "${API_BASE_URL}",
+  appUrl: "${APP_URL}",
+  marketingSiteUrl: "${MARKETING_SITE_URL}"
+};

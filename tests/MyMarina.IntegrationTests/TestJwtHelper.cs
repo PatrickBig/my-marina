@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
+using MyMarina.Domain.Enums;
 
 namespace MyMarina.IntegrationTests;
 
@@ -20,15 +21,23 @@ public static class TestJwtHelper
     public static string PlatformOperatorToken()
         => GenerateToken(Guid.NewGuid(), "platform@mymarina.io", "PlatformAdmin");
 
-    public static string MarinaOwnerToken(Guid tenantId, Guid? marinaId = null)
-        => GenerateToken(Guid.NewGuid(), "owner@marina.io", "TenantOwner", tenantId, marinaId);
+    public static string MarinaOwnerToken(Guid tenantId, Guid? marinaId = null,
+        SubscriptionTier tier = SubscriptionTier.Free)
+        => GenerateToken(Guid.NewGuid(), "owner@marina.io", "TenantOwner", tenantId, marinaId, tier: tier);
 
-    public static string MarinaStaffToken(Guid tenantId, Guid marinaId)
-        => GenerateToken(Guid.NewGuid(), "staff@marina.io", "MarinaStaff", tenantId, marinaId);
+    public static string MarinaStaffToken(Guid tenantId, Guid marinaId,
+        SubscriptionTier tier = SubscriptionTier.Free)
+        => GenerateToken(Guid.NewGuid(), "staff@marina.io", "MarinaStaff", tenantId, marinaId, tier: tier);
 
-    public static string CustomerToken(Guid tenantId, Guid customerAccountId)
+    public static string CustomerToken(Guid tenantId, Guid customerAccountId,
+        SubscriptionTier tier = SubscriptionTier.Free)
         => GenerateToken(Guid.NewGuid(), "customer@portal.io", "Customer", tenantId,
-            customerAccountId: customerAccountId);
+            customerAccountId: customerAccountId, tier: tier);
+
+    public static string DemoToken(Guid tenantId, string role,
+        SubscriptionTier tier = SubscriptionTier.Pro)
+        => GenerateToken(Guid.NewGuid(), $"demo-{role}@demo.mymarina.org", role, tenantId,
+            tier: tier, isDemo: true);
 
     public static string GenerateToken(
         Guid userId,
@@ -37,7 +46,9 @@ public static class TestJwtHelper
         Guid? tenantId = null,
         Guid? marinaId = null,
         Guid? customerAccountId = null,
-        IReadOnlyList<Guid>? customerAccountIds = null)
+        IReadOnlyList<Guid>? customerAccountIds = null,
+        SubscriptionTier tier = SubscriptionTier.Free,
+        bool isDemo = false)
     {
         var claims = new List<Claim>
         {
@@ -47,7 +58,11 @@ public static class TestJwtHelper
             new(JwtRegisteredClaimNames.FamilyName, "Customer"),
             new("role", role),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("subscription_tier", tier.ToString()),
         };
+
+        if (isDemo)
+            claims.Add(new Claim("is_demo", "true"));
 
         if (tenantId.HasValue)
             claims.Add(new Claim("tenant_id", tenantId.Value.ToString()));
@@ -79,5 +94,13 @@ public static class TestJwtHelper
             signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256));
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>Decodes a JWT and returns its claims as a flat string dictionary.</summary>
+    public static Dictionary<string, string> ParseClaims(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+        return jwt.Claims.ToDictionary(c => c.Type, c => c.Value);
     }
 }

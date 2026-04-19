@@ -86,6 +86,10 @@ spec:
               value: {{ .Values.api.env.jwtExpiryMinutes | quote }}
             - name: Cors__AllowedOrigins__0
               value: {{ .Values.api.env.corsAllowedOrigin }}
+            - name: Cors__AllowedOrigins__1
+              value: https://{{ .Values.ingress.marketingHost }}
+            - name: Cors__AllowedOrigins__2
+              value: https://www.{{ .Values.ingress.marketingHost }}
           livenessProbe:
             httpGet:
               path: /health

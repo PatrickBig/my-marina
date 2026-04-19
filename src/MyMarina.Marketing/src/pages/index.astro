@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FeaturesSection from '../components/FeaturesSection.astro';
+import ScreenshotsSection from '../components/ScreenshotsSection.astro';
+import { HeroSection } from '../components/HeroSection';
+import { PricingSection } from '../components/PricingSection';
+import { ContactSection } from '../components/ContactSection';
+---
+
+<Layout
+  title="MyMarina — Marina Management Made Simple"
+  description="MyMarina is the all-in-one SaaS platform for marina operators. Manage slips, bookings, invoices, and customer accounts from one place."
+>
+  <!-- Hero with interactive demo CTA -->
+  <HeroSection client:load />
+
+  <!-- Static feature cards -->
+  <FeaturesSection />
+
+  <!-- Screenshots -->
+  <ScreenshotsSection />
+
+  <!-- Pricing table (fetches live capability list from API) -->
+  <PricingSection client:load />
+
+  <!-- Contact form -->
+  <ContactSection client:load />
+</Layout>

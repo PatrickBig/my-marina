@@ -14,6 +14,8 @@ public class Tenant
     public required string Slug { get; set; }
     public SubscriptionTier SubscriptionTier { get; set; } = SubscriptionTier.Free;
     public bool IsActive { get; set; } = true;
+    public bool IsDemo { get; set; } = false;
+    public DateTimeOffset? DemoExpiresAt { get; set; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
     public ICollection<Marina> Marinas { get; init; } = [];

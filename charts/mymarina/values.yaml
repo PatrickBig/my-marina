@@ -43,6 +43,23 @@ webui:
   port: 8080
   resources: {}
 
+# --- Marketing site ---
+marketing:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ghcr.io/patrickbig/my-marina/marketing
+    tag: latest
+    pullPolicy: Always
+  port: 8080
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
 # --- Ingress ---
 ingress:
   enabled: true
@@ -51,6 +68,7 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
   appHost: app.mymarina.org
   apiHost: api.mymarina.org
+  marketingHost: mymarina.org
   tlsSecretName: mymarina-tls
 
 # --- PostgresCluster (Crunchy Data Postgres Operator) ---

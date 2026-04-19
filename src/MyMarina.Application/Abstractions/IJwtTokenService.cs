@@ -23,4 +23,6 @@ public sealed record UserTokenInfo(
     Guid? MarinaId,
     Guid? CustomerAccountId = null,
     IReadOnlyList<Guid>? CustomerAccountIds = null,
-    bool HasMultipleContexts = false);
+    bool HasMultipleContexts = false,
+    MyMarina.Domain.Enums.SubscriptionTier SubscriptionTier = MyMarina.Domain.Enums.SubscriptionTier.Free,
+    bool IsDemo = false);

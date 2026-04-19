@@ -94,6 +94,16 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: webui
 {{- end }}
 
+{{- define "mymarina.marketing.name" -}}
+{{- printf "%s-marketing" (include "mymarina.fullname" .) }}
+{{- end }}
+
+{{- define "mymarina.marketing.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "mymarina.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: marketing
+{{- end }}
+
 {{- define "mymarina.redis.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "mymarina.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}

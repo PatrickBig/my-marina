@@ -142,8 +142,9 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
     public HttpClient CreatePlatformOperatorClient()
         => CreateClientWithToken(TestJwtHelper.PlatformOperatorToken());
 
-    public HttpClient CreateMarinaOwnerClient(Guid tenantId, Guid? marinaId = null)
-        => CreateClientWithToken(TestJwtHelper.MarinaOwnerToken(tenantId, marinaId));
+    public HttpClient CreateMarinaOwnerClient(Guid tenantId, Guid? marinaId = null,
+        MyMarina.Domain.Enums.SubscriptionTier tier = MyMarina.Domain.Enums.SubscriptionTier.Free)
+        => CreateClientWithToken(TestJwtHelper.MarinaOwnerToken(tenantId, marinaId, tier));
 
     public HttpClient CreateCustomerClient(Guid tenantId, Guid customerAccountId)
         => CreateClientWithToken(TestJwtHelper.CustomerToken(tenantId, customerAccountId));

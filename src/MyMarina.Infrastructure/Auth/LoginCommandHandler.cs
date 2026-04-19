@@ -4,6 +4,7 @@ using MyMarina.Application.Abstractions;
 using MyMarina.Application.Auth;
 using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
@@ -37,7 +38,8 @@ public class LoginCommandHandler(
         if (contexts.Count == 1)
         {
             var context = contexts[0];
-            var tokenInfo = BuildTokenInfo(user, context, hasMultipleContexts: false);
+            var tier = await GetTenantTierAsync(context.TenantId, ct);
+            var tokenInfo = BuildTokenInfo(user, context, hasMultipleContexts: false, tier: tier);
             var token = jwtTokenService.GenerateToken(tokenInfo);
 
             return new LoginResult(
@@ -124,7 +126,16 @@ public class LoginCommandHandler(
         return roleName;
     }
 
-    private UserTokenInfo BuildTokenInfo(ApplicationUser user, AvailableContext context, bool hasMultipleContexts)
+    private async Task<SubscriptionTier> GetTenantTierAsync(Guid? tenantId, CancellationToken ct)
+    {
+        if (!tenantId.HasValue || tenantId.Value == Guid.Empty) return SubscriptionTier.Free;
+        var tenant = await db.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == tenantId.Value, ct);
+        return tenant?.SubscriptionTier ?? SubscriptionTier.Free;
+    }
+
+    private UserTokenInfo BuildTokenInfo(ApplicationUser user, AvailableContext context, bool hasMultipleContexts,
+        SubscriptionTier tier = SubscriptionTier.Free)
     {
         Guid? customerAccountId = null;
         IReadOnlyList<Guid>? customerAccountIds = null;
@@ -145,6 +156,7 @@ public class LoginCommandHandler(
             MarinaId: context.MarinaId,
             CustomerAccountId: customerAccountId,
             CustomerAccountIds: customerAccountIds,
-            HasMultipleContexts: hasMultipleContexts);
+            HasMultipleContexts: hasMultipleContexts,
+            SubscriptionTier: tier);
     }
 }

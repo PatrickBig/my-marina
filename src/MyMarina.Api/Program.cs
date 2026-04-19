@@ -1,6 +1,8 @@
 using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using MyMarina.Infrastructure.Demo;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -36,6 +38,21 @@ if (isSetupMode)
         builder.Configuration.GetSection(SetupOptions.Section));
     builder.Services.AddHostedService<SetupHostedService>();
 }
+
+// --- Demo options ---
+builder.Services.Configure<DemoOptions>(builder.Configuration.GetSection(DemoOptions.Section));
+
+// --- Rate limiting (for demo session endpoint) ---
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("demo-session", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromHours(1);
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // --- JWT Bearer authentication ---
 var jwtKey = builder.Configuration["Jwt:Key"]
@@ -144,6 +161,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

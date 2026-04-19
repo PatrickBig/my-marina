@@ -1,6 +1,7 @@
 ingress:
   appHost: app-staging.mymarina.org
   apiHost: api-staging.mymarina.org
+  marketingHost: staging.mymarina.org
   tlsSecretName: mymarina-staging-tls
 
 api:
