@@ -579,14 +579,22 @@ namespace MyMarina.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("HealthTargets")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<decimal?>("OccupancyAlertThreshold")
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<decimal?>("OccupancyWarningThreshold")
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<int?>("OverdueAlertDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OverdueWarningDays")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()

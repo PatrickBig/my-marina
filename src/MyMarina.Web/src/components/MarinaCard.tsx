@@ -1,17 +1,23 @@
-import type { MarinaDto, MarinaMetricsDto } from "@/api/api";
-import { getMarinaMetrics } from "@/api/api";
+import type { MarinaDto, MarinaMetricsDto, HealthTargetsDto } from "@/api/api";
+import { getMarinaMetrics, getMarinaHealthTargets } from "@/api/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, AlertCircle, AlertTriangle, CheckCircle } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { HealthTargetsDialog } from "./HealthTargetsDialog";
 import { useState } from "react";
 
 interface MarinaCardProps {
   marina: MarinaDto;
 }
+
+const toNum = (v: null | number | string | undefined) =>
+  v == null ? null : typeof v === "string" ? parseFloat(v) : v;
+
+const toInt = (v: null | number | string | undefined) =>
+  v == null ? null : typeof v === "string" ? parseInt(v) : v;
 
 export function MarinaCard({ marina }: MarinaCardProps) {
   const navigate = useNavigate();
@@ -20,6 +26,11 @@ export function MarinaCard({ marina }: MarinaCardProps) {
   const { data: metrics, isLoading } = useQuery<MarinaMetricsDto | undefined>({
     queryKey: ["marina-metrics", marina.id],
     queryFn: () => getMarinaMetrics(marina.id),
+  });
+
+  const { data: targets } = useQuery<HealthTargetsDto | undefined>({
+    queryKey: ["marina-health-targets", marina.id],
+    queryFn: () => getMarinaHealthTargets(marina.id),
   });
 
   const healthStatus = metrics?.healthStatus ?? 0;
@@ -37,8 +48,31 @@ export function MarinaCard({ marina }: MarinaCardProps) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(num);
   };
 
-  const occupancyRate = typeof metrics?.occupancyRate === "string" ? parseFloat(metrics.occupancyRate) : (metrics?.occupancyRate ?? 0);
-  const oldestOverdueDays = typeof metrics?.oldestOverdueDays === "string" ? parseInt(metrics.oldestOverdueDays) : (metrics?.oldestOverdueDays ?? 0);
+  const occupancyRate =
+    typeof metrics?.occupancyRate === "string"
+      ? parseFloat(metrics.occupancyRate)
+      : (metrics?.occupancyRate ?? 0);
+
+  const oldestOverdueDays =
+    typeof metrics?.oldestOverdueDays === "string"
+      ? parseInt(metrics.oldestOverdueDays)
+      : (metrics?.oldestOverdueDays ?? 0);
+
+  const occupancyWarning = toNum(targets?.occupancyWarningThreshold);
+  const occupancyAlert = toNum(targets?.occupancyAlertThreshold);
+  const overdueWarningDays = toInt(targets?.overdueWarningDays);
+  const overdueAlertDays = toInt(targets?.overdueAlertDays);
+
+  // Bar color mirrors server-side HealthStatusCalculator logic
+  const occupancyBarColor =
+    occupancyAlert != null && occupancyRate < occupancyAlert
+      ? "bg-red-500"
+      : occupancyWarning != null && occupancyRate < occupancyWarning
+        ? "bg-amber-500"
+        : "bg-green-600";
+
+  const overdueIsAlert = overdueAlertDays != null && oldestOverdueDays > overdueAlertDays;
+  const overdueIsWarning = overdueWarningDays != null && oldestOverdueDays > overdueWarningDays;
 
   if (isLoading) {
     return (
@@ -80,33 +114,71 @@ export function MarinaCard({ marina }: MarinaCardProps) {
                 {metrics?.occupiedSlips} / {metrics?.totalSlips}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="relative w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full"
+                className={`${occupancyBarColor} h-2 rounded-full`}
                 style={{ width: `${Math.min(occupancyRate, 100)}%` }}
-              ></div>
+              />
+              {/* Warning tick (amber) */}
+              {occupancyWarning != null && (
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-amber-500"
+                  style={{ left: `${Math.min(occupancyWarning, 100)}%` }}
+                  title={`Warning below ${occupancyWarning}%`}
+                />
+              )}
+              {/* Alert tick (red) */}
+              {occupancyAlert != null && (
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-red-500"
+                  style={{ left: `${Math.min(occupancyAlert, 100)}%` }}
+                  title={`Alert below ${occupancyAlert}%`}
+                />
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {occupancyRate.toFixed(1)}% occupied
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">
+                {occupancyRate.toFixed(1)}% occupied
+              </p>
+              {(occupancyWarning != null || occupancyAlert != null) && (
+                <p className="text-xs text-muted-foreground flex gap-2">
+                  {occupancyWarning != null && (
+                    <span className="text-amber-600">⚠ {occupancyWarning}%</span>
+                  )}
+                  {occupancyAlert != null && (
+                    <span className="text-red-600">✕ {occupancyAlert}%</span>
+                  )}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Billing & Customers */}
           <div className="space-y-3">
             <div>
               <p className="text-xs text-muted-foreground">Outstanding AR</p>
-              <p className="font-semibold">
-                {getFormattedAR(metrics?.outstandingAR)}
-              </p>
+              <p className="font-semibold">{getFormattedAR(metrics?.outstandingAR)}</p>
             </div>
             {oldestOverdueDays > 0 && (
               <div>
-                <p className={`text-xs ${oldestOverdueDays > 30 ? "text-red-600" : "text-muted-foreground"}`}>
-                  Oldest Overdue
-                </p>
-                <p className={`font-semibold ${oldestOverdueDays > 30 ? "text-red-600" : ""}`}>
+                <div className="flex items-center gap-1">
+                  <p className={`text-xs ${overdueIsAlert ? "text-red-600" : overdueIsWarning ? "text-amber-600" : "text-muted-foreground"}`}>
+                    Oldest Overdue Invoice
+                  </p>
+                  {overdueIsAlert && overdueAlertDays != null && (
+                    <span className="text-xs text-red-600">(alert: {overdueAlertDays}d)</span>
+                  )}
+                  {!overdueIsAlert && overdueIsWarning && overdueWarningDays != null && (
+                    <span className="text-xs text-amber-600">(warning: {overdueWarningDays}d)</span>
+                  )}
+                </div>
+                <Link
+                  to="/invoices"
+                  search={{ status: 4, marinaId: marina.id, sortBy: "dueDate", sortDescending: false }}
+                  className={`font-semibold hover:underline ${overdueIsAlert ? "text-red-600" : overdueIsWarning ? "text-amber-600" : ""}`}
+                >
                   {oldestOverdueDays} days
-                </p>
+                </Link>
               </div>
             )}
             <div>

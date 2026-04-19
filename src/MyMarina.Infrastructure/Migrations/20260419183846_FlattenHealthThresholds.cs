@@ -5,11 +5,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyMarina.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddMarinaHealthTargets : Migration
+    public partial class FlattenHealthThresholds : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(name: "HealthTargets", table: "Marinas");
+
             migrationBuilder.AddColumn<decimal>(
                 name: "OccupancyWarningThreshold",
                 table: "Marinas",
@@ -42,6 +44,13 @@ namespace MyMarina.Infrastructure.Migrations
             migrationBuilder.DropColumn(name: "OccupancyAlertThreshold", table: "Marinas");
             migrationBuilder.DropColumn(name: "OverdueWarningDays", table: "Marinas");
             migrationBuilder.DropColumn(name: "OverdueAlertDays", table: "Marinas");
+
+            migrationBuilder.AddColumn<string>(
+                name: "HealthTargets",
+                table: "Marinas",
+                type: "jsonb",
+                nullable: false,
+                defaultValue: "{}");
         }
     }
 }

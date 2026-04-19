@@ -31,10 +31,13 @@ public class InvoicesController(
         [FromQuery] InvoiceStatus? status,
         [FromQuery] DateOnly? issuedFrom,
         [FromQuery] DateOnly? issuedTo,
+        [FromQuery] Guid? marinaId,
+        [FromQuery] string? sortBy,
+        [FromQuery] bool sortDescending = true,
         CancellationToken ct = default)
     {
         var invoices = await getInvoicesHandler.HandleAsync(
-            new GetInvoicesQuery(customerAccountId, status, issuedFrom, issuedTo), ct);
+            new GetInvoicesQuery(customerAccountId, status, issuedFrom, issuedTo, marinaId, sortBy, sortDescending), ct);
         return Ok(invoices);
     }
 

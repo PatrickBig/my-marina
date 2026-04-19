@@ -21,9 +21,10 @@ public sealed record MarinaDto(
     DateTimeOffset CreatedAt);
 
 public sealed record HealthTargetsDto(
-    decimal? OccupancyRateTarget,
-    int? OverdueARThresholdDays,
-    decimal? TargetMonthlyRevenue);
+    decimal? OccupancyWarningThreshold,
+    decimal? OccupancyAlertThreshold,
+    int? OverdueWarningDays,
+    int? OverdueAlertDays);
 
 public sealed record MarinaMetricsDto(
     int TotalSlips,

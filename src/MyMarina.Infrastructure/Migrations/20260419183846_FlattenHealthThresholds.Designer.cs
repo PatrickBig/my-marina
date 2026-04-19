@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MyMarina.Domain.ValueObjects;
 using MyMarina.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,14 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyMarina.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260417172503_AddMarinaHealthTargets")]
-    partial class AddMarinaHealthTargets
+    [Migration("20260419183846_FlattenHealthThresholds")]
+    partial class FlattenHealthThresholds
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("mymarina")
                 .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -47,7 +47,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", "mymarina");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -71,7 +71,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", "mymarina");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -92,7 +92,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", "mymarina");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -107,7 +107,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", "mymarina");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -126,7 +126,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Announcement", b =>
@@ -175,7 +175,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "MarinaId", "PublishedAt");
 
-                    b.ToTable("Announcements");
+                    b.ToTable("Announcements", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.AuditLog", b =>
@@ -224,7 +224,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("Timestamp");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Boat", b =>
@@ -292,7 +292,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("CustomerAccountId");
 
-                    b.ToTable("Boats");
+                    b.ToTable("Boats", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.CustomerAccount", b =>
@@ -338,7 +338,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CustomerAccounts");
+                    b.ToTable("CustomerAccounts", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.CustomerAccountMember", b =>
@@ -369,7 +369,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("CustomerAccountId");
 
-                    b.ToTable("CustomerAccountMembers");
+                    b.ToTable("CustomerAccountMembers", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Dock", b =>
@@ -404,7 +404,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("MarinaId");
 
-                    b.ToTable("Docks");
+                    b.ToTable("Docks", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Invoice", b =>
@@ -470,7 +470,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("TenantId", "InvoiceNumber")
                         .IsUnique();
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.InvoiceLineItem", b =>
@@ -509,7 +509,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceLineItems");
+                    b.ToTable("InvoiceLineItems", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.MaintenanceRequest", b =>
@@ -562,7 +562,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("CustomerAccountId");
 
-                    b.ToTable("MaintenanceRequests");
+                    b.ToTable("MaintenanceRequests", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Marina", b =>
@@ -582,22 +582,22 @@ namespace MyMarina.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<decimal?>("OccupancyWarningThreshold")
-                        .HasColumnType("numeric(5,2)");
-
-                    b.Property<decimal?>("OccupancyAlertThreshold")
-                        .HasColumnType("numeric(5,2)");
-
-                    b.Property<int?>("OverdueWarningDays")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("OverdueAlertDays")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<decimal?>("OccupancyAlertThreshold")
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<decimal?>("OccupancyWarningThreshold")
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<int?>("OverdueAlertDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("OverdueWarningDays")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -623,7 +623,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Marinas");
+                    b.ToTable("Marinas", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.OperatingExpense", b =>
@@ -674,7 +674,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "MarinaId", "IncurredDate");
 
-                    b.ToTable("OperatingExpenses");
+                    b.ToTable("OperatingExpenses", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Payment", b =>
@@ -727,7 +727,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Permission", b =>
@@ -750,7 +750,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Role", b =>
@@ -773,7 +773,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("AuthorizationRoles", (string)null);
+                    b.ToTable("AuthorizationRoles", "mymarina");
 
                     b.HasData(
                         new
@@ -893,7 +893,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("MarinaId");
 
-                    b.ToTable("Slips");
+                    b.ToTable("Slips", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.SlipAssignment", b =>
@@ -943,7 +943,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("SlipId");
 
-                    b.ToTable("SlipAssignments");
+                    b.ToTable("SlipAssignments", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Tenant", b =>
@@ -955,7 +955,13 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("DemoExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDemo")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -971,7 +977,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tenants");
+                    b.ToTable("Tenants", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.UserContext", b =>
@@ -1004,7 +1010,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "TenantId", "MarinaId");
 
-                    b.ToTable("UserContexts");
+                    b.ToTable("UserContexts", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.WorkOrder", b =>
@@ -1059,7 +1065,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("MaintenanceRequestId")
                         .IsUnique();
 
-                    b.ToTable("WorkOrders");
+                    b.ToTable("WorkOrders", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Infrastructure.Identity.ApplicationRole", b =>
@@ -1086,7 +1092,7 @@ namespace MyMarina.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("AspNetRoles", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Infrastructure.Identity.ApplicationUser", b =>
@@ -1177,7 +1183,7 @@ namespace MyMarina.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("AspNetUsers", "mymarina");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1292,7 +1298,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                             b1.HasKey("CustomerAccountId");
 
-                            b1.ToTable("CustomerAccounts");
+                            b1.ToTable("CustomerAccounts", "mymarina");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerAccountId");
@@ -1334,7 +1340,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasOne("MyMarina.Domain.Entities.Marina", null)
                         .WithMany()
                         .HasForeignKey("MarinaId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("CustomerAccount");
@@ -1407,7 +1413,7 @@ namespace MyMarina.Infrastructure.Migrations
 
                             b1.HasKey("MarinaId");
 
-                            b1.ToTable("Marinas");
+                            b1.ToTable("Marinas", "mymarina");
 
                             b1.WithOwner()
                                 .HasForeignKey("MarinaId");
@@ -1422,7 +1428,7 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasOne("MyMarina.Domain.Entities.Marina", null)
                         .WithMany()
                         .HasForeignKey("MarinaId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

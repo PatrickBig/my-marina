@@ -445,6 +445,109 @@ public class InvoiceTests(ApiWebApplicationFactory factory) : IClassFixture<ApiW
         sent.Should().NotContain(i => i.Id == id2);
     }
 
+    [Fact]
+    public async Task Filter_by_marinaId_returns_only_that_marinas_invoices()
+    {
+        var slug = $"inv-{Guid.NewGuid():N}"[..28];
+        var tenantResp = await _platformClient.PostAsJsonAsync("/tenants", new
+        {
+            Name = "Multi Marina Co", Slug = slug,
+            OwnerEmail = $"{Guid.NewGuid():N}@m.io", OwnerFirstName = "O", OwnerLastName = "M",
+            OwnerPassword = "OwnerPass@123", SubscriptionTier = SubscriptionTier.Free,
+        });
+        var tenant = await tenantResp.Content.ReadFromJsonAsync<CreateTenantResult>();
+        var owner = factory.CreateMarinaOwnerClient(tenant!.TenantId);
+
+        // Two marinas
+        var m1Resp = await owner.PostAsJsonAsync("/marinas", new
+        {
+            Name = "Marina Alpha", Address = new { Street = "1 A St", City = "Portside", State = "CA", Zip = "90000", Country = "US" },
+            PhoneNumber = "555-1111", Email = "alpha@m.io", TimeZoneId = "America/Los_Angeles",
+        });
+        var marinaId1 = await m1Resp.Content.ReadFromJsonAsync<Guid>();
+
+        var m2Resp = await owner.PostAsJsonAsync("/marinas", new
+        {
+            Name = "Marina Beta", Address = new { Street = "2 B St", City = "Portside", State = "CA", Zip = "90000", Country = "US" },
+            PhoneNumber = "555-2222", Email = "beta@m.io", TimeZoneId = "America/Los_Angeles",
+        });
+        var marinaId2 = await m2Resp.Content.ReadFromJsonAsync<Guid>();
+
+        // Customer in marina 1 context
+        var custResp = await owner.PostAsJsonAsync("/customers", new
+        {
+            DisplayName = "Filter Customer", BillingEmail = $"{Guid.NewGuid():N}@c.io",
+            BillingPhone = (string?)null, BillingAddress = (object?)null,
+            EmergencyContactName = (string?)null, EmergencyContactPhone = (string?)null, Notes = (string?)null,
+        });
+        var custId = await custResp.Content.ReadFromJsonAsync<Guid>();
+
+        // Invoices at each marina — use marina-scoped owner clients
+        var m1Client = factory.CreateMarinaOwnerClient(tenant.TenantId, marinaId1);
+        var m2Client = factory.CreateMarinaOwnerClient(tenant.TenantId, marinaId2);
+
+        var inv1Resp = await m1Client.PostAsJsonAsync("/invoices", new
+        {
+            CustomerAccountId = custId, IssuedDate = "2026-01-01", DueDate = "2026-01-31", Notes = (string?)null,
+        });
+        var inv1Id = await inv1Resp.Content.ReadFromJsonAsync<Guid>();
+
+        var inv2Resp = await m2Client.PostAsJsonAsync("/invoices", new
+        {
+            CustomerAccountId = custId, IssuedDate = "2026-02-01", DueDate = "2026-02-28", Notes = (string?)null,
+        });
+        var inv2Id = await inv2Resp.Content.ReadFromJsonAsync<Guid>();
+
+        // Filter to marina 1 only
+        var m1Invoices = await owner.GetFromJsonAsync<IReadOnlyList<InvoiceDto>>(
+            $"/invoices?marinaId={marinaId1}");
+
+        m1Invoices.Should().Contain(i => i.Id == inv1Id);
+        m1Invoices.Should().NotContain(i => i.Id == inv2Id);
+    }
+
+    [Fact]
+    public async Task Sort_by_due_date_ascending_returns_oldest_due_first()
+    {
+        var (owner, custId) = await SetupAsync();
+
+        var resp1 = await owner.PostAsJsonAsync("/invoices", new
+        {
+            CustomerAccountId = custId, IssuedDate = "2026-01-01", DueDate = "2026-03-31", Notes = (string?)null,
+        });
+        var laterId = await resp1.Content.ReadFromJsonAsync<Guid>();
+
+        var resp2 = await owner.PostAsJsonAsync("/invoices", new
+        {
+            CustomerAccountId = custId, IssuedDate = "2026-01-01", DueDate = "2026-01-31", Notes = (string?)null,
+        });
+        var earlierId = await resp2.Content.ReadFromJsonAsync<Guid>();
+
+        var sorted = await owner.GetFromJsonAsync<IReadOnlyList<InvoiceDto>>(
+            $"/invoices?customerAccountId={custId}&sortBy=dueDate&sortDescending=false");
+
+        var ids = sorted!.Select(i => i.Id).ToList();
+        ids.IndexOf(earlierId).Should().BeLessThan(ids.IndexOf(laterId),
+            "oldest due date should appear before later due date when sorting ascending");
+    }
+
+    [Fact]
+    public async Task Invoice_list_includes_marinaId_in_response()
+    {
+        var (owner, custId) = await SetupAsync();
+
+        var createResp = await owner.PostAsJsonAsync("/invoices", new
+        {
+            CustomerAccountId = custId, IssuedDate = "2026-04-01", DueDate = "2026-04-30", Notes = (string?)null,
+        });
+        var invoiceId = await createResp.Content.ReadFromJsonAsync<Guid>();
+
+        var list = await owner.GetFromJsonAsync<IReadOnlyList<InvoiceDto>>(
+            $"/invoices?customerAccountId={custId}");
+
+        list.Should().ContainSingle(i => i.Id == invoiceId && i.MarinaId != Guid.Empty);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>

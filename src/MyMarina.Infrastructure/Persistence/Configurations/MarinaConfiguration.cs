@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyMarina.Domain.Entities;
-using MyMarina.Domain.ValueObjects;
 
 namespace MyMarina.Infrastructure.Persistence.Configurations;
 
@@ -17,13 +15,8 @@ public class MarinaConfiguration : IEntityTypeConfiguration<Marina>
         builder.Property(e => e.TimeZoneId).HasMaxLength(100).IsRequired();
         builder.Property(e => e.Website).HasMaxLength(500);
 
-        // Configure HealthTargets as JSON with a value converter
-        builder.Property(e => e.HealthTargets)
-            .HasColumnType("jsonb")
-            .IsRequired()
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<HealthTargets>(v, (JsonSerializerOptions?)null) ?? HealthTargets.CreateDefaults());
+        builder.Property(e => e.OccupancyWarningThreshold).HasColumnType("numeric(5,2)");
+        builder.Property(e => e.OccupancyAlertThreshold).HasColumnType("numeric(5,2)");
 
         builder.OwnsOne(e => e.Address, addr =>
         {

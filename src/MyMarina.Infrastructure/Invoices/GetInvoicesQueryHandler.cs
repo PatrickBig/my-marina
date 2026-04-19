@@ -24,9 +24,18 @@ public class GetInvoicesQueryHandler(AppDbContext db)
         if (query.IssuedTo.HasValue)
             q = q.Where(i => i.IssuedDate <= query.IssuedTo.Value);
 
-        return await q
-            .OrderByDescending(i => i.IssuedDate)
-            .ThenByDescending(i => i.InvoiceNumber)
+        if (query.MarinaId.HasValue)
+            q = q.Where(i => i.MarinaId == query.MarinaId.Value);
+
+        var sorted = query.SortBy == "dueDate"
+            ? query.SortDescending
+                ? q.OrderByDescending(i => i.DueDate).ThenByDescending(i => i.InvoiceNumber)
+                : q.OrderBy(i => i.DueDate).ThenBy(i => i.InvoiceNumber)
+            : query.SortDescending
+                ? q.OrderByDescending(i => i.IssuedDate).ThenByDescending(i => i.InvoiceNumber)
+                : q.OrderBy(i => i.IssuedDate).ThenBy(i => i.InvoiceNumber);
+
+        return await sorted
             .Select(i => new InvoiceDto(
                 i.Id,
                 i.InvoiceNumber,
@@ -41,7 +50,8 @@ public class GetInvoicesQueryHandler(AppDbContext db)
                 i.AmountPaid,
                 i.TotalAmount - i.AmountPaid,
                 i.Notes,
-                i.CreatedAt))
+                i.CreatedAt,
+                i.MarinaId))
             .ToListAsync(ct);
     }
 }

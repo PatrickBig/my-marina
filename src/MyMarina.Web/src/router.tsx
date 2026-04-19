@@ -89,6 +89,19 @@ const invoicesRoute = createRoute({
   getParentRoute: () => operatorRoute,
   path: "/invoices",
   component: InvoicesPage,
+  validateSearch: (search: Record<string, unknown>): {
+    status?: number;
+    marinaId?: string;
+    sortBy?: string;
+    sortDescending?: boolean;
+  } => {
+    const result: { status?: number; marinaId?: string; sortBy?: string; sortDescending?: boolean } = {};
+    if (search.status !== undefined) result.status = Number(search.status);
+    if (typeof search.marinaId === "string") result.marinaId = search.marinaId;
+    if (typeof search.sortBy === "string") result.sortBy = search.sortBy;
+    if (search.sortDescending !== undefined) result.sortDescending = search.sortDescending !== false && search.sortDescending !== "false";
+    return result;
+  },
 });
 
 const invoiceDetailRoute = createRoute({

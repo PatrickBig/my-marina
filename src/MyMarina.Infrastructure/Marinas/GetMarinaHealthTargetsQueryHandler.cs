@@ -10,14 +10,22 @@ public class GetMarinaHealthTargetsQueryHandler(AppDbContext db) : IQueryHandler
     public async Task<HealthTargetsDto?> HandleAsync(GetMarinaHealthTargetsQuery query, CancellationToken ct = default)
     {
         var marina = await db.Marinas
-            .Select(m => new { m.Id, m.HealthTargets })
+            .Select(m => new
+            {
+                m.Id,
+                m.OccupancyWarningThreshold,
+                m.OccupancyAlertThreshold,
+                m.OverdueWarningDays,
+                m.OverdueAlertDays
+            })
             .FirstOrDefaultAsync(m => m.Id == query.MarinaId, ct);
 
         if (marina is null) return null;
 
         return new HealthTargetsDto(
-            marina.HealthTargets.OccupancyRateTarget,
-            marina.HealthTargets.OverdueARThresholdDays,
-            marina.HealthTargets.TargetMonthlyRevenue);
+            marina.OccupancyWarningThreshold,
+            marina.OccupancyAlertThreshold,
+            marina.OverdueWarningDays,
+            marina.OverdueAlertDays);
     }
 }

@@ -145,7 +145,7 @@ public class MarinaTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
     }
 
     [Fact]
-    public async Task Get_health_targets_returns_default_targets_for_new_marina()
+    public async Task Get_health_targets_returns_null_thresholds_for_new_marina()
     {
         var (_, ownerClient) = await CreateTenantAsync();
 
@@ -163,9 +163,10 @@ public class MarinaTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
 
         var targets = await ownerClient.GetFromJsonAsync<HealthTargetsDto>($"/marinas/{id}/health-targets");
         targets.Should().NotBeNull();
-        targets!.OccupancyRateTarget.Should().Be(70m);
-        targets.OverdueARThresholdDays.Should().Be(30);
-        targets.TargetMonthlyRevenue.Should().BeNull();
+        targets!.OccupancyWarningThreshold.Should().BeNull();
+        targets.OccupancyAlertThreshold.Should().BeNull();
+        targets.OverdueWarningDays.Should().BeNull();
+        targets.OverdueAlertDays.Should().BeNull();
     }
 
     [Fact]
@@ -187,18 +188,20 @@ public class MarinaTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
 
         var updateResp = await ownerClient.PutAsJsonAsync($"/marinas/{id}/health-targets", new
         {
-            OccupancyRateTarget = 50m,
-            OverdueARThresholdDays = 45,
-            TargetMonthlyRevenue = 100000m,
+            OccupancyWarningThreshold = 60m,
+            OccupancyAlertThreshold = 30m,
+            OverdueWarningDays = 30,
+            OverdueAlertDays = 60,
         });
 
         updateResp.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var targets = await ownerClient.GetFromJsonAsync<HealthTargetsDto>($"/marinas/{id}/health-targets");
         targets.Should().NotBeNull();
-        targets!.OccupancyRateTarget.Should().Be(50m);
-        targets.OverdueARThresholdDays.Should().Be(45);
-        targets.TargetMonthlyRevenue.Should().Be(100000m);
+        targets!.OccupancyWarningThreshold.Should().Be(60m);
+        targets.OccupancyAlertThreshold.Should().Be(30m);
+        targets.OverdueWarningDays.Should().Be(30);
+        targets.OverdueAlertDays.Should().Be(60);
     }
 
     [Fact]
@@ -209,9 +212,10 @@ public class MarinaTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWe
 
         var updateResp = await ownerClient.PutAsJsonAsync($"/marinas/{fakeId}/health-targets", new
         {
-            OccupancyRateTarget = 50m,
-            OverdueARThresholdDays = 45,
-            TargetMonthlyRevenue = (decimal?)null,
+            OccupancyWarningThreshold = 50m,
+            OccupancyAlertThreshold = 25m,
+            OverdueWarningDays = 30,
+            OverdueAlertDays = (int?)null,
         });
 
         updateResp.StatusCode.Should().Be(HttpStatusCode.NotFound);

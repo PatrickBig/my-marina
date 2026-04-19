@@ -172,6 +172,7 @@ export interface InvoiceDto {
   balanceDue: number;
   notes: string | null;
   createdAt: string;
+  marinaId: string;
 }
 
 export interface InvoiceLineItemDto {
@@ -200,7 +201,13 @@ export interface InvoiceDetailDto extends InvoiceDto {
 }
 
 export const getInvoices = (params?: {
-  customerAccountId?: string; status?: InvoiceStatus; issuedFrom?: string; issuedTo?: string;
+  customerAccountId?: string;
+  status?: InvoiceStatus;
+  issuedFrom?: string;
+  issuedTo?: string;
+  marinaId?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
 }) => apiClient.get<InvoiceDto[]>("/invoices", { params }).then((r) => r.data);
 
 export const getInvoice = (id: string) =>
