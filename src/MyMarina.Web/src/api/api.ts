@@ -38,6 +38,12 @@ export const login = (email: string, password: string) =>
 export const chooseContext = (userId: string, context: AvailableContext) =>
   apiClient.post<ContextToken>("/auth/choose-context", { userId, context }).then((r) => r.data);
 
+export const confirmEmail = (userId: string, token: string) =>
+  apiClient.get<{ message: string }>("/auth/confirm-email", { params: { userId, token } }).then((r) => r.data);
+
+export const resendConfirmationEmail = () =>
+  apiClient.post<{ message: string }>("/auth/resend-confirmation").then((r) => r.data);
+
 // ─── Marinas ─────────────────────────────────────────────────────────────────
 
 export const getMarinas = () =>
@@ -565,6 +571,7 @@ export interface ProfileDto {
   lastName: string;
   email: string;
   phoneNumber: string | null;
+  emailConfirmed: boolean;
 }
 
 export const getProfile = () =>

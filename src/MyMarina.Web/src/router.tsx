@@ -29,6 +29,7 @@ import { TenantDetailPage } from "./pages/platform/TenantDetailPage";
 import { UsersPage } from "./pages/platform/UsersPage";
 import { AuditLogPage } from "./pages/platform/AuditLogPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { ConfirmEmailPage } from "./pages/ConfirmEmailPage";
 import { useAuthStore } from "./store/authStore";
 
 // ─── Root ────────────────────────────────────────────────────────────────────
@@ -39,6 +40,13 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
   component: LoginPage,
+});
+
+// ─── Email confirmation (public, no auth required) ────────────────────────────
+const confirmEmailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/confirm-email",
+  component: ConfirmEmailPage,
 });
 
 // ─── Protected operator shell ─────────────────────────────────────────────────
@@ -263,6 +271,7 @@ const portalAnnouncementsRoute = createRoute({
 // ─── Route tree ───────────────────────────────────────────────────────────────
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  confirmEmailRoute,
   profileRoute,
   operatorRoute.addChildren([
     dashboardRoute,

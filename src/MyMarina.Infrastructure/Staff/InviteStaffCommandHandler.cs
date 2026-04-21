@@ -1,14 +1,23 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Staff;
 using MyMarina.Domain.Enums;
+using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
+using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Staff;
 
 public class InviteStaffCommandHandler(
     UserManager<ApplicationUser> userManager,
-    ITenantContext tenantContext) : ICommandHandler<InviteStaffCommand, InviteStaffResult>
+    ITenantContext tenantContext,
+    AppDbContext db,
+    IEmailService emailService,
+    IOptions<EmailOptions> emailOptions,
+    ILogger<InviteStaffCommandHandler> logger) : ICommandHandler<InviteStaffCommand, InviteStaffResult>
 {
     public async Task<InviteStaffResult> HandleAsync(InviteStaffCommand command, CancellationToken ct = default)
     {
@@ -38,6 +47,31 @@ public class InviteStaffCommandHandler(
         {
             var errors = string.Join("; ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Failed to create staff user: {errors}");
+        }
+
+        // Send invite email — non-fatal if delivery fails
+        try
+        {
+            var marinaName = await db.Marinas
+                .Where(m => m.Id == command.MarinaId)
+                .Select(m => m.Name)
+                .FirstOrDefaultAsync(ct) ?? "Your Marina";
+
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var confirmationLink = $"{emailOptions.Value.AppBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+            await emailService.SendStaffInviteAsync(
+                command.Email,
+                $"{command.FirstName} {command.LastName}",
+                marinaName,
+                command.Role.ToString(),
+                temporaryPassword,
+                confirmationLink,
+                ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send invite email to staff {Email}", command.Email);
         }
 
         return new InviteStaffResult(user.Id, temporaryPassword);

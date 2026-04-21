@@ -6,8 +6,8 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { getProfile, updateProfile, changeEmail, changePassword } from "@/api/api";
+import { ArrowLeft, MailWarning } from "lucide-react";
+import { getProfile, updateProfile, changeEmail, changePassword, resendConfirmationEmail } from "@/api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -157,6 +157,12 @@ export function ProfilePage() {
     },
   });
 
+  const resendMut = useMutation({
+    mutationFn: resendConfirmationEmail,
+    onSuccess: () => toast.success("Confirmation email sent — check your inbox."),
+    onError: () => toast.error("Failed to send confirmation email."),
+  });
+
   if (isLoading) return <div className="p-8 text-muted-foreground">Loading…</div>;
 
   return (
@@ -167,6 +173,25 @@ export function ProfilePage() {
         </Button>
         <h1 className="text-2xl font-bold">My Profile</h1>
       </div>
+
+      {/* Email verification banner */}
+      {profile && !profile.emailConfirmed && (
+        <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800">
+          <MailWarning className="h-5 w-5 shrink-0" />
+          <p className="flex-1 text-sm">
+            Your email address <strong>{profile.email}</strong> has not been verified.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-yellow-400 bg-white text-yellow-800 hover:bg-yellow-100"
+            disabled={resendMut.isPending || resendMut.isSuccess}
+            onClick={() => resendMut.mutate()}
+          >
+            {resendMut.isPending ? "Sending…" : resendMut.isSuccess ? "Email sent!" : "Resend verification"}
+          </Button>
+        </div>
+      )}
 
       {/* Personal Info */}
       <Card>

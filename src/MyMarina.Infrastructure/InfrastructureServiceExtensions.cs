@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Abstractions;
+using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
 using MyMarina.Infrastructure.MultiTenancy;
@@ -31,12 +32,34 @@ public static class InfrastructureServiceExtensions
                     .MigrationsHistoryTable("__EFMigrationsHistory", "mymarina"));
         });
 
+        // --- Email ---
+        services.Configure<EmailOptions>(configuration.GetSection("Email"));
+        var emailProvider = configuration.GetValue<string>("Email:Provider") ?? "null";
+        if (string.Equals(emailProvider, "smtp2go", StringComparison.OrdinalIgnoreCase))
+        {
+            var host         = configuration.GetValue<string>("Email:Host");
+            var username     = configuration.GetValue<string>("Email:Username");
+            var password     = configuration.GetValue<string>("Email:Password");
+            var fromAddress  = configuration.GetValue<string>("Email:FromAddress");
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fromAddress))
+                throw new InvalidOperationException(
+                    "Email:Provider is 'smtp2go' but one or more required fields are missing: Host, Username, Password, FromAddress.");
+            services.AddScoped<IEmailService, Smtp2GoEmailService>();
+        }
+        else
+        {
+            services.AddScoped<IEmailService, NullEmailService>();
+        }
+
         // --- ASP.NET Core Identity ---
+        var requireConfirmedEmail = configuration.GetValue<bool>("Email:RequireConfirmedEmail");
         services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 options.Password.RequiredLength = 10;
                 options.Password.RequireNonAlphanumeric = true;
                 options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = requireConfirmedEmail;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();

@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: POST /customers/{id}/invite endpoint creates user for selected customer
 The system SHALL accept a POST request to invite a customer by CustomerAccountId. The endpoint creates an ApplicationUser with UserRole.Customer and a CustomerAccountMember (Owner role), returning a generated temporary password. It SHALL also generate an email confirmation token and trigger an invite email via `IEmailService`.
@@ -30,11 +30,3 @@ The system SHALL accept a POST request to invite a customer by CustomerAccountId
 - **WHEN** `IEmailService.SendCustomerInviteAsync` throws during the invite
 - **THEN** the exception is caught and logged as a warning
 - **AND** the endpoint still returns HTTP 201 with the temporary password
-
-### Requirement: No email or name input required on invite
-The invite endpoint SHALL NOT require email or name in the request body, as these are already stored in the CustomerAccount record.
-
-#### Scenario: Request body is empty or minimal
-- **WHEN** operator POSTs to /customers/{id}/invite
-- **THEN** no email or name fields are expected in the request body
-- **AND** these values are retrieved from the existing CustomerAccount record

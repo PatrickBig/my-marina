@@ -8,6 +8,7 @@ public sealed record GetProfileResult(
     string FirstName,
     string LastName,
     string Email,
-    string? PhoneNumber);
+    string? PhoneNumber,
+    bool EmailConfirmed);
 
 public interface IGetProfileQueryHandler : IQueryHandler<GetProfileQuery, GetProfileResult>;
