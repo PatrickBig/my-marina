@@ -16,7 +16,8 @@ public class GetProfileQueryHandler(
         var user = await userManager.FindByIdAsync(userId.ToString())
             ?? throw new KeyNotFoundException($"User {userId} not found.");
 
-        return new GetProfileResult(user.FirstName, user.LastName, user.Email!, user.PhoneNumber);
+        var isDemo = httpContextAccessor.HttpContext?.User.FindFirstValue("is_demo") == "true";
+        return new GetProfileResult(user.FirstName, user.LastName, user.Email!, user.PhoneNumber, user.EmailConfirmed, isDemo);
     }
 
     private Guid GetUserId()

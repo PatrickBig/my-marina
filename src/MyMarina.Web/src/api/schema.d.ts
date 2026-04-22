@@ -364,6 +364,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/confirm-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    userId?: string;
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/choose-context": {
         parameters: {
             query?: never;
@@ -825,6 +916,155 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/demo/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    tier?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CapabilitiesResponse"];
+                        "application/json": components["schemas"]["CapabilitiesResponse"];
+                        "text/json": components["schemas"]["CapabilitiesResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/demo/capabilities/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AllTiersCapabilitiesResponse"];
+                        "application/json": components["schemas"]["AllTiersCapabilitiesResponse"];
+                        "text/json": components["schemas"]["AllTiersCapabilitiesResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/demo/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    role?: string;
+                    tier?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["DemoSessionResult"];
+                        "application/json": components["schemas"]["DemoSessionResult"];
+                        "text/json": components["schemas"]["DemoSessionResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/marinas/{marinaId}/docks": {
         parameters: {
             query?: never;
@@ -989,6 +1229,9 @@ export interface paths {
                     status?: components["schemas"]["InvoiceStatus"];
                     issuedFrom?: string;
                     issuedTo?: string;
+                    marinaId?: string;
+                    sortBy?: string;
+                    sortDescending?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -2565,6 +2808,192 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GetProfileResult"];
+                        "application/json": components["schemas"]["GetProfileResult"];
+                        "text/json": components["schemas"]["GetProfileResult"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProfileCommand"];
+                    "text/json": components["schemas"]["UpdateProfileCommand"];
+                    "application/*+json": components["schemas"]["UpdateProfileCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GetProfileResult"];
+                        "application/json": components["schemas"]["GetProfileResult"];
+                        "text/json": components["schemas"]["GetProfileResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/change-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangeEmailCommand"];
+                    "text/json": components["schemas"]["ChangeEmailCommand"];
+                    "application/*+json": components["schemas"]["ChangeEmailCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangePasswordCommand"];
+                    "text/json": components["schemas"]["ChangePasswordCommand"];
+                    "application/*+json": components["schemas"]["ChangePasswordCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/slip-assignments": {
         parameters: {
             query?: never;
@@ -2577,6 +3006,7 @@ export interface paths {
                 query?: {
                     slipId?: string;
                     customerAccountId?: string;
+                    marinaId?: string;
                     activeOnly?: boolean;
                 };
                 header?: never;
@@ -3467,6 +3897,9 @@ export interface components {
             zip: string;
             country: string;
         };
+        AllTiersCapabilitiesResponse: {
+            tiers: components["schemas"]["CapabilitiesResponse"][];
+        };
         AnnouncementDto: {
             /** Format: uuid */
             id: string;
@@ -3509,7 +3942,7 @@ export interface components {
             displayName: string;
             role: null | string;
             /** Format: uuid */
-            tenantId: null | string;
+            tenantId: string;
             /** Format: uuid */
             marinaId: null | string;
             /** Format: uuid */
@@ -3543,6 +3976,18 @@ export interface components {
             createdAt: string;
         };
         BoatType: number;
+        CapabilitiesResponse: {
+            tier: string;
+            capabilities: string[];
+        };
+        ChangeEmailCommand: {
+            newEmail: string;
+            currentPassword: string;
+        };
+        ChangePasswordCommand: {
+            currentPassword: string;
+            newPassword: string;
+        };
         ChooseContextCommand: {
             /** Format: uuid */
             userId: string;
@@ -3708,6 +4153,11 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        DemoSessionResult: {
+            token: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
         DockDto: {
             /** Format: uuid */
             id: string;
@@ -3724,6 +4174,13 @@ export interface components {
         EndAssignmentRequest: {
             /** Format: date */
             endDate: string;
+        };
+        GetProfileResult: {
+            firstName: string;
+            lastName: string;
+            email: string;
+            phoneNumber: null | string;
+            emailConfirmed: boolean;
         };
         HealthStatus: number;
         HealthTargetsDto: {
@@ -4278,6 +4735,11 @@ export interface components {
             timeZoneId: string;
             website: null | string;
             description: null | string;
+        };
+        UpdateProfileCommand: {
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
         };
         UpdateSlipRequest: {
             name: string;

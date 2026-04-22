@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Customers;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
+using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
@@ -13,7 +16,11 @@ namespace MyMarina.Infrastructure.Customers;
 public class InviteCustomerCommandHandler(
     UserManager<ApplicationUser> userManager,
     AppDbContext db,
-    ITenantContext tenantContext) : ICommandHandler<InviteCustomerCommand, InviteCustomerResult>
+    ITenantContext tenantContext,
+    IMarinaContext marinaContext,
+    IEmailService emailService,
+    IOptions<EmailOptions> emailOptions,
+    ILogger<InviteCustomerCommandHandler> logger) : ICommandHandler<InviteCustomerCommand, InviteCustomerResult>
 {
     public async Task<InviteCustomerResult> HandleAsync(InviteCustomerCommand command, CancellationToken ct = default)
     {
@@ -69,6 +76,29 @@ public class InviteCustomerCommandHandler(
         };
         db.CustomerAccountMembers.Add(member);
         await db.SaveChangesAsync(ct);
+
+        // Send invite email — non-fatal if delivery fails
+        try
+        {
+            var marinaName = marinaContext.MarinaId.HasValue
+                ? (await db.Marinas.Where(m => m.Id == marinaContext.MarinaId.Value).Select(m => m.Name).FirstOrDefaultAsync(ct) ?? "Your Marina")
+                : "Your Marina";
+
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var confirmationLink = $"{emailOptions.Value.AppBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+            await emailService.SendCustomerInviteAsync(
+                account.BillingEmail,
+                account.DisplayName,
+                marinaName,
+                temporaryPassword,
+                confirmationLink,
+                ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send invite email to customer {CustomerAccountId}", command.CustomerAccountId);
+        }
 
         return new InviteCustomerResult(user.Id, temporaryPassword);
     }

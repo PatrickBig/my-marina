@@ -30,6 +30,11 @@ spec:
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
           args: ["--setup"]
+          envFrom:
+          - secretRef:
+              name: {{ include "mymarina.api.name" . }}-app-secrets
+          - configMapRef:
+              name: {{ include "mymarina.api.name" . }}-configmap
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.api.env.aspnetcoreEnvironment }}

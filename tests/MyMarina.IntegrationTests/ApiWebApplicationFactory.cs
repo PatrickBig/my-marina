@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using MyMarina.Application.Abstractions;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
+using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
@@ -114,6 +117,10 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
 
         builder.ConfigureServices(services =>
         {
+            // Always use NullEmailService in tests — no real emails sent
+            services.RemoveAll<IEmailService>();
+            services.AddScoped<IEmailService, NullEmailService>();
+
             // Replace the production DbContext with one pointing at the test container
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
