@@ -36,6 +36,11 @@ spec:
             - name: http
               containerPort: {{ .Values.api.port }}
               protocol: TCP
+          envFrom:
+          - secretRef:
+              name: {{ include "mymarina.api.name" . }}-app-secrets
+          - configMapRef:
+              name: {{ include "mymarina.api.name" . }}-configmap
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.api.env.aspnetcoreEnvironment }}
