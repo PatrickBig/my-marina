@@ -38,9 +38,9 @@ spec:
               protocol: TCP
           envFrom:
           - secretRef:
-              name: {{ include "mymarina.api.name" . }}-app-secrets
+              name: {{ include "mymarina.fullname" . }}-app-secrets
           - configMapRef:
-              name: {{ include "mymarina.api.name" . }}-configmap
+              name: {{ include "mymarina.fullname" . }}-configmap
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.api.env.aspnetcoreEnvironment }}
