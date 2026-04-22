@@ -45,7 +45,8 @@ public static class InfrastructureServiceExtensions
                 string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fromAddress))
                 throw new InvalidOperationException(
                     "Email:Provider is 'smtp2go' but one or more required fields are missing: Host, Username, Password, FromAddress.");
-            services.AddScoped<IEmailService, Smtp2GoEmailService>();
+            services.AddScoped<IEmailService, QueuedEmailService>();
+            services.AddScoped<IMessageHandler<SendEmailMessage>, SmtpEmailMessageHandler>();
         }
         else
         {

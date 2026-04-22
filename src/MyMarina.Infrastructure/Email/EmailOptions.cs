@@ -20,6 +20,9 @@ public sealed class EmailOptions
     /// <summary>Base URL of the web app, used for building confirmation links.</summary>
     public string AppBaseUrl { get; init; } = "http://localhost:5173";
 
+    /// <summary>Email domains that will never receive real emails (e.g. demo tenants).</summary>
+    public List<string> ExcludedDomains { get; init; } = [];
+
     public SecureSocketOptions GetSecureSocketOptions() => SecureSocket switch
     {
         "SslOnConnect" => SecureSocketOptions.SslOnConnect,

@@ -11,7 +11,7 @@ public class GetPlatformUsersQueryHandler(AppDbContext db)
     public async Task<IReadOnlyList<PlatformUserDto>> HandleAsync(
         GetPlatformUsersQuery query, CancellationToken ct = default)
     {
-        var q = db.Users.AsQueryable();
+        var q = db.Users.Where(u => u.ExpiresAt == null);
 
         if (query.TenantId.HasValue)
             q = q.Where(u => u.TenantId == query.TenantId.Value);

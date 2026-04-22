@@ -12,6 +12,9 @@ public class ChangeEmailCommandHandler(
 {
     public async Task HandleAsync(ChangeEmailCommand command, CancellationToken ct = default)
     {
+        if (httpContextAccessor.HttpContext?.User.FindFirstValue("is_demo") == "true")
+            throw new DemoAccountException();
+
         var userId = GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString())
             ?? throw new KeyNotFoundException($"User {userId} not found.");

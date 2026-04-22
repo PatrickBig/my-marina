@@ -27,7 +27,7 @@ public class ProvisionDemoTenantCommandHandler(
         db.Tenants.Add(tenant);
         await db.SaveChangesAsync(ct);
 
-        var seed = await seedScript.SeedAsync(tenantId, ct);
+        var seed = await seedScript.SeedAsync(tenantId, tenant.DemoExpiresAt!.Value, ct);
 
         return new ProvisionDemoTenantResult(
             TenantId: tenantId,

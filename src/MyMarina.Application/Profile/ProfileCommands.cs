@@ -18,3 +18,5 @@ public sealed record ChangePasswordCommand(
 public interface IUpdateProfileCommandHandler : ICommandHandler<UpdateProfileCommand>;
 public interface IChangeEmailCommandHandler : ICommandHandler<ChangeEmailCommand>;
 public interface IChangePasswordCommandHandler : ICommandHandler<ChangePasswordCommand>;
+
+public sealed class DemoAccountException() : Exception("Demo accounts cannot be modified.");

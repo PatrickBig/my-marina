@@ -12,6 +12,9 @@ public class UpdateProfileCommandHandler(
 {
     public async Task HandleAsync(UpdateProfileCommand command, CancellationToken ct = default)
     {
+        if (httpContextAccessor.HttpContext?.User.FindFirstValue("is_demo") == "true")
+            throw new DemoAccountException();
+
         var userId = GetUserId();
         if (string.IsNullOrWhiteSpace(command.FirstName))
             throw new ArgumentException("First name is required.");

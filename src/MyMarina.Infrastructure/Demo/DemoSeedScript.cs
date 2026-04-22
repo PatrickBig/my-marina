@@ -21,10 +21,10 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
     private static readonly Guid MarinaStaffRoleId    = Guid.Parse("00000004-0000-0000-0000-000000000001");
     private static readonly Guid CustomerRoleId       = Guid.Parse("00000005-0000-0000-0000-000000000001");
 
-    public async Task<DemoSeedResult> SeedAsync(Guid tenantId, CancellationToken ct = default)
+    public async Task<DemoSeedResult> SeedAsync(Guid tenantId, DateTimeOffset expiresAt, CancellationToken ct = default)
     {
         var ownerUser = await CreateUserAsync($"demo-owner-{tenantId:N}@demo.mymarina.org",
-            "Demo", "Owner", "DemoPass123!", ct);
+            "Demo", "Owner", "DemoPass123!", expiresAt, ct);
         db.UserContexts.Add(new UserContext
         {
             UserId = ownerUser.Id, RoleId = TenantOwnerRoleId, TenantId = tenantId,
@@ -46,8 +46,8 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
         };
         db.Marinas.Add(marina1);
 
-        var mgr1 = await CreateUserAsync($"mgr1-{tenantId:N}@demo.mymarina.org", "Alex", "Marinetti", "DemoPass123!", ct);
-        var staff1 = await CreateUserAsync($"staff1-{tenantId:N}@demo.mymarina.org", "Sam", "Dockhands", "DemoPass123!", ct);
+        var mgr1 = await CreateUserAsync($"mgr1-{tenantId:N}@demo.mymarina.org", "Alex", "Marinetti", "DemoPass123!", expiresAt, ct);
+        var staff1 = await CreateUserAsync($"staff1-{tenantId:N}@demo.mymarina.org", "Sam", "Dockhands", "DemoPass123!", expiresAt, ct);
         db.UserContexts.AddRange(
             new UserContext { UserId = mgr1.Id, RoleId = MarinaManagerRoleId, TenantId = tenantId, MarinaId = marina1.Id },
             new UserContext { UserId = staff1.Id, RoleId = MarinaStaffRoleId, TenantId = tenantId, MarinaId = marina1.Id });
@@ -63,11 +63,11 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
             ("B-02", SlipStatus.Available, 55), ("B-03", SlipStatus.Available, 30));
         db.Slips.AddRange(slips1);
 
-        var (cust1, boat1a, boat1b) = await CreateCustomerAsync(tenantId, "Chen Family", "chen@demo.mymarina.org", ct);
-        var (cust2, boat2a, _)      = await CreateCustomerAsync(tenantId, "Blue Water Charters LLC", "bwc@demo.mymarina.org", ct);
-        var (cust3, boat3a, _)      = await CreateCustomerAsync(tenantId, "Rodriguez Sailboats", "rod@demo.mymarina.org", ct);
-        var (cust5, boat5a, _)      = await CreateCustomerAsync(tenantId, "Nguyen Racing Team", "nguyen@demo.mymarina.org", ct);
-        var (cust6, boat6a, _)      = await CreateCustomerAsync(tenantId, "Pacific Whale Watch Tours", "pwwt@demo.mymarina.org", ct);
+        var (cust1, boat1a, boat1b) = await CreateCustomerAsync(tenantId, "Chen Family", "chen@demo.mymarina.org", expiresAt, ct);
+        var (cust2, boat2a, _)      = await CreateCustomerAsync(tenantId, "Blue Water Charters LLC", "bwc@demo.mymarina.org", expiresAt, ct);
+        var (cust3, boat3a, _)      = await CreateCustomerAsync(tenantId, "Rodriguez Sailboats", "rod@demo.mymarina.org", expiresAt, ct);
+        var (cust5, boat5a, _)      = await CreateCustomerAsync(tenantId, "Nguyen Racing Team", "nguyen@demo.mymarina.org", expiresAt, ct);
+        var (cust6, boat6a, _)      = await CreateCustomerAsync(tenantId, "Pacific Whale Watch Tours", "pwwt@demo.mymarina.org", expiresAt, ct);
 
         // Slip assignments — 5/8 slips occupied = 62.5%, above 50% warning → Healthy
         var assign1 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips1[0].Id, CustomerAccountId = cust1.Id, BoatId = boat1a.Id, AssignmentType = AssignmentType.Annual, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-3)) };
@@ -138,7 +138,7 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
         };
         db.Marinas.Add(marina2);
 
-        var mgr2 = await CreateUserAsync($"mgr2-{tenantId:N}@demo.mymarina.org", "Jordan", "Keelwood", "DemoPass123!", ct);
+        var mgr2 = await CreateUserAsync($"mgr2-{tenantId:N}@demo.mymarina.org", "Jordan", "Keelwood", "DemoPass123!", expiresAt, ct);
         db.UserContexts.Add(new UserContext { UserId = mgr2.Id, RoleId = MarinaManagerRoleId, TenantId = tenantId, MarinaId = marina2.Id });
 
         var dock2a = new Dock { Id = Guid.CreateVersion7(), TenantId = tenantId, MarinaId = marina2.Id, Name = "Main Float", SortOrder = 1 };
@@ -150,7 +150,7 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
             ("M-05", SlipStatus.UnderMaintenance, 22));
         db.Slips.AddRange(slips2);
 
-        var (cust4, boat4a, _) = await CreateCustomerAsync(tenantId, "Park & Sons", "parks@demo.mymarina.org", ct);
+        var (cust4, boat4a, _) = await CreateCustomerAsync(tenantId, "Park & Sons", "parks@demo.mymarina.org", expiresAt, ct);
         var assign4 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips2[0].Id, CustomerAccountId = cust4.Id, BoatId = boat4a.Id, AssignmentType = AssignmentType.Monthly, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-2)) };
         var assign5 = new SlipAssignment { Id = Guid.CreateVersion7(), TenantId = tenantId, SlipId = slips2[2].Id, CustomerAccountId = cust1.Id, BoatId = boat1b!.Id, AssignmentType = AssignmentType.Annual, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-6)) };
         db.SlipAssignments.AddRange(assign4, assign5);
@@ -194,7 +194,7 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
     }
 
     private async Task<ApplicationUser> CreateUserAsync(string email, string firstName, string lastName,
-        string password, CancellationToken ct)
+        string password, DateTimeOffset expiresAt, CancellationToken ct)
     {
         var existing = await userManager.FindByEmailAsync(email);
         if (existing is not null) return existing;
@@ -205,6 +205,7 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
             Email = email, UserName = email,
             FirstName = firstName, LastName = lastName, IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow,
+            ExpiresAt = expiresAt,
         };
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
@@ -214,9 +215,9 @@ public class DemoSeedScript(AppDbContext db, UserManager<ApplicationUser> userMa
     }
 
     private async Task<(CustomerAccount account, Boat boat1, Boat? boat2)> CreateCustomerAsync(
-        Guid tenantId, string displayName, string email, CancellationToken ct)
+        Guid tenantId, string displayName, string email, DateTimeOffset expiresAt, CancellationToken ct)
     {
-        var user = await CreateUserAsync(email, displayName.Split(' ')[0], "Demo", "DemoPass123!", ct);
+        var user = await CreateUserAsync(email, displayName.Split(' ')[0], "Demo", "DemoPass123!", expiresAt, ct);
 
         var account = new CustomerAccount
         {

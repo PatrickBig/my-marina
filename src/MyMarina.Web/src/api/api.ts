@@ -572,6 +572,7 @@ export interface ProfileDto {
   email: string;
   phoneNumber: string | null;
   emailConfirmed: boolean;
+  isDemo: boolean;
 }
 
 export const getProfile = () =>

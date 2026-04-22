@@ -174,6 +174,13 @@ export function ProfilePage() {
         <h1 className="text-2xl font-bold">My Profile</h1>
       </div>
 
+      {/* Demo account notice */}
+      {profile?.isDemo && (
+        <div className="rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 text-blue-800 text-sm">
+          This is a demo account. Profile changes are disabled.
+        </div>
+      )}
+
       {/* Email verification banner */}
       {profile && !profile.emailConfirmed && (
         <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800">
@@ -214,7 +221,7 @@ export function ProfilePage() {
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={!profileDirty || profileSubmitting || updateProfileMut.isPending}
+                disabled={!profileDirty || profileSubmitting || updateProfileMut.isPending || profile?.isDemo}
               >
                 {updateProfileMut.isPending ? "Saving…" : "Save Changes"}
               </Button>
@@ -237,7 +244,7 @@ export function ProfilePage() {
               <Input {...regEmail("currentPassword")} type="password" />
             </Field>
             <div className="flex justify-end">
-              <Button type="submit" disabled={emailSubmitting || changeEmailMut.isPending}>
+              <Button type="submit" disabled={emailSubmitting || changeEmailMut.isPending || profile?.isDemo}>
                 {changeEmailMut.isPending ? "Updating…" : "Update Email"}
               </Button>
             </div>
@@ -262,7 +269,7 @@ export function ProfilePage() {
               <Input {...regPassword("confirmPassword")} type="password" />
             </Field>
             <div className="flex justify-end">
-              <Button type="submit" disabled={passwordSubmitting || changePasswordMut.isPending}>
+              <Button type="submit" disabled={passwordSubmitting || changePasswordMut.isPending || profile?.isDemo}>
                 {changePasswordMut.isPending ? "Changing…" : "Change Password"}
               </Button>
             </div>
