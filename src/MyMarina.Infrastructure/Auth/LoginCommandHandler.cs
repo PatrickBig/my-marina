@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Auth;
 using MyMarina.Domain.Common;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
+using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
@@ -13,7 +15,8 @@ namespace MyMarina.Infrastructure.Auth;
 public class LoginCommandHandler(
     UserManager<ApplicationUser> userManager,
     IJwtTokenService jwtTokenService,
-    AppDbContext db) : ICommandHandler<LoginCommand, LoginResult>
+    AppDbContext db,
+    IOptions<EmailOptions> emailOptions) : ICommandHandler<LoginCommand, LoginResult>
 {
     public async Task<LoginResult> HandleAsync(LoginCommand command, CancellationToken ct = default)
     {
@@ -26,6 +29,9 @@ public class LoginCommandHandler(
         var passwordValid = await userManager.CheckPasswordAsync(user, command.Password);
         if (!passwordValid)
             throw new UnauthorizedAccessException("Invalid credentials.");
+
+        if (emailOptions.Value.RequireConfirmedEmail && !user.EmailConfirmed)
+            throw new UnauthorizedAccessException("Email confirmation is required.");
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userManager.UpdateAsync(user);
