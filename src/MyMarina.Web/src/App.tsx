@@ -5,13 +5,19 @@ import { MyBoatsPage } from '@/pages/MyBoatsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
+import { SearchPage } from '@/pages/SearchPage';
+import { SlipDetailPage } from '@/pages/SlipDetailPage';
 import { NavBar } from '@/components/NavBar';
 
 export function App() {
   const { isAuthenticated, marinaMemberships } = useAuthStore();
   const path = window.location.pathname;
 
+  // Public routes — no authentication required
   if (path === '/auth/callback') return <AuthCallbackPage />;
+  if (path === '/search') return <SearchPage />;
+  if (path.startsWith('/slips/')) return <SlipDetailPage />;
+
   if (path === '/login') return <LoginPage />;
   if (!isAuthenticated()) return <LoginPage />;
   if (path === '/boats') return <MyBoatsPage />;

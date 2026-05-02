@@ -145,17 +145,17 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 8 — Discovery & Search
+### Phase 8 — Discovery & Search ✅
 
 *Boaters find slips.*
 
-- [ ] `GET /slips/search` — public, unauthenticated
-- [ ] Bounding-box geo filter
-- [ ] Vessel-fit filter (length, beam, draft)
-- [ ] Date-range availability filter
-- [ ] Public slip detail page
-- [ ] Search-results UI with map view (lightweight; e.g., Leaflet)
-- [ ] Filter out demo listings unless the visitor is in a demo session
+- [x] `GET /slips/search` — public, unauthenticated
+- [x] Bounding-box geo filter
+- [x] Vessel-fit filter (length, beam, draft)
+- [x] Date-range availability filter
+- [x] Public slip detail page
+- [x] Search-results UI with map view (Leaflet + OpenStreetMap)
+- [x] Filter out demo listings unless the visitor is in a demo session
 
 **Deliverable:** A visitor (logged in or not) can search slips by location, dates, and boat dimensions, and see real listings.
 

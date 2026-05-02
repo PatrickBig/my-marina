@@ -447,3 +447,85 @@ export const updateAvailabilityWindow = (marinaId: string, id: string, data: Par
 
 export const setAvailabilityWindowStatus = (marinaId: string, id: string, status: AvailabilityWindowStatus) =>
   apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}/status`, { status }).then((r) => r.data);
+
+// ─── Slip Search (public) ─────────────────────────────────────────────────────
+
+export interface SlipSearchResultDto {
+  slipId: string;
+  slipName: string;
+  slipType: string;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  hasElectric: boolean;
+  hasWater: boolean;
+  latitude: number;
+  longitude: number;
+  marinaId: string;
+  marinaName: string;
+  marinaCity?: string | null;
+  marinaState?: string | null;
+  bestWindowId: string;
+  basePricePerNight: number;
+  instantBook: boolean;
+  cleaningFee?: number | null;
+  minNights?: number | null;
+  maxNights?: number | null;
+  distanceMiles: number;
+}
+
+export interface PublicWindowSummaryDto {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export interface SlipDetailDto {
+  id: string;
+  name: string;
+  slipType: string;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  hasElectric: boolean;
+  electric?: number | null;
+  hasWater: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  addressCity?: string | null;
+  addressState?: string | null;
+  marinaId: string;
+  marinaName: string;
+  marinaDescription?: string | null;
+  marinaPhoneNumber?: string | null;
+  openWindows: PublicWindowSummaryDto[];
+}
+
+export interface SlipSearchParams {
+  lat: number;
+  lon: number;
+  radiusMiles?: number;
+  arrivesAt?: string;
+  departsAt?: string;
+  vesselLength?: number;
+  vesselBeam?: number;
+  vesselDraft?: number;
+  slipType?: string;
+  hasElectric?: boolean;
+  hasWater?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export const searchSlips = (params: SlipSearchParams) =>
+  apiClient.get<SlipSearchResultDto[]>('/slips/search', { params }).then((r) => r.data);
+
+export const getPublicSlipDetail = (slipId: string) =>
+  apiClient.get<SlipDetailDto>(`/slips/${slipId}`).then((r) => r.data);

@@ -16,6 +16,7 @@ export function NavBar() {
   const path = window.location.pathname;
 
   const staticLinks = [
+    { href: '/search', label: 'Find a slip' },
     { href: '/boats', label: 'My Boats' },
     { href: '/profile', label: 'Profile' },
   ];
