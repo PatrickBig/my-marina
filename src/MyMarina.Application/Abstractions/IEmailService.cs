@@ -20,4 +20,18 @@ public interface IEmailService
         string invitedByName,
         Guid membershipId,
         CancellationToken ct = default);
+
+    Task SendGhostVesselClaimAsync(
+        string toEmail,
+        string marinaName,
+        string vesselName,
+        Guid vesselId,
+        CancellationToken ct = default);
+
+    Task SendBillingAccountInviteAsync(
+        string toEmail,
+        string marinaName,
+        string invitedByName,
+        Guid memberId,
+        CancellationToken ct = default);
 }

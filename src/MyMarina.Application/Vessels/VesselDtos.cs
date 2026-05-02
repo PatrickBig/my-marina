@@ -16,3 +16,16 @@ public sealed record VesselDto(
     bool IsArchived,
     DateTimeOffset CreatedAt
 );
+
+public sealed record PendingVesselClaimDto(
+    Guid VesselId,
+    string Name,
+    string? Make,
+    string? Model,
+    int? Year,
+    decimal Length,
+    string BoatType,
+    // Marina that added this vessel
+    Guid MarinaId,
+    string MarinaName
+);

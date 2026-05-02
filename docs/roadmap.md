@@ -102,16 +102,16 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 5 — Customers & Ghost Vessels
+### Phase 5 — Customers & Ghost Vessels ✅
 
 *Marinas track customers (with or without platform accounts).*
 
-- [ ] `BillingAccount` CRUD
-- [ ] `BillingAccountMember` (junction)
-- [ ] Ghost vessel creation: marina staff can add a `Vessel` for a non-platform customer
-- [ ] Email-based vessel claim flow (invitation email with claim link)
-- [ ] Acceptance updates `Vessel.OwnerUserId` and creates `BillingAccountMember`
-- [ ] `MarinaVesselRecord` (insurance, notes, billing-account link)
+- [x] `BillingAccount` CRUD
+- [x] `BillingAccountMember` (junction)
+- [x] Ghost vessel creation: marina staff can add a `Vessel` for a non-platform customer
+- [x] Email-based vessel claim flow (invitation email with claim link)
+- [x] Acceptance updates `Vessel.OwnerUserId` and creates `BillingAccountMember`
+- [x] `MarinaVesselRecord` (insurance, notes, billing-account link)
 
 **Deliverable:** A marina can record customers, their vessels, and insurance — even before the customer signs up. Once the customer accepts, ownership transfers cleanly.
 

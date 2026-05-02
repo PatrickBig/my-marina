@@ -28,4 +28,20 @@ public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
         var body = EmailTemplates.MembershipInvite(toEmail, marinaName, invitedByName, membershipId);
         return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendGhostVesselClaimAsync(string toEmail, string marinaName, string vesselName,
+        Guid vesselId, CancellationToken ct = default)
+    {
+        var subject = $"Your boat has been added at {marinaName}";
+        var body = EmailTemplates.GhostVesselClaim(toEmail, marinaName, vesselName, vesselId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendBillingAccountInviteAsync(string toEmail, string marinaName, string invitedByName,
+        Guid memberId, CancellationToken ct = default)
+    {
+        var subject = $"You've been added to a billing account at {marinaName}";
+        var body = EmailTemplates.BillingAccountInvite(toEmail, marinaName, invitedByName, memberId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
 }

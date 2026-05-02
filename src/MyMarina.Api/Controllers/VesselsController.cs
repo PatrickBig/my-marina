@@ -15,6 +15,9 @@ public class VesselsController(
     ICommandHandler<ArchiveVesselCommand> archiveVessel,
     IQueryHandler<GetMyVesselsQuery, IReadOnlyList<VesselDto>> getMyVessels,
     IQueryHandler<GetVesselQuery, VesselDto> getVessel,
+    IQueryHandler<GetPendingVesselClaimsQuery, IReadOnlyList<PendingVesselClaimDto>> getPendingClaims,
+    ICommandHandler<ClaimVesselCommand, VesselDto> claimVessel,
+    ICommandHandler<RejectVesselClaimCommand> rejectClaim,
     IUserContext userContext)
     : ControllerBase
 {
@@ -122,10 +125,48 @@ public class VesselsController(
         }
     }
 
-    // Stub — wired for real in Phase 5 when ghost vessels exist
+    // ---------- Ghost vessel claim flow ----------
+
+    [HttpGet("pending-claims")]
+    [ProducesResponseType(typeof(IReadOnlyList<PendingVesselClaimDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPendingClaims(CancellationToken ct)
+    {
+        var claims = await getPendingClaims.HandleAsync(
+            new GetPendingVesselClaimsQuery(userContext.UserId!.Value, userContext.Email!), ct);
+        return Ok(claims);
+    }
+
     [HttpPost("{id:guid}/claim")]
+    [ProducesResponseType(typeof(VesselDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> ClaimVessel(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var vessel = await claimVessel.HandleAsync(
+                new ClaimVesselCommand(id, userContext.UserId!.Value, userContext.Email!), ct);
+            return Ok(vessel);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Detail = ex.Message }); }
+    }
+
+    [HttpPost("{id:guid}/reject-claim")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult ClaimVessel(Guid id) => NoContent();
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RejectClaim(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            await rejectClaim.HandleAsync(
+                new RejectVesselClaimCommand(id, userContext.UserId!.Value, userContext.Email!), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Detail = ex.Message }); }
+    }
 }
 
 // ---------- request records ----------

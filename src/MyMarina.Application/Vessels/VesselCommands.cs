@@ -38,3 +38,10 @@ public sealed record ArchiveVesselCommand(Guid Id, Guid OwnerId);
 public sealed record GetMyVesselsQuery(Guid OwnerId);
 
 public sealed record GetVesselQuery(Guid Id, Guid OwnerId);
+
+// Ghost vessel claim flow
+public sealed record GetPendingVesselClaimsQuery(Guid UserId, string UserEmail);
+
+public sealed record ClaimVesselCommand(Guid VesselId, Guid UserId, string UserEmail);
+
+public sealed record RejectVesselClaimCommand(Guid VesselId, Guid UserId, string UserEmail);

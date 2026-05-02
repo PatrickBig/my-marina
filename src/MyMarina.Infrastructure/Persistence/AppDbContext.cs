@@ -15,6 +15,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Dock> Docks => Set<Dock>();
     public DbSet<Slip> Slips => Set<Slip>();
     public DbSet<Membership> Memberships => Set<Membership>();
+    public DbSet<BillingAccount> BillingAccounts => Set<BillingAccount>();
+    public DbSet<BillingAccountMember> BillingAccountMembers => Set<BillingAccountMember>();
+    public DbSet<MarinaVesselRecord> MarinaVesselRecords => Set<MarinaVesselRecord>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
