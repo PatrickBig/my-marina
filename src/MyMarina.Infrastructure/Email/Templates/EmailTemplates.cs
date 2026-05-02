@@ -34,6 +34,21 @@ internal static class EmailTemplates
         </html>
         """;
 
+    public static string MembershipInvite(string toEmail, string marinaName, string invitedByName, Guid membershipId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">You've been invited to {HtmlEncode(marinaName)}</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>{HtmlEncode(invitedByName)} has invited you to join <strong>{HtmlEncode(marinaName)}</strong> on MyMarina as a staff member.</p>
+          <p>Your invitation ID: <code>{membershipId}</code></p>
+          <p>Sign in to MyMarina and accept the invitation from your profile to get started.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
     private static string HtmlEncode(string value) =>
         System.Net.WebUtility.HtmlEncode(value);
 }

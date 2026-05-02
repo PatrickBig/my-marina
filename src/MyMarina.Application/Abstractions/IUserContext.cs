@@ -1,3 +1,5 @@
+using MyMarina.Domain.Enums;
+
 namespace MyMarina.Application.Abstractions;
 
 public interface IUserContext
@@ -15,10 +17,6 @@ public interface IUserContext
     bool HasTenantAccess(Guid tenantId, MembershipRole minimumRole = MembershipRole.Staff);
     bool HasBillingAccountAccess(Guid billingAccountId);
 }
-
-public enum MembershipScope { Marina, Tenant }
-public enum MembershipRole { Staff = 0, Manager = 1, Owner = 2 }
-public enum BillingAccountRole { Member = 0, CoOwner = 1, Owner = 2 }
 
 public record MembershipClaim(
     MembershipScope Scope,

@@ -18,4 +18,11 @@ public sealed class NullEmailService(ILogger<NullEmailService> logger) : IEmailS
         logger.LogDebug("NullEmailService: password reset to {Email} suppressed", toEmail);
         return Task.CompletedTask;
     }
+
+    public Task SendMembershipInviteAsync(string toEmail, string marinaName, string invitedByName,
+        Guid membershipId, CancellationToken ct = default)
+    {
+        logger.LogDebug("NullEmailService: membership invite to {Email} for marina {Marina} suppressed", toEmail, marinaName);
+        return Task.CompletedTask;
+    }
 }

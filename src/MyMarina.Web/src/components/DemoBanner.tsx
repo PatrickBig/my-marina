@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTokenExpiry, getDemoTier } from "@/lib/jwt";
+import { getTokenExpiry } from "@/lib/jwt";
 
 interface Props {
   token: string;
@@ -15,7 +15,6 @@ function formatCountdown(ms: number): string {
 
 export function DemoBanner({ token }: Props) {
   const expiry = getTokenExpiry(token);
-  const tier = getDemoTier(token);
   const [remaining, setRemaining] = useState(() =>
     expiry ? Math.max(0, expiry.getTime() - Date.now()) : 0
   );
@@ -33,15 +32,7 @@ export function DemoBanner({ token }: Props) {
 
   return (
     <div className="bg-amber-500 text-amber-950 text-sm font-medium px-4 py-2 flex items-center justify-between gap-4">
-      <span>
-        Demo session
-        {tier && (
-          <>
-            {" "}
-            &mdash; <span className="font-semibold capitalize">{tier}</span> tier
-          </>
-        )}
-      </span>
+      <span>Demo session</span>
       <span className="tabular-nums">
         {remaining > 0 ? `Expires in ${formatCountdown(remaining)}` : "Session expired"}
       </span>

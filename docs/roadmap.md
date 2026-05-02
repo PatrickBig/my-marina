@@ -65,7 +65,7 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 3 — User Profile & Vessels 🔄
+### Phase 3 — User Profile & Vessels ✅
 
 *Boaters can manage their boats.*
 
@@ -86,17 +86,17 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 4 — Marina Onboarding (Commercial)
+### Phase 4 — Marina Onboarding (Commercial) ✅
 
 *Commercial marinas come on the platform.*
 
-- [ ] Tenant + Marina creation flow (host signup)
-- [ ] `Marina` profile CRUD (name, address, phone, timezone, lat/long, type=`Commercial` for now)
-- [ ] `Dock` CRUD
-- [ ] `Slip` CRUD (with all dimension/amenity/status fields)
-- [ ] `Membership` invitations: `POST /marinas/{id}/staff/invite`
-- [ ] Staff sign-in with marina membership claims in JWT
-- [ ] Marina dashboard skeleton (host view)
+- [x] Tenant + Marina creation flow (host signup)
+- [x] `Marina` profile CRUD (name, address, phone, timezone, lat/long, type=`Commercial` for now)
+- [x] `Dock` CRUD
+- [x] `Slip` CRUD (with all dimension/amenity/status fields)
+- [x] `Membership` invitations: `POST /marinas/{id}/staff/invite`
+- [x] Staff sign-in with marina membership claims in JWT
+- [x] Marina dashboard skeleton (host view)
 
 **Deliverable:** A commercial marina can sign up, configure docks and slips, and invite staff.
 

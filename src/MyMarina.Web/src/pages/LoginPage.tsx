@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { login } from '@/api/api';
+import { login, getMe } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,10 @@ export function LoginPage() {
     setServerError(null);
     try {
       const response = await login(values.email, values.password);
-      setAuth(response.accessToken, response.refreshToken, response.expiresAt, response.user);
+      // Temporarily set token so getMe() can attach it
+      useAuthStore.setState({ accessToken: response.accessToken });
+      const meData = await getMe();
+      setAuth(response.accessToken, response.refreshToken, response.expiresAt, response.user, meData.memberships);
       window.location.href = '/';
     } catch (err: any) {
       const status = err?.response?.status;

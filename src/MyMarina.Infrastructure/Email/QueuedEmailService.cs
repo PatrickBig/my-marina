@@ -20,4 +20,12 @@ public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
         var body = EmailTemplates.PasswordReset(toEmail, userId, token);
         return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendMembershipInviteAsync(string toEmail, string marinaName, string invitedByName,
+        Guid membershipId, CancellationToken ct = default)
+    {
+        var subject = $"You've been invited to join {marinaName} on MyMarina";
+        var body = EmailTemplates.MembershipInvite(toEmail, marinaName, invitedByName, membershipId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { MembershipClaim } from '@/api/api';
 
 export interface UserProfile {
   id: string;
@@ -17,10 +18,13 @@ interface AuthState {
   refreshToken: string | null;
   expiresAt: string | null;
   user: UserProfile | null;
+  memberships: MembershipClaim[];
 
-  setAuth: (accessToken: string, refreshToken: string, expiresAt: string, user: UserProfile) => void;
+  setAuth: (accessToken: string, refreshToken: string, expiresAt: string, user: UserProfile, memberships?: MembershipClaim[]) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
+  hasMarinaAccess: () => boolean;
+  marinaMemberships: () => MembershipClaim[];
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,18 +34,25 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       expiresAt: null,
       user: null,
+      memberships: [],
 
-      setAuth: (accessToken, refreshToken, expiresAt, user) =>
-        set({ accessToken, refreshToken, expiresAt, user }),
+      setAuth: (accessToken, refreshToken, expiresAt, user, memberships = []) =>
+        set({ accessToken, refreshToken, expiresAt, user, memberships }),
 
       clearAuth: () =>
-        set({ accessToken: null, refreshToken: null, expiresAt: null, user: null }),
+        set({ accessToken: null, refreshToken: null, expiresAt: null, user: null, memberships: [] }),
 
       isAuthenticated: () => {
         const { accessToken, expiresAt } = get();
         if (!accessToken || !expiresAt) return false;
         return new Date(expiresAt) > new Date();
       },
+
+      hasMarinaAccess: () =>
+        get().memberships.some((m) => m.scope === 'Marina'),
+
+      marinaMemberships: () =>
+        get().memberships.filter((m) => m.scope === 'Marina'),
     }),
     {
       name: 'mymarina-auth',
@@ -50,6 +61,7 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         expiresAt: state.expiresAt,
         user: state.user,
+        memberships: state.memberships,
       }),
     }
   )

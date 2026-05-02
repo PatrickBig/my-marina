@@ -59,9 +59,10 @@ function VesselForm({
   onCancel: () => void;
 }) {
   const [serverError, setServerError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { register, handleSubmit, formState: { errors, isSubmitting } } =
     useForm<VesselFormValues>({
-      resolver: zodResolver(vesselSchema),
+      resolver: zodResolver(vesselSchema) as any,
       defaultValues: initial ? toFormValues(initial) : { boatType: 'Powerboat', length: 0, beam: 0, draft: 0 },
     });
 

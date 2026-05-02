@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using MyMarina.Application.Abstractions;
+using MyMarina.Domain.Enums;
 
 namespace MyMarina.Infrastructure.UserContext;
 

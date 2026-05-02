@@ -53,7 +53,7 @@ public class ExternalLoginCommandHandler(
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userManager.UpdateAsync(user);
 
-        var tokenInfo = await AuthHelpers.BuildTokenInfoAsync(userManager, user);
+        var tokenInfo = await AuthHelpers.BuildTokenInfoAsync(userManager, user, db, ct);
         var accessToken = jwtTokenService.GenerateAccessToken(tokenInfo);
         var (rawRefresh, hashedRefresh, expiresAt) = AuthHelpers.GenerateRefreshToken(configuration);
 

@@ -26,8 +26,8 @@ export function AuthCallbackPage() {
       try {
         // Temporarily set the access token so the API client can attach it to the /me request.
         useAuthStore.setState({ accessToken, refreshToken, expiresAt });
-        const user = await getMe();
-        setAuth(accessToken, refreshToken, expiresAt, user);
+        const meData = await getMe();
+        setAuth(accessToken, refreshToken, expiresAt, meData, meData.memberships);
         window.location.replace('/');
       } catch {
         useAuthStore.getState().clearAuth();

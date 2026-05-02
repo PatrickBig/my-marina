@@ -10,6 +10,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Vessel> Vessels => Set<Vessel>();
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<Marina> Marinas => Set<Marina>();
+    public DbSet<Dock> Docks => Set<Dock>();
+    public DbSet<Slip> Slips => Set<Slip>();
+    public DbSet<Membership> Memberships => Set<Membership>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

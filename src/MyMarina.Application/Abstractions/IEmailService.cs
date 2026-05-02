@@ -13,4 +13,11 @@ public interface IEmailService
         string userId,
         string token,
         CancellationToken ct = default);
+
+    Task SendMembershipInviteAsync(
+        string toEmail,
+        string marinaName,
+        string invitedByName,
+        Guid membershipId,
+        CancellationToken ct = default);
 }
