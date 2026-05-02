@@ -5,7 +5,9 @@ import { z } from 'zod';
 import {
   getMarina, updateMarina, getDocks, createDock, deleteDock,
   getSlips, createSlip, deleteSlip, getMarinaStaff, inviteStaff, revokeStaff,
+  getBillingAccounts, getVesselRecords, getSlipAssignments, createSlipAssignment, endSlipAssignment,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
+  type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -329,6 +331,203 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
   );
 }
 
+// ─── Assignments panel ───────────────────────────────────────────────────────
+
+const ASSIGNMENT_TYPES: AssignmentType[] = ['Transient', 'Monthly', 'Seasonal', 'Annual'];
+
+const assignmentSchema = z.object({
+  slipId:                  z.string().min(1, 'Required'),
+  billingAccountId:        z.string().min(1, 'Required'),
+  vesselId:                z.string().min(1, 'Required'),
+  assignmentType:          z.enum(['Transient', 'Monthly', 'Seasonal', 'Annual'] as const),
+  startDate:               z.string().min(1, 'Required'),
+  endDate:                 z.string().optional(),
+  baseRate:                z.coerce.number().min(0, 'Must be ≥ 0'),
+  allowOwnerSubletWhenAway: z.boolean(),
+  allowHolderSublet:       z.boolean(),
+});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AssignmentFormData = z.infer<typeof assignmentSchema>;
+
+function AssignmentsPanel({ marinaId }: { marinaId: string }) {
+  const [assignments, setAssignments] = useState<SlipAssignmentDto[]>([]);
+  const [slips, setSlips] = useState<SlipDto[]>([]);
+  const [accounts, setAccounts] = useState<BillingAccountDto[]>([]);
+  const [vesselRecords, setVesselRecords] = useState<VesselRecordDto[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<AssignmentFormData>({
+    resolver: zodResolver(assignmentSchema) as any,
+    defaultValues: {
+      assignmentType: 'Annual',
+      baseRate: 0,
+      allowOwnerSubletWhenAway: false,
+      allowHolderSublet: false,
+    },
+  });
+
+  const selectedAccountId = watch('billingAccountId');
+
+  useEffect(() => {
+    Promise.all([
+      getSlipAssignments(marinaId, { activeOnly: true }),
+      getSlips(marinaId),
+      getBillingAccounts(marinaId),
+    ]).then(([a, s, b]) => { setAssignments(a); setSlips(s); setAccounts(b); });
+  }, [marinaId]);
+
+  // When billing account changes, load vessel records for that account
+  useEffect(() => {
+    if (!selectedAccountId) { setVesselRecords([]); return; }
+    getVesselRecords(marinaId, selectedAccountId).then(setVesselRecords);
+  }, [marinaId, selectedAccountId]);
+
+  async function onSubmit(data: AssignmentFormData) {
+    setError(null);
+    try {
+      const item = await createSlipAssignment(marinaId, {
+        slipId:                   data.slipId,
+        billingAccountId:         data.billingAccountId,
+        vesselId:                 data.vesselId,
+        assignmentType:           data.assignmentType,
+        startDate:                data.startDate,
+        endDate:                  data.endDate || null,
+        baseRate:                 data.baseRate,
+        allowOwnerSubletWhenAway: data.allowOwnerSubletWhenAway,
+        allowHolderSublet:        data.allowHolderSublet,
+        ownerSubletShareToHolder: 0,
+        holderSubletShareToOwner: 0,
+      });
+      setAssignments((prev) => [item, ...prev]);
+      reset();
+      setShowForm(false);
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? 'Could not create assignment. Check for conflicts.');
+    }
+  }
+
+  async function handleEnd(id: string) {
+    if (!window.confirm('End this assignment today?')) return;
+    const updated = await endSlipAssignment(marinaId, id);
+    setAssignments((prev) => prev.map((a) => a.id === id ? updated : a).filter((a) => a.isActive));
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-base font-semibold text-slate-800">Slip Assignments</h2>
+        <button onClick={() => setShowForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+          + New assignment
+        </button>
+      </div>
+
+      {assignments.length === 0 && !showForm && (
+        <p className="text-sm text-slate-400">No active assignments.</p>
+      )}
+
+      <ul className="divide-y divide-slate-100">
+        {assignments.map((a) => (
+          <li key={a.id} className="py-3 flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-slate-800">
+                {a.slipName}
+                <span className="ml-2 text-xs text-slate-400 font-normal">{a.assignmentType}</span>
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {a.billingAccountDisplayName} · {a.vesselName}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {a.startDate} – {a.endDate ?? 'open-ended'} · ${a.baseRate.toLocaleString()}/period
+              </p>
+            </div>
+            <button onClick={() => handleEnd(a.id)} className="text-xs text-slate-400 hover:text-red-500 mt-1">
+              End
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {showForm && (
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+          <h3 className="text-sm font-medium text-slate-700">New assignment</h3>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Slip" error={errors.slipId?.message}>
+              <select {...register('slipId')} className={`${input} bg-white`}>
+                <option value="">— select slip —</option>
+                {slips.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.maxLength}′)</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Assignment type">
+              <select {...register('assignmentType')} className={`${input} bg-white`}>
+                {ASSIGNMENT_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Billing account" error={errors.billingAccountId?.message}>
+              <select {...register('billingAccountId')} className={`${input} bg-white`}>
+                <option value="">— select account —</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>{a.displayName}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Vessel" error={errors.vesselId?.message}>
+              <select {...register('vesselId')} className={`${input} bg-white`} disabled={!selectedAccountId}>
+                <option value="">— select vessel —</option>
+                {vesselRecords.map((r) => (
+                  <option key={r.vesselId} value={r.vesselId}>{r.vesselName}{r.vesselIsGhost ? ' (unregistered)' : ''}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Start date" error={errors.startDate?.message}>
+              <input {...register('startDate')} type="date" className={input} />
+            </Field>
+
+            <Field label="End date (leave blank for open-ended)">
+              <input {...register('endDate')} type="date" className={input} />
+            </Field>
+
+            <Field label="Base rate ($)" error={errors.baseRate?.message}>
+              <input {...register('baseRate')} type="number" step="0.01" min="0" className={input} />
+            </Field>
+          </div>
+
+          <div className="flex gap-4 text-sm">
+            <label className="flex items-center gap-2 text-slate-600">
+              <input {...register('allowHolderSublet')} type="checkbox" /> Holder may sublet
+            </label>
+            <label className="flex items-center gap-2 text-slate-600">
+              <input {...register('allowOwnerSubletWhenAway')} type="checkbox" /> Marina may sublet when away
+            </label>
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex gap-2">
+            <button type="submit" disabled={isSubmitting} className={btn}>
+              {isSubmitting ? 'Saving…' : 'Assign slip'}
+            </button>
+            <button type="button" onClick={() => { setShowForm(false); reset(); setError(null); }} className={btnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 // ─── Staff panel ─────────────────────────────────────────────────────────────
 
 function StaffPanel({ marinaId }: { marinaId: string }) {
@@ -455,6 +654,7 @@ export function MarinaDashboardPage() {
         <MarinaInfoPanel marina={marina} onSaved={setMarina} />
         <DocksPanel marinaId={marinaId} />
         <SlipsPanel marinaId={marinaId} />
+        <AssignmentsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
     </div>

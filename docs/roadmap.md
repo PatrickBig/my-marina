@@ -117,14 +117,14 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 6 — Long-Term Assignments
+### Phase 6 — Long-Term Assignments ✅
 
 *Marinas assign slips to customers.*
 
-- [ ] `SlipAssignment` CRUD (with sublet policy flags from day one)
-- [ ] Slip availability check (date range + vessel dimensions)
-- [ ] Conflict detection (prevent double-booking)
-- [ ] Web UI: assignment list, create/edit, end assignment
+- [x] `SlipAssignment` CRUD (with sublet policy flags from day one)
+- [x] Slip availability check (date range + vessel dimensions)
+- [x] Conflict detection (prevent double-booking)
+- [x] Web UI: assignment list, create/edit, end assignment
 
 **Deliverable:** A marina can assign a customer and their boat to a slip for a date range.
 

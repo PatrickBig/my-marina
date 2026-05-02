@@ -264,3 +264,121 @@ export const getMyMemberships = () =>
 
 export const acceptMembership = (membershipId: string) =>
   apiClient.post(`/memberships/${membershipId}/accept`);
+
+// ─── Billing Accounts ─────────────────────────────────────────────────────────
+
+export interface BillingAccountDto {
+  id: string;
+  marinaId: string;
+  displayName: string;
+  billingEmail: string;
+  billingPhone?: string | null;
+  billingAddressStreet?: string | null;
+  billingAddressCity?: string | null;
+  billingAddressState?: string | null;
+  billingAddressZip?: string | null;
+  billingAddressCountry?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface BillingAccountMemberDto {
+  id: string;
+  billingAccountId: string;
+  userId: string;
+  role: string;
+  invitedAt: string;
+  acceptedAt?: string | null;
+}
+
+export const getBillingAccounts = (marinaId: string) =>
+  apiClient.get<BillingAccountDto[]>(`/marinas/${marinaId}/billing-accounts`).then((r) => r.data);
+
+export const createBillingAccount = (marinaId: string, data: {
+  displayName: string; billingEmail: string; billingPhone?: string | null;
+  billingAddressStreet?: string | null; billingAddressCity?: string | null;
+  billingAddressState?: string | null; billingAddressZip?: string | null;
+  emergencyContactName?: string | null; emergencyContactPhone?: string | null;
+  notes?: string | null;
+}) => apiClient.post<BillingAccountDto>(`/marinas/${marinaId}/billing-accounts`, data).then((r) => r.data);
+
+// ─── Vessel Records ───────────────────────────────────────────────────────────
+
+export interface VesselRecordDto {
+  id: string;
+  marinaId: string;
+  vesselId: string;
+  billingAccountId?: string | null;
+  vesselName: string;
+  vesselMake?: string | null;
+  vesselModel?: string | null;
+  vesselYear?: number | null;
+  vesselLength: number;
+  vesselBoatType: string;
+  vesselIsGhost: boolean;
+  insuranceProvider?: string | null;
+  insurancePolicyNumber?: string | null;
+  insuranceExpiresOn?: string | null;
+  insuranceVerifiedAt?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export const getVesselRecords = (marinaId: string, billingAccountId?: string) =>
+  apiClient.get<VesselRecordDto[]>(`/marinas/${marinaId}/vessel-records`, {
+    params: billingAccountId ? { billingAccountId } : undefined,
+  }).then((r) => r.data);
+
+// ─── Slip Assignments ─────────────────────────────────────────────────────────
+
+export type AssignmentType = 'Transient' | 'Monthly' | 'Seasonal' | 'Annual';
+
+export interface SlipAssignmentDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  billingAccountId: string;
+  billingAccountDisplayName: string;
+  vesselId: string;
+  vesselName: string;
+  assignmentType: AssignmentType;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowOwnerSubletWhenAway: boolean;
+  allowHolderSublet: boolean;
+  ownerSubletShareToHolder: number;
+  holderSubletShareToOwner: number;
+  notes?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateSlipAssignmentData {
+  slipId: string;
+  billingAccountId: string;
+  vesselId: string;
+  assignmentType: AssignmentType;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowOwnerSubletWhenAway: boolean;
+  allowHolderSublet: boolean;
+  ownerSubletShareToHolder: number;
+  holderSubletShareToOwner: number;
+  notes?: string | null;
+}
+
+export const getSlipAssignments = (marinaId: string, params?: { slipId?: string; billingAccountId?: string; activeOnly?: boolean }) =>
+  apiClient.get<SlipAssignmentDto[]>(`/marinas/${marinaId}/slip-assignments`, { params }).then((r) => r.data);
+
+export const createSlipAssignment = (marinaId: string, data: CreateSlipAssignmentData) =>
+  apiClient.post<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments`, data).then((r) => r.data);
+
+export const updateSlipAssignment = (marinaId: string, id: string, data: Partial<CreateSlipAssignmentData>) =>
+  apiClient.patch<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments/${id}`, data).then((r) => r.data);
+
+export const endSlipAssignment = (marinaId: string, id: string, endDate?: string) =>
+  apiClient.post<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments/${id}/end`, { endDate: endDate ?? null }).then((r) => r.data);
