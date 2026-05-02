@@ -1,10 +1,12 @@
 import { useAuthStore } from '@/store/authStore';
+import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { LoginPage } from '@/pages/LoginPage';
 
 export function App() {
   const { isAuthenticated } = useAuthStore();
   const path = window.location.pathname;
 
+  if (path === '/auth/callback') return <AuthCallbackPage />;
   if (path === '/login') return <LoginPage />;
   if (!isAuthenticated()) return <LoginPage />;
 

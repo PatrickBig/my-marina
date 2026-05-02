@@ -1,5 +1,8 @@
 using System.Text;
+using AspNet.Security.OAuth.Apple;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +25,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is required.");
 
-builder.Services.AddAuthentication(options =>
+var authBuilder = builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -58,6 +61,42 @@ builder.Services.AddAuthentication(options =>
             };
         }
     });
+
+// --- Social login providers (only registered when credentials are configured) ---
+var googleClientId = builder.Configuration["Auth:Google:ClientId"];
+if (!string.IsNullOrWhiteSpace(googleClientId))
+{
+    authBuilder.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId     = googleClientId;
+        options.ClientSecret = builder.Configuration["Auth:Google:ClientSecret"]!;
+        options.CallbackPath = "/signin-google";
+    });
+}
+
+var facebookAppId = builder.Configuration["Auth:Facebook:AppId"];
+if (!string.IsNullOrWhiteSpace(facebookAppId))
+{
+    authBuilder.AddFacebook(FacebookDefaults.AuthenticationScheme, options =>
+    {
+        options.AppId     = facebookAppId;
+        options.AppSecret = builder.Configuration["Auth:Facebook:AppSecret"]!;
+        options.CallbackPath = "/signin-facebook";
+    });
+}
+
+var appleClientId = builder.Configuration["Auth:Apple:ClientId"];
+if (!string.IsNullOrWhiteSpace(appleClientId))
+{
+    authBuilder.AddApple(AppleAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId  = appleClientId;
+        options.KeyId     = builder.Configuration["Auth:Apple:KeyId"]!;
+        options.TeamId    = builder.Configuration["Auth:Apple:TeamId"]!;
+        options.CallbackPath = "/signin-apple";
+        // options.GenerateClientSecret — wire up private key from config in production
+    });
+}
 
 builder.Services.AddAuthorization();
 
