@@ -7,9 +7,10 @@ import {
   getSlips, createSlip, deleteSlip, getMarinaStaff, inviteStaff, revokeStaff,
   getBillingAccounts, getVesselRecords, getSlipAssignments, createSlipAssignment, endSlipAssignment,
   getAvailabilityWindows, createAvailabilityWindow, setAvailabilityWindowStatus,
+  getMarinaReservations, approveReservation, declineReservation, markNoShow,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
-  type AvailabilityWindowDto, type AvailabilityWindowStatus,
+  type AvailabilityWindowDto, type AvailabilityWindowStatus, type ReservationDto,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -726,6 +727,167 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
   );
 }
 
+// ─── Inbox panel ─────────────────────────────────────────────────────────────
+
+const INBOX_STATUS_BADGE: Record<string, string> = {
+  PendingApproval:           'bg-amber-50 text-amber-700',
+  PendingHostMarinaApproval: 'bg-amber-50 text-amber-700',
+  Confirmed:                 'bg-emerald-50 text-emerald-700',
+  Declined:                  'bg-red-50 text-red-600',
+  Cancelled:                 'bg-slate-100 text-slate-500',
+  Completed:                 'bg-slate-100 text-slate-600',
+  NoShow:                    'bg-red-50 text-red-600',
+};
+
+const INBOX_STATUS_LABEL: Record<string, string> = {
+  PendingApproval:           'Pending approval',
+  PendingHostMarinaApproval: 'Pending host approval',
+  Confirmed:                 'Confirmed',
+  Declined:                  'Declined',
+  Cancelled:                 'Cancelled',
+  Completed:                 'Completed',
+  NoShow:                    'No-show',
+};
+
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function InboxPanel({ marinaId }: { marinaId: string }) {
+  const [reservations, setReservations] = useState<ReservationDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+
+  useEffect(() => {
+    setLoading(true);
+    getMarinaReservations(marinaId, statusFilter || undefined)
+      .then(setReservations)
+      .finally(() => setLoading(false));
+  }, [marinaId, statusFilter]);
+
+  async function handleApprove(id: string) {
+    const updated = await approveReservation(marinaId, id);
+    setReservations((prev) => prev.map((r) => r.id === id ? updated : r));
+  }
+
+  async function handleDecline(id: string) {
+    if (!window.confirm('Decline this reservation?')) return;
+    const updated = await declineReservation(marinaId, id);
+    setReservations((prev) => prev.map((r) => r.id === id ? updated : r));
+  }
+
+  async function handleNoShow(id: string) {
+    if (!window.confirm('Mark as no-show?')) return;
+    const updated = await markNoShow(marinaId, id);
+    setReservations((prev) => prev.map((r) => r.id === id ? updated : r));
+  }
+
+  const pending = reservations.filter((r) =>
+    r.status === 'PendingApproval' || r.status === 'PendingHostMarinaApproval'
+  );
+  const others  = reservations.filter((r) =>
+    r.status !== 'PendingApproval' && r.status !== 'PendingHostMarinaApproval'
+  );
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-base font-semibold text-slate-800">
+          Reservation Inbox
+          {pending.length > 0 && (
+            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+              {pending.length} pending
+            </span>
+          )}
+        </h2>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-600 bg-white"
+        >
+          <option value="">All statuses</option>
+          <option value="PendingApproval">Pending approval</option>
+          <option value="PendingHostMarinaApproval">Pending host approval</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Declined">Declined</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+
+      {!loading && reservations.length === 0 && (
+        <p className="text-sm text-slate-400">No reservations found.</p>
+      )}
+
+      {!loading && pending.length > 0 && (
+        <div className="mb-4 space-y-3">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Awaiting action</p>
+          {pending.map((r) => (
+            <div key={r.id} className="border border-amber-200 bg-amber-50/40 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{r.slipName} · {r.vesselName}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {fmtDate(r.arrivesAt)} – {fmtDate(r.departsAt)} · {r.nights}n · ${r.total.toFixed(2)}
+                  </p>
+                  {r.notes && <p className="text-xs text-slate-400 mt-0.5 italic">"{r.notes}"</p>}
+                </div>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${INBOX_STATUS_BADGE[r.status]}`}>
+                  {INBOX_STATUS_LABEL[r.status]}
+                </span>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => handleApprove(r.id)}
+                  className="text-xs rounded-md bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleDecline(r.id)}
+                  className="text-xs rounded-md border border-red-300 text-red-600 px-3 py-1.5 hover:bg-red-50"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && others.length > 0 && (
+        <ul className="divide-y divide-slate-100">
+          {others.map((r) => (
+            <li key={r.id} className="py-3 flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-slate-800">
+                  {r.slipName}
+                  <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${INBOX_STATUS_BADGE[r.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                    {INBOX_STATUS_LABEL[r.status] ?? r.status}
+                  </span>
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {r.vesselName} · {fmtDate(r.arrivesAt)} – {fmtDate(r.departsAt)} · ${r.total.toFixed(2)}
+                </p>
+              </div>
+              {r.status === 'Confirmed' && (
+                <button
+                  onClick={() => handleNoShow(r.id)}
+                  className="text-xs text-slate-400 hover:text-red-500 mt-1"
+                >
+                  No-show
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ─── Staff panel ─────────────────────────────────────────────────────────────
 
 function StaffPanel({ marinaId }: { marinaId: string }) {
@@ -854,6 +1016,7 @@ export function MarinaDashboardPage() {
         <SlipsPanel marinaId={marinaId} />
         <AssignmentsPanel marinaId={marinaId} />
         <ListingsPanel marinaId={marinaId} />
+        <InboxPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
     </div>

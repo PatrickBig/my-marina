@@ -161,18 +161,18 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 9 — Reservations
+### Phase 9 — Reservations ✅
 
 *Boaters book slips.*
 
-- [ ] `Reservation` entity
-- [ ] Status state machine (`PendingHostMarinaApproval` → `PendingApproval` → `Confirmed` → `Completed`/`Cancelled`/`NoShow`)
-- [ ] Request-to-book flow (owner approves or declines)
-- [ ] Instant-book flow (auto-confirms)
-- [ ] Boater portal: "My Trips" — upcoming, past, cancelled
-- [ ] Host inbox: incoming reservations with approve/decline actions
-- [ ] Email notifications on status transitions
-- [ ] Cancellation by boater or host (records snapshot of policy; no money moves in MVP)
+- [x] `Reservation` entity
+- [x] Status state machine (`PendingHostMarinaApproval` → `PendingApproval` → `Confirmed` → `Completed`/`Cancelled`/`NoShow`)
+- [x] Request-to-book flow (owner approves or declines)
+- [x] Instant-book flow (auto-confirms)
+- [x] Boater portal: "My Trips" — upcoming, past, cancelled
+- [x] Host inbox: incoming reservations with approve/decline actions
+- [x] Email notifications on status transitions
+- [x] Cancellation by boater or host (records snapshot of policy; no money moves in MVP)
 
 **Deliverable:** A boater can reserve a slip. The host can approve, decline, or instant-book. The reservation is tracked through its lifecycle.
 

@@ -34,4 +34,42 @@ public interface IEmailService
         string invitedByName,
         Guid memberId,
         CancellationToken ct = default);
+
+    Task SendReservationRequestAsync(
+        string toHostEmail,
+        string marinaName,
+        string boaterName,
+        string slipName,
+        DateTimeOffset arrivesAt,
+        DateTimeOffset departsAt,
+        Guid reservationId,
+        CancellationToken ct = default);
+
+    Task SendReservationConfirmedAsync(
+        string toBoaterEmail,
+        string slipName,
+        string marinaName,
+        DateTimeOffset arrivesAt,
+        DateTimeOffset departsAt,
+        decimal total,
+        Guid reservationId,
+        CancellationToken ct = default);
+
+    Task SendReservationDeclinedAsync(
+        string toBoaterEmail,
+        string slipName,
+        string marinaName,
+        DateTimeOffset arrivesAt,
+        DateTimeOffset departsAt,
+        Guid reservationId,
+        CancellationToken ct = default);
+
+    Task SendReservationCancelledAsync(
+        string toEmail,
+        string slipName,
+        string marinaName,
+        DateTimeOffset arrivesAt,
+        DateTimeOffset departsAt,
+        Guid reservationId,
+        CancellationToken ct = default);
 }

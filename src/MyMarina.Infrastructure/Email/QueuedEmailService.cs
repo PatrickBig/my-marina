@@ -44,4 +44,40 @@ public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
         var body = EmailTemplates.BillingAccountInvite(toEmail, marinaName, invitedByName, memberId);
         return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendReservationRequestAsync(string toHostEmail, string marinaName, string boaterName,
+        string slipName, DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"New booking request for {slipName} at {marinaName}";
+        var body = EmailTemplates.ReservationRequest(toHostEmail, marinaName, boaterName, slipName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toHostEmail, toHostEmail, subject, body), ct);
+    }
+
+    public Task SendReservationConfirmedAsync(string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt, decimal total,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Your booking at {marinaName} is confirmed";
+        var body = EmailTemplates.ReservationConfirmed(toBoaterEmail, slipName, marinaName, arrivesAt, departsAt, total, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toBoaterEmail, toBoaterEmail, subject, body), ct);
+    }
+
+    public Task SendReservationDeclinedAsync(string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Your booking request at {marinaName} was declined";
+        var body = EmailTemplates.ReservationDeclined(toBoaterEmail, slipName, marinaName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toBoaterEmail, toBoaterEmail, subject, body), ct);
+    }
+
+    public Task SendReservationCancelledAsync(string toEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Booking cancelled — {slipName} at {marinaName}";
+        var body = EmailTemplates.ReservationCancelled(toEmail, slipName, marinaName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
 }

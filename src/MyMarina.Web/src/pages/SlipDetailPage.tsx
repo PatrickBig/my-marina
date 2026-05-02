@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { NavBar } from '@/components/NavBar';
-import { getPublicSlipDetail, type SlipDetailDto, type PublicWindowSummaryDto } from '@/api/api';
+import { getPublicSlipDetail, getVessels, createReservation, type SlipDetailDto, type PublicWindowSummaryDto, type VesselDto } from '@/api/api';
+import { useAuthStore } from '@/store/authStore';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -22,7 +23,17 @@ function formatDateRange(startsAt: string, endsAt: string) {
   return `${fmt(startsAt)} – ${fmt(endsAt)}`;
 }
 
-function WindowCard({ w, nights }: { w: PublicWindowSummaryDto; nights: number }) {
+function WindowCard({
+  w, nights, arrivesAt, departsAt, vessels, isAuthenticated, onBooked,
+}: {
+  w: PublicWindowSummaryDto;
+  nights: number;
+  arrivesAt: string;
+  departsAt: string;
+  vessels: VesselDto[];
+  isAuthenticated: boolean;
+  onBooked: (windowId: string) => void;
+}) {
   const discount = nights >= 28 && w.monthlyDiscount
     ? w.monthlyDiscount
     : nights >= 7 && w.weeklyDiscount
@@ -31,6 +42,34 @@ function WindowCard({ w, nights }: { w: PublicWindowSummaryDto; nights: number }
   const base     = w.basePricePerNight * nights;
   const subtotal = base * (1 - discount);
   const total    = subtotal + (w.cleaningFee ?? 0);
+
+  const [selectedVesselId, setSelectedVesselId] = useState(vessels[0]?.id ?? '');
+  const [notes, setNotes] = useState('');
+  const [booking, setBooking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [booked, setBooked] = useState(false);
+
+  async function handleBook() {
+    if (!selectedVesselId) { setError('Select a vessel.'); return; }
+    setError(null);
+    setBooking(true);
+    try {
+      await createReservation({
+        vesselId:             selectedVesselId,
+        availabilityWindowId: w.id,
+        arrivesAt:            new Date(arrivesAt).toISOString(),
+        departsAt:            new Date(departsAt).toISOString(),
+        notes:                notes || null,
+      });
+      setBooked(true);
+      onBooked(w.id);
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? 'Could not complete booking. Try again.');
+    } finally {
+      setBooking(false);
+    }
+  }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5">
@@ -71,20 +110,63 @@ function WindowCard({ w, nights }: { w: PublicWindowSummaryDto; nights: number }
           )}
         </div>
       </div>
-      <button
-        disabled
-        className="mt-4 w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium opacity-40 cursor-not-allowed"
-        title="Booking coming in Phase 9"
-      >
-        {w.instantBook ? 'Book now' : 'Request to book'} — coming soon
-      </button>
+
+      {booked ? (
+        <div className="mt-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">
+          {w.instantBook ? 'Booking confirmed!' : 'Request submitted — the marina will respond shortly.'}
+          {' '}
+          <a href="/trips" className="underline font-medium">View my trips →</a>
+        </div>
+      ) : !isAuthenticated ? (
+        <a
+          href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
+          className="mt-4 block text-center w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700"
+        >
+          Sign in to {w.instantBook ? 'book' : 'request'}
+        </a>
+      ) : vessels.length === 0 ? (
+        <p className="mt-4 text-xs text-slate-500">
+          <a href="/boats" className="underline">Add a vessel</a> to your profile first.
+        </p>
+      ) : (
+        <div className="mt-4 space-y-2">
+          <select
+            value={selectedVesselId}
+            onChange={(e) => setSelectedVesselId(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            {vessels.map((v) => (
+              <option key={v.id} value={v.id}>{v.name} ({v.length}′ {v.boatType})</option>
+            ))}
+          </select>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Notes for the marina (optional)"
+            rows={2}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-none"
+          />
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <button
+            onClick={handleBook}
+            disabled={booking}
+            className="w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50"
+          >
+            {booking ? 'Submitting…' : w.instantBook ? 'Book now' : 'Request to book'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 export function SlipDetailPage() {
   const slipId = getSlipIdFromPath();
+  const { isAuthenticated } = useAuthStore();
+  const authed = isAuthenticated();
+
   const [slip, setSlip] = useState<SlipDetailDto | null>(null);
+  const [vessels, setVessels] = useState<VesselDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -99,11 +181,20 @@ export function SlipDetailPage() {
 
   useEffect(() => {
     if (!slipId) { setNotFound(true); setLoading(false); return; }
-    getPublicSlipDetail(slipId)
+    const slipFetch = getPublicSlipDetail(slipId)
       .then(setSlip)
-      .catch(() => setNotFound(true))
-      .finally(() => setLoading(false));
-  }, [slipId]);
+      .catch(() => setNotFound(true));
+    const vesselFetch = authed ? getVessels().then(setVessels).catch(() => {}) : Promise.resolve();
+    Promise.all([slipFetch, vesselFetch]).finally(() => setLoading(false));
+  }, [slipId, authed]);
+
+  function handleBooked(windowId: string) {
+    // Optimistically mark the window as taken by removing it from the open list
+    setSlip((prev) => prev
+      ? { ...prev, openWindows: prev.openWindows.filter((w) => w.id !== windowId) }
+      : prev
+    );
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 text-sm">
@@ -203,7 +294,16 @@ export function SlipDetailPage() {
               <p className="text-sm text-slate-400">No open listing windows right now.</p>
             ) : (
               slip.openWindows.map((w) => (
-                <WindowCard key={w.id} w={w} nights={nights} />
+                <WindowCard
+                  key={w.id}
+                  w={w}
+                  nights={nights}
+                  arrivesAt={arrivesAt}
+                  departsAt={departsAt}
+                  vessels={vessels}
+                  isAuthenticated={authed}
+                  onBooked={handleBooked}
+                />
               ))
             )}
           </div>

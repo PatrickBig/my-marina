@@ -17,6 +17,7 @@ export function NavBar() {
 
   const staticLinks = [
     { href: '/search', label: 'Find a slip' },
+    { href: '/trips', label: 'My Trips' },
     { href: '/boats', label: 'My Boats' },
     { href: '/profile', label: 'Profile' },
   ];

@@ -7,6 +7,7 @@ import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SlipDetailPage } from '@/pages/SlipDetailPage';
+import { MyTripsPage } from '@/pages/MyTripsPage';
 import { NavBar } from '@/components/NavBar';
 
 export function App() {
@@ -20,6 +21,7 @@ export function App() {
 
   if (path === '/login') return <LoginPage />;
   if (!isAuthenticated()) return <LoginPage />;
+  if (path === '/trips') return <MyTripsPage />;
   if (path === '/boats') return <MyBoatsPage />;
   if (path === '/profile') return <ProfilePage />;
   if (path === '/marina/new') return <MarinaOnboardingPage />;

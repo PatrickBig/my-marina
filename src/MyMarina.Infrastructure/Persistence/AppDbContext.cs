@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<MarinaVesselRecord> MarinaVesselRecords => Set<MarinaVesselRecord>();
     public DbSet<SlipAssignment> SlipAssignments => Set<SlipAssignment>();
     public DbSet<AvailabilityWindow> AvailabilityWindows => Set<AvailabilityWindow>();
+    public DbSet<Reservation> Reservations => Set<Reservation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

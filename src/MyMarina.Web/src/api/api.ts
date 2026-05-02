@@ -529,3 +529,65 @@ export const searchSlips = (params: SlipSearchParams) =>
 
 export const getPublicSlipDetail = (slipId: string) =>
   apiClient.get<SlipDetailDto>(`/slips/${slipId}`).then((r) => r.data);
+
+// ─── Reservations ─────────────────────────────────────────────────────────────
+
+export interface ReservationDto {
+  id: string;
+  boaterUserId: string;
+  vesselId: string;
+  vesselName: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  availabilityWindowId: string;
+  arrivesAt: string;
+  departsAt: string;
+  nights: number;
+  status: string;
+  basePrice: number;
+  fees: number;
+  taxes: number;
+  total: number;
+  paymentStatus: string;
+  instantBook: boolean;
+  requestedAt: string;
+  confirmedAt?: string | null;
+  declinedAt?: string | null;
+  cancelledAt?: string | null;
+  cancelledByUserId?: string | null;
+  notes?: string | null;
+}
+
+export interface CreateReservationData {
+  vesselId: string;
+  availabilityWindowId: string;
+  arrivesAt: string;
+  departsAt: string;
+  notes?: string | null;
+}
+
+export const createReservation = (data: CreateReservationData) =>
+  apiClient.post<ReservationDto>('/reservations', data).then((r) => r.data);
+
+export const getMyTrips = (status?: string) =>
+  apiClient.get<ReservationDto[]>('/reservations/my-trips', { params: status ? { status } : undefined }).then((r) => r.data);
+
+export const getReservation = (id: string) =>
+  apiClient.get<ReservationDto>(`/reservations/${id}`).then((r) => r.data);
+
+export const getMarinaReservations = (marinaId: string, status?: string) =>
+  apiClient.get<ReservationDto[]>(`/marinas/${marinaId}/reservations`, { params: status ? { status } : undefined }).then((r) => r.data);
+
+export const approveReservation = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/approve`).then((r) => r.data);
+
+export const declineReservation = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/decline`).then((r) => r.data);
+
+export const cancelReservation = (id: string) =>
+  apiClient.post<ReservationDto>(`/reservations/${id}/cancel`).then((r) => r.data);
+
+export const markNoShow = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/no-show`).then((r) => r.data);

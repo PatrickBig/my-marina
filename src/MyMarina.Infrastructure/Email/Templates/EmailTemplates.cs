@@ -80,6 +80,81 @@ internal static class EmailTemplates
         </html>
         """;
 
+    public static string ReservationRequest(
+        string toHostEmail, string marinaName, string boaterName,
+        string slipName, DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">New booking request for {HtmlEncode(slipName)}</h2>
+          <p>Hi {HtmlEncode(marinaName)} team,</p>
+          <p><strong>{HtmlEncode(boaterName)}</strong> has requested to book <strong>{HtmlEncode(slipName)}</strong>.</p>
+          <p>Arrival: <strong>{arrivesAt:MMMM d, yyyy}</strong> &mdash; Departure: <strong>{departsAt:MMMM d, yyyy}</strong></p>
+          <p>Log in to your marina dashboard to approve or decline this request.</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationConfirmed(
+        string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt, decimal total,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #059669;">Your booking is confirmed!</h2>
+          <p>Hi {HtmlEncode(toBoaterEmail)},</p>
+          <p>Your booking at <strong>{HtmlEncode(marinaName)}</strong> for slip <strong>{HtmlEncode(slipName)}</strong> is confirmed.</p>
+          <p>Arrival: <strong>{arrivesAt:MMMM d, yyyy}</strong> &mdash; Departure: <strong>{departsAt:MMMM d, yyyy}</strong></p>
+          <p>Estimated total: <strong>${total:N2}</strong> (payable directly to the marina — off-platform)</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationDeclined(
+        string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #dc2626;">Booking request declined</h2>
+          <p>Hi {HtmlEncode(toBoaterEmail)},</p>
+          <p>Unfortunately your booking request for <strong>{HtmlEncode(slipName)}</strong> at <strong>{HtmlEncode(marinaName)}</strong> has been declined.</p>
+          <p>Dates: {arrivesAt:MMMM d} &mdash; {departsAt:MMMM d, yyyy}</p>
+          <p>Please search for other available slips on MyMarina.</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationCancelled(
+        string toEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #f59e0b;">Booking cancelled</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>The booking for <strong>{HtmlEncode(slipName)}</strong> at <strong>{HtmlEncode(marinaName)}</strong> has been cancelled.</p>
+          <p>Dates: {arrivesAt:MMMM d} &mdash; {departsAt:MMMM d, yyyy}</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
     private static string HtmlEncode(string value) =>
         System.Net.WebUtility.HtmlEncode(value);
 }
