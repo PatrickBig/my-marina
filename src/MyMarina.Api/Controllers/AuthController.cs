@@ -1,97 +1,159 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using MyMarina.Application.Abstractions;
-using MyMarina.Application.Auth;
-using MyMarina.Infrastructure.Email;
+using MyMarina.Application.Identity;
 using MyMarina.Infrastructure.Identity;
-using System.Security.Claims;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
 [Route("auth")]
 public class AuthController(
-    ICommandHandler<LoginCommand, LoginResult> loginHandler,
-    ICommandHandler<ChooseContextCommand, ContextToken> chooseContextHandler,
-    UserManager<ApplicationUser> userManager,
-    IEmailService emailService,
-    IOptions<EmailOptions> emailOptions) : ControllerBase
+    ICommandHandler<RegisterCommand> register,
+    ICommandHandler<LoginCommand, AuthResponse> login,
+    ICommandHandler<RefreshTokenCommand, AuthResponse> refresh,
+    ICommandHandler<LogoutCommand> logout,
+    ICommandHandler<ForgotPasswordCommand> forgotPassword,
+    ICommandHandler<ResetPasswordCommand> resetPassword,
+    ICommandHandler<ConfirmEmailCommand> confirmEmail,
+    ICommandHandler<ResendConfirmationCommand> resendConfirmation)
+    : ControllerBase
 {
-    [HttpPost("login")]
-    [ProducesResponseType(typeof(LoginResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken ct)
+    [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
+        var command = new RegisterCommand(
+            request.Email, request.Password, request.FirstName, request.LastName,
+            request.MarketingOptIn, request.TermsAccepted);
         try
         {
-            var result = await loginHandler.HandleAsync(command, ct);
-            return Ok(result);
+            await register.HandleAsync(command, ct);
+            return NoContent();
         }
-        catch (UnauthorizedAccessException ex)
+        catch (IdentityException ex)
         {
-            return Unauthorized(new { message = ex.Message });
+            return ValidationProblem(new ValidationProblemDetails(
+                ex.Errors.GroupBy(e => e.Code).ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.Description).ToArray())));
         }
     }
 
-    [HttpGet("confirm-email")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var user = await userManager.FindByIdAsync(userId);
-        if (user is null)
-            return BadRequest(new { message = "Invalid confirmation link." });
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        try
+        {
+            var response = await login.HandleAsync(new LoginCommand(request.Email, request.Password, ip), ct);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Problem(ex.Message, statusCode: StatusCodes.Status401Unauthorized);
+        }
+    }
 
-        if (user.EmailConfirmed)
-            return Ok(new { message = "Email already confirmed." });
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request, CancellationToken ct)
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        try
+        {
+            var response = await refresh.HandleAsync(new RefreshTokenCommand(request.RefreshToken, ip), ct);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Problem(ex.Message, statusCode: StatusCodes.Status401Unauthorized);
+        }
+    }
 
-        var result = await userManager.ConfirmEmailAsync(user, token);
-        if (!result.Succeeded)
-            return BadRequest(new { message = "Confirmation link is invalid or has expired." });
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken ct)
+    {
+        await logout.HandleAsync(new LogoutCommand(request.RefreshToken), ct);
+        return NoContent();
+    }
 
-        return Ok(new { message = "Email confirmed. You can now log in." });
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
+    {
+        await forgotPassword.HandleAsync(new ForgotPasswordCommand(request.Email), ct);
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+    {
+        try
+        {
+            await resetPassword.HandleAsync(new ResetPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
+            return NoContent();
+        }
+        catch (IdentityException ex)
+        {
+            return ValidationProblem(new ValidationProblemDetails(
+                ex.Errors.GroupBy(e => e.Code).ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.Description).ToArray())));
+        }
+    }
+
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken ct)
+    {
+        try
+        {
+            await confirmEmail.HandleAsync(new ConfirmEmailCommand(request.UserId, request.Token), ct);
+            return NoContent();
+        }
+        catch (IdentityException ex)
+        {
+            return ValidationProblem(new ValidationProblemDetails(
+                ex.Errors.GroupBy(e => e.Code).ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.Description).ToArray())));
+        }
     }
 
     [HttpPost("resend-confirmation")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ResendConfirmation()
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationRequest request, CancellationToken ct)
     {
-        var userId = User.FindFirstValue("sub");
-        var user = userId is not null ? await userManager.FindByIdAsync(userId) : null;
-        if (user is null) return Unauthorized();
-
-        if (user.EmailConfirmed)
-            return BadRequest(new { message = "Email is already confirmed." });
-
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = Uri.EscapeDataString(token);
-        var confirmationLink = $"{emailOptions.Value.AppBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        await emailService.SendEmailConfirmationAsync(
-            user.Email!,
-            $"{user.FirstName} {user.LastName}".Trim(),
-            confirmationLink);
-
-        return Ok(new { message = "Confirmation email sent." });
-    }
-
-    [HttpPost("choose-context")]
-    [ProducesResponseType(typeof(ContextToken), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> ChooseContext([FromBody] ChooseContextCommand command, CancellationToken ct)
-    {
-        try
-        {
-            var result = await chooseContextHandler.HandleAsync(command, ct);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+        await resendConfirmation.HandleAsync(new ResendConfirmationCommand(request.Email), ct);
+        return NoContent();
     }
 }
+
+// ---------- request records ----------
+
+public sealed record RegisterRequest(
+    string Email,
+    string Password,
+    string FirstName,
+    string LastName,
+    bool MarketingOptIn,
+    bool TermsAccepted
+);
+
+public sealed record LoginRequest(string Email, string Password);
+public sealed record RefreshRequest(string RefreshToken);
+public sealed record LogoutRequest(string RefreshToken);
+public sealed record ForgotPasswordRequest(string Email);
+public sealed record ResetPasswordRequest(string Email, string Token, string NewPassword);
+public sealed record ConfirmEmailRequest(string UserId, string Token);
+public sealed record ResendConfirmationRequest(string Email);

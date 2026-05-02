@@ -2,8 +2,7 @@ namespace MyMarina.Domain.Enums;
 
 public enum SubscriptionTier
 {
-    Free,
-    Starter,
-    Pro,
-    Enterprise
+    Free = 0,
+    Pro = 1,
+    Premium = 2,
 }
