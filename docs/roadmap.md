@@ -14,64 +14,73 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 0 — Hard Reset
+### Phase 0 — Hard Reset ✅
 
 *Clear v0; preserve the project shell.*
 
-- Drop all EF Core migrations
-- Wipe `MyMarina.Domain`, `MyMarina.Application`, `MyMarina.Infrastructure` (entities, handlers, DI registrations)
-- Wipe `MyMarina.Api/Controllers/*` (auth, marina, customer, billing, etc.)
-- Wipe `MyMarina.Web/src/routes/*` and stateful stores
-- Drop the development Postgres volume
-- Keep: project structure, `.sln`, Dockerfiles, docker-compose, K8s manifests, marketing site, CI workflows, OpenAPI scaffolding, integration test harness, the demo seed script structure (rewritten in Phase 15)
+- [x] Drop all EF Core migrations
+- [x] Wipe `MyMarina.Domain`, `MyMarina.Application`, `MyMarina.Infrastructure` (entities, handlers, DI registrations)
+- [x] Wipe `MyMarina.Api/Controllers/*` (auth, marina, customer, billing, etc.)
+- [x] Wipe `MyMarina.Web/src/routes/*` and stateful stores
+- [x] Drop the development Postgres volume
+- [x] Keep: project structure, `.sln`, Dockerfiles, docker-compose, K8s manifests, marketing site, CI workflows, OpenAPI scaffolding, integration test harness, the demo seed script structure (rewritten in Phase 15)
 
 **Deliverable:** Buildable but mostly-empty solution. API runs and returns 401 on every endpoint. Frontend renders an empty shell.
 
 ---
 
-### Phase 1 — Identity Foundation
+### Phase 1 — Identity Foundation ✅
 
 *Sign up. Sign in. Get a JWT.*
 
-- ASP.NET Core Identity with global `ApplicationUser` (no `TenantId`)
-- `POST /auth/register` — email+password registration with email confirmation
-- `POST /auth/login` — credential validation; issues access + refresh JWT
-- `POST /auth/refresh` — refresh token rotation; reuse-detection revokes all sibling tokens
-- `POST /auth/forgot-password` / `POST /auth/reset-password`
-- `POST /auth/confirm-email` / `POST /auth/resend-confirmation`
-- `RefreshToken` table with hashed token storage
-- `IUserContext` abstraction populated from JWT
-- `GET /me` — current user profile + memberships + billing accounts (empty for new users)
-- Login page in `MyMarina.Web` — email/password form with Zod validation
+- [x] ASP.NET Core Identity with global `ApplicationUser` (no `TenantId`)
+- [x] `POST /auth/register` — email+password registration with email confirmation
+- [x] `POST /auth/login` — credential validation; issues access + refresh JWT
+- [x] `POST /auth/refresh` — refresh token rotation; reuse-detection revokes all sibling tokens
+- [x] `POST /auth/forgot-password` / `POST /auth/reset-password`
+- [x] `POST /auth/confirm-email` / `POST /auth/resend-confirmation`
+- [x] `RefreshToken` table with hashed token storage
+- [x] `IUserContext` abstraction populated from JWT
+- [x] `GET /me` — current user profile + memberships + billing accounts (empty for new users)
+- [x] Login page in `MyMarina.Web` — email/password form with Zod validation
 
 **Deliverable:** A user can register, confirm their email, log in, and see their profile.
 
 ---
 
-### Phase 2 — Social Login
+### Phase 2 — Social Login ✅
 
 *Google, Apple, Facebook.*
 
-- `GET /auth/external/{provider}` — OAuth challenge
-- `GET /auth/external/{provider}/callback` — sign in or register
-- `POST /auth/external/{provider}/link` / `unlink` — manage linked providers from profile
-- Provider configuration in K8s secrets
-- Account-linking rules (existing email requires verification before link)
-- Profile page shows linked providers; allows unlinking
+- [x] `GET /auth/external/{provider}` — OAuth challenge
+- [x] `GET /auth/external/{provider}/callback` — sign in or register
+- [x] `GET /auth/external/{provider}/link` / `link-callback` — link provider to signed-in account
+- [x] `POST /auth/external/{provider}/unlink` — remove linked provider
+- [x] `GET /auth/external/providers` — list linked providers
+- [x] Provider configuration in K8s secrets (`Auth:Google`, `Auth:Facebook`, `Auth:Apple` in appsettings)
+- [x] Account-linking rules (existing email collision requires existing-method sign-in first)
+- [x] Social login buttons on login page; `AuthCallbackPage.tsx` handles OAuth redirect
 
 **Deliverable:** A user can sign in via Google, Apple, or Facebook. Existing accounts can link multiple providers.
 
 ---
 
-### Phase 3 — User Profile & Vessels
+### Phase 3 — User Profile & Vessels 🔄
 
 *Boaters can manage their boats.*
 
-- `Vessel` entity (canonical, user-owned)
-- `POST /vessels`, `GET /vessels`, `PATCH /vessels/{id}`, `DELETE /vessels/{id}` (soft archive)
-- Vessel claim acceptance: `POST /vessels/{id}/claim` (no-op until ghost vessels exist; wired in Phase 5)
-- Profile editing: `PATCH /me` (name, phone, photo)
-- Web UI: "My Boats" page with create/edit/archive
+- [x] `Vessel` entity in Domain (OwnerUserId, dimensions, BoatType, ghost-vessel fields)
+- [x] `BoatType` enum: `Sailboat`, `Powerboat`, `Catamaran`, `Dinghy`, `Pwc`, `Other`
+- [x] `POST /vessels` — create a vessel for the authenticated user
+- [x] `GET /vessels` — list my vessels (non-archived)
+- [x] `GET /vessels/{id}` — get single vessel
+- [x] `PATCH /vessels/{id}` — edit vessel fields
+- [x] `DELETE /vessels/{id}` — soft archive
+- [x] `POST /vessels/{id}/claim` — stub (no-op until Phase 5)
+- [x] EF Core migration `Phase3_Vessels`
+- [x] Profile editing UI — `ProfilePage.tsx` (`PATCH /me` backend already existed)
+- [x] "My Boats" page — `MyBoatsPage.tsx` with create/edit/archive
+- [x] `NavBar.tsx` — navigation between profile and boats pages
 
 **Deliverable:** A boater can sign up, add boats to their profile, and edit their information.
 
@@ -81,13 +90,13 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Commercial marinas come on the platform.*
 
-- Tenant + Marina creation flow (host signup)
-- `Marina` profile CRUD (name, address, phone, timezone, lat/long, type=`Commercial` for now)
-- `Dock` CRUD
-- `Slip` CRUD (with all dimension/amenity/status fields)
-- `Membership` invitations: `POST /marinas/{id}/staff/invite`
-- Staff sign-in with marina membership claims in JWT
-- Marina dashboard skeleton (host view)
+- [ ] Tenant + Marina creation flow (host signup)
+- [ ] `Marina` profile CRUD (name, address, phone, timezone, lat/long, type=`Commercial` for now)
+- [ ] `Dock` CRUD
+- [ ] `Slip` CRUD (with all dimension/amenity/status fields)
+- [ ] `Membership` invitations: `POST /marinas/{id}/staff/invite`
+- [ ] Staff sign-in with marina membership claims in JWT
+- [ ] Marina dashboard skeleton (host view)
 
 **Deliverable:** A commercial marina can sign up, configure docks and slips, and invite staff.
 
@@ -97,12 +106,12 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Marinas track customers (with or without platform accounts).*
 
-- `BillingAccount` CRUD
-- `BillingAccountMember` (junction)
-- Ghost vessel creation: marina staff can add a `Vessel` for a non-platform customer
-- Email-based vessel claim flow (invitation email with claim link)
-- Acceptance updates `Vessel.OwnerUserId` and creates `BillingAccountMember`
-- `MarinaVesselRecord` (insurance, notes, billing-account link)
+- [ ] `BillingAccount` CRUD
+- [ ] `BillingAccountMember` (junction)
+- [ ] Ghost vessel creation: marina staff can add a `Vessel` for a non-platform customer
+- [ ] Email-based vessel claim flow (invitation email with claim link)
+- [ ] Acceptance updates `Vessel.OwnerUserId` and creates `BillingAccountMember`
+- [ ] `MarinaVesselRecord` (insurance, notes, billing-account link)
 
 **Deliverable:** A marina can record customers, their vessels, and insurance — even before the customer signs up. Once the customer accepts, ownership transfers cleanly.
 
@@ -112,10 +121,10 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Marinas assign slips to customers.*
 
-- `SlipAssignment` CRUD (with sublet policy flags from day one)
-- Slip availability check (date range + vessel dimensions)
-- Conflict detection (prevent double-booking)
-- Web UI: assignment list, create/edit, end assignment
+- [ ] `SlipAssignment` CRUD (with sublet policy flags from day one)
+- [ ] Slip availability check (date range + vessel dimensions)
+- [ ] Conflict detection (prevent double-booking)
+- [ ] Web UI: assignment list, create/edit, end assignment
 
 **Deliverable:** A marina can assign a customer and their boat to a slip for a date range.
 
@@ -125,12 +134,12 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Hosts list slips for transient bookings.*
 
-- `AvailabilityWindow` CRUD
-- Window non-overlap enforcement
-- `InstantBook` toggle
-- Pricing fields (base price, weekly/monthly discount, cleaning fee, min/max nights)
-- `RevenueSplit` (defaulted to 100% to slip owner; overrides come in Phase 10)
-- Calendar UI for hosts: drag a date range, set price/policy
+- [ ] `AvailabilityWindow` CRUD
+- [ ] Window non-overlap enforcement
+- [ ] `InstantBook` toggle
+- [ ] Pricing fields (base price, weekly/monthly discount, cleaning fee, min/max nights)
+- [ ] `RevenueSplit` (defaulted to 100% to slip owner; overrides come in Phase 10)
+- [ ] Calendar UI for hosts: drag a date range, set price/policy
 
 **Deliverable:** A host can list a slip on the marketplace with pricing and policy.
 
@@ -140,13 +149,13 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Boaters find slips.*
 
-- `GET /slips/search` — public, unauthenticated
-- Bounding-box geo filter
-- Vessel-fit filter (length, beam, draft)
-- Date-range availability filter
-- Public slip detail page
-- Search-results UI with map view (lightweight; e.g., Leaflet)
-- Filter out demo listings unless the visitor is in a demo session
+- [ ] `GET /slips/search` — public, unauthenticated
+- [ ] Bounding-box geo filter
+- [ ] Vessel-fit filter (length, beam, draft)
+- [ ] Date-range availability filter
+- [ ] Public slip detail page
+- [ ] Search-results UI with map view (lightweight; e.g., Leaflet)
+- [ ] Filter out demo listings unless the visitor is in a demo session
 
 **Deliverable:** A visitor (logged in or not) can search slips by location, dates, and boat dimensions, and see real listings.
 
@@ -156,14 +165,14 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Boaters book slips.*
 
-- `Reservation` entity
-- Status state machine (`PendingHostMarinaApproval` → `PendingApproval` → `Confirmed` → `Completed`/`Cancelled`/`NoShow`)
-- Request-to-book flow (owner approves or declines)
-- Instant-book flow (auto-confirms)
-- Boater portal: "My Trips" — upcoming, past, cancelled
-- Host inbox: incoming reservations with approve/decline actions
-- Email notifications on status transitions
-- Cancellation by boater or host (records snapshot of policy; no money moves in MVP)
+- [ ] `Reservation` entity
+- [ ] Status state machine (`PendingHostMarinaApproval` → `PendingApproval` → `Confirmed` → `Completed`/`Cancelled`/`NoShow`)
+- [ ] Request-to-book flow (owner approves or declines)
+- [ ] Instant-book flow (auto-confirms)
+- [ ] Boater portal: "My Trips" — upcoming, past, cancelled
+- [ ] Host inbox: incoming reservations with approve/decline actions
+- [ ] Email notifications on status transitions
+- [ ] Cancellation by boater or host (records snapshot of policy; no money moves in MVP)
 
 **Deliverable:** A boater can reserve a slip. The host can approve, decline, or instant-book. The reservation is tracked through its lifecycle.
 
@@ -173,11 +182,11 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Marinas and boaters can sublet leased slips.*
 
-- "I'm away" UI + endpoint (`POST /slip-assignments/{id}/away`)
-- Holder-initiated sublet listing (`AvailabilityWindow` with `ListedByKind = Holder`)
-- Owner-initiated sublet listing (`ListedByKind = OwnerForHolder`) tied to a holder's "away" entry
-- `RevenueSplit` snapshot on sublet windows (using lease policy fields)
-- Lease policy enforcement in availability-window creation
+- [ ] "I'm away" UI + endpoint (`POST /slip-assignments/{id}/away`)
+- [ ] Holder-initiated sublet listing (`AvailabilityWindow` with `ListedByKind = Holder`)
+- [ ] Owner-initiated sublet listing (`ListedByKind = OwnerForHolder`) tied to a holder's "away" entry
+- [ ] `RevenueSplit` snapshot on sublet windows (using lease policy fields)
+- [ ] Lease policy enforcement in availability-window creation
 
 **Deliverable:** A long-term tenant can mark themselves away and either list it themselves or have the marina list it on their behalf, with revenue split per the lease.
 
@@ -187,12 +196,12 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Marinas bill, customers pay (off-platform).*
 
-- `Invoice` CRUD (carry over from v0; updated to use `BillingAccountId` and optional `ReservationId`)
-- `InvoiceLineItem` and `Payment` (manual recording: cash, check, card, etc.)
-- Sequential invoice number per marina
-- Overdue auto-flagging (Hangfire recurring job)
-- Customer portal: "My Invoices" — view, history, balance
-- Marina invoice list, detail, void, partial payment
+- [ ] `Invoice` CRUD (carry over from v0; updated to use `BillingAccountId` and optional `ReservationId`)
+- [ ] `InvoiceLineItem` and `Payment` (manual recording: cash, check, card, etc.)
+- [ ] Sequential invoice number per marina
+- [ ] Overdue auto-flagging (Hangfire recurring job)
+- [ ] Customer portal: "My Invoices" — view, history, balance
+- [ ] Marina invoice list, detail, void, partial payment
 
 **Deliverable:** A marina can issue invoices linked to assignments or reservations. A customer can see invoices and payment history. Money still moves off-platform.
 
@@ -202,10 +211,10 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Marina–customer communication.*
 
-- `MaintenanceRequest` CRUD (boater submits, marina triages)
-- `WorkOrder` CRUD (marina internal; optionally linked to a request)
-- `Announcement` CRUD (marina publishes, customers + incoming boaters see)
-- Boater portal: submit/view requests; view announcements feed
+- [ ] `MaintenanceRequest` CRUD (boater submits, marina triages)
+- [ ] `WorkOrder` CRUD (marina internal; optionally linked to a request)
+- [ ] `Announcement` CRUD (marina publishes, customers + incoming boaters see)
+- [ ] Boater portal: submit/view requests; view announcements feed
 
 **Deliverable:** Boaters report problems; marinas track and resolve. Marinas post news; boaters see it.
 
@@ -215,13 +224,13 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Dockominium and private dock onboarding.*
 
-- "Add my dock" wizard (`MarinaType = PrivateDock`)
-- "Add a slip I own at a marina" wizard (`MarinaType = Dockominium`, requires `Slip.HostMarinaId`)
-- Auto-creates Tenant + Marina + Slip + Owner Membership
-- `HostMarinaPolicy` (None / NotifyOnly / RequiresApproval)
-- Host marina notification flow when a dockominium slip is added
-- Host marina approval flow in reservation lifecycle (when policy = `RequiresApproval`)
-- UX: brand the experience as "your dock" / "your slip," never "your marina"
+- [ ] "Add my dock" wizard (`MarinaType = PrivateDock`)
+- [ ] "Add a slip I own at a marina" wizard (`MarinaType = Dockominium`, requires `Slip.HostMarinaId`)
+- [ ] Auto-creates Tenant + Marina + Slip + Owner Membership
+- [ ] `HostMarinaPolicy` (None / NotifyOnly / RequiresApproval)
+- [ ] Host marina notification flow when a dockominium slip is added
+- [ ] Host marina approval flow in reservation lifecycle (when policy = `RequiresApproval`)
+- [ ] UX: brand the experience as "your dock" / "your slip," never "your marina"
 
 **Deliverable:** Individuals can list a private dock or a dockominium slip on the marketplace. Host marina policies are enforced.
 
@@ -231,13 +240,13 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *MyMarina staff manage the platform.*
 
-- `PlatformOperator` Identity role
-- Tenant list + create/suspend/reactivate
-- User search across tenants
-- Force sign-out (revoke all refresh tokens)
-- Cross-tenant audit log viewer
-- Listing moderation queue
-- User moderation actions
+- [ ] `PlatformOperator` Identity role
+- [ ] Tenant list + create/suspend/reactivate
+- [ ] User search across tenants
+- [ ] Force sign-out (revoke all refresh tokens)
+- [ ] Cross-tenant audit log viewer
+- [ ] Listing moderation queue
+- [ ] User moderation actions
 
 **Deliverable:** MyMarina staff can manage tenants, users, and listings without touching the database.
 
@@ -247,14 +256,14 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Replace ephemeral demo tenants with a curated read-only demo.*
 
-- `Tenant.IsDemo` flag (single demo tenant, multiple demo marinas)
-- `WriteAccess` policy decorator on every non-GET endpoint — returns 403 with a "this is a demo" body when the caller's context is demo
-- Demo seed script (idempotent, runs on each deploy)
-- Demo seed includes: 1 commercial marina, 1 yacht club, 1 dockominium, 1 private dock; full inventory (docks, slips, customers, vessels, reservations, invoices, maintenance, announcements, work orders)
-- "Try the host dashboard" auto-signin button on marketing site (creates a short-lived demo session token tied to a read-only `Membership` at a demo marina)
-- Demo listings are excluded from real-user search results (filtered via `Tenant.IsDemo` in the search query unless the caller is in a demo session)
-- CI integration test asserts at least one record per known entity type lives in the demo tenant
-- Marketing site's screenshots are captured against the demo via the Playwright skill
+- [ ] `Tenant.IsDemo` flag (single demo tenant, multiple demo marinas)
+- [ ] `WriteAccess` policy decorator on every non-GET endpoint — returns 403 with a "this is a demo" body when the caller's context is demo
+- [ ] Demo seed script (idempotent, runs on each deploy)
+- [ ] Demo seed includes: 1 commercial marina, 1 yacht club, 1 dockominium, 1 private dock; full inventory (docks, slips, customers, vessels, reservations, invoices, maintenance, announcements, work orders)
+- [ ] "Try the host dashboard" auto-signin button on marketing site (creates a short-lived demo session token tied to a read-only `Membership` at a demo marina)
+- [ ] Demo listings are excluded from real-user search results (filtered via `Tenant.IsDemo` in the search query unless the caller is in a demo session)
+- [ ] CI integration test asserts at least one record per known entity type lives in the demo tenant
+- [ ] Marketing site's screenshots are captured against the demo via the Playwright skill
 
 **Deliverable:** A visitor on the marketing site can click into a working host dashboard backed by a curated demo, with no risk of polluting data or being abused. Real users never see demo listings in search.
 
@@ -264,13 +273,13 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 *Get ready for a real public.*
 
-- End-to-end Playwright tests covering critical flows
-- Performance baseline (search, reservation creation, login)
-- Security review (auth flows, input validation, PII handling)
-- Marketing site polish (screenshots from the live demo, onboarding copy)
-- Production deploy + smoke tests
-- Monitoring/alerting (Sentry or similar; basic API metrics; uptime checks)
-- Documentation polish (CLAUDE.md, README, support docs)
+- [ ] End-to-end Playwright tests covering critical flows
+- [ ] Performance baseline (search, reservation creation, login)
+- [ ] Security review (auth flows, input validation, PII handling)
+- [ ] Marketing site polish (screenshots from the live demo, onboarding copy)
+- [ ] Production deploy + smoke tests
+- [ ] Monitoring/alerting (Sentry or similar; basic API metrics; uptime checks)
+- [ ] Documentation polish (CLAUDE.md, README, support docs)
 
 **Deliverable:** Public launch.
 

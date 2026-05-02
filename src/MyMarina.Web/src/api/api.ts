@@ -79,3 +79,53 @@ export const updateProfile = (data: {
   phoneNumber?: string | null;
   marketingOptIn?: boolean | null;
 }) => apiClient.patch('/me', data);
+
+// ─── Vessels ──────────────────────────────────────────────────────────────────
+
+export type BoatType = 'Sailboat' | 'Powerboat' | 'Catamaran' | 'Dinghy' | 'Pwc' | 'Other';
+
+export interface VesselDto {
+  id: string;
+  name: string;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  length: number;
+  beam: number;
+  draft: number;
+  boatType: BoatType;
+  hullColor?: string | null;
+  registrationNumber?: string | null;
+  registrationState?: string | null;
+  isArchived: boolean;
+  createdAt: string;
+}
+
+export interface CreateVesselData {
+  name: string;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  length: number;
+  beam: number;
+  draft: number;
+  boatType: BoatType;
+  hullColor?: string | null;
+  registrationNumber?: string | null;
+  registrationState?: string | null;
+}
+
+export const getVessels = () =>
+  apiClient.get<VesselDto[]>('/vessels').then((r) => r.data);
+
+export const getVessel = (id: string) =>
+  apiClient.get<VesselDto>(`/vessels/${id}`).then((r) => r.data);
+
+export const createVessel = (data: CreateVesselData) =>
+  apiClient.post<VesselDto>('/vessels', data).then((r) => r.data);
+
+export const updateVessel = (id: string, data: Partial<CreateVesselData>) =>
+  apiClient.patch(`/vessels/${id}`, data);
+
+export const archiveVessel = (id: string) =>
+  apiClient.delete(`/vessels/${id}`);
