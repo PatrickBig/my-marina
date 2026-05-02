@@ -382,3 +382,68 @@ export const updateSlipAssignment = (marinaId: string, id: string, data: Partial
 
 export const endSlipAssignment = (marinaId: string, id: string, endDate?: string) =>
   apiClient.post<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments/${id}/end`, { endDate: endDate ?? null }).then((r) => r.data);
+
+// ─── Availability Windows ─────────────────────────────────────────────────────
+
+export type ListedByKind = 'Owner' | 'Holder' | 'OwnerForHolder';
+export type AvailabilityWindowStatus = 'Open' | 'Paused' | 'FullyBooked' | 'Closed';
+
+export interface RevenueSplitEntryDto {
+  payeeKind: string;
+  payeeId?: string | null;
+  percent: number;
+}
+
+export interface AvailabilityWindowDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  listedByKind: ListedByKind;
+  listedByMarinaId?: string | null;
+  listedByBillingAccountId?: string | null;
+  relatedAssignmentId?: string | null;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+  revenueSplit: RevenueSplitEntryDto[];
+  status: AvailabilityWindowStatus;
+  createdAt: string;
+}
+
+export interface CreateAvailabilityWindowData {
+  slipId: string;
+  listedByKind: ListedByKind;
+  listedByMarinaId?: string | null;
+  listedByBillingAccountId?: string | null;
+  relatedAssignmentId?: string | null;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export const getAvailabilityWindows = (marinaId: string, params?: { slipId?: string; status?: string }) =>
+  apiClient.get<AvailabilityWindowDto[]>(`/marinas/${marinaId}/availability-windows`, { params }).then((r) => r.data);
+
+export const getAvailabilityWindow = (marinaId: string, id: string) =>
+  apiClient.get<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}`).then((r) => r.data);
+
+export const createAvailabilityWindow = (marinaId: string, data: CreateAvailabilityWindowData) =>
+  apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows`, data).then((r) => r.data);
+
+export const updateAvailabilityWindow = (marinaId: string, id: string, data: Partial<Omit<CreateAvailabilityWindowData, 'slipId' | 'listedByKind'>>) =>
+  apiClient.patch<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}`, data).then((r) => r.data);
+
+export const setAvailabilityWindowStatus = (marinaId: string, id: string, status: AvailabilityWindowStatus) =>
+  apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}/status`, { status }).then((r) => r.data);

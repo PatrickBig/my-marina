@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<BillingAccountMember> BillingAccountMembers => Set<BillingAccountMember>();
     public DbSet<MarinaVesselRecord> MarinaVesselRecords => Set<MarinaVesselRecord>();
     public DbSet<SlipAssignment> SlipAssignments => Set<SlipAssignment>();
+    public DbSet<AvailabilityWindow> AvailabilityWindows => Set<AvailabilityWindow>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

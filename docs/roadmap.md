@@ -130,16 +130,16 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 7 — Marketplace Listings
+### Phase 7 — Marketplace Listings ✅
 
 *Hosts list slips for transient bookings.*
 
-- [ ] `AvailabilityWindow` CRUD
-- [ ] Window non-overlap enforcement
-- [ ] `InstantBook` toggle
-- [ ] Pricing fields (base price, weekly/monthly discount, cleaning fee, min/max nights)
-- [ ] `RevenueSplit` (defaulted to 100% to slip owner; overrides come in Phase 10)
-- [ ] Calendar UI for hosts: drag a date range, set price/policy
+- [x] `AvailabilityWindow` CRUD
+- [x] Window non-overlap enforcement
+- [x] `InstantBook` toggle
+- [x] Pricing fields (base price, weekly/monthly discount, cleaning fee, min/max nights)
+- [x] `RevenueSplit` (defaulted to 100% to slip owner; overrides come in Phase 10)
+- [x] Calendar UI for hosts: drag a date range, set price/policy
 
 **Deliverable:** A host can list a slip on the marketplace with pricing and policy.
 

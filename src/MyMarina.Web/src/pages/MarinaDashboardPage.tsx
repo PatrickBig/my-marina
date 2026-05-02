@@ -6,8 +6,10 @@ import {
   getMarina, updateMarina, getDocks, createDock, deleteDock,
   getSlips, createSlip, deleteSlip, getMarinaStaff, inviteStaff, revokeStaff,
   getBillingAccounts, getVesselRecords, getSlipAssignments, createSlipAssignment, endSlipAssignment,
+  getAvailabilityWindows, createAvailabilityWindow, setAvailabilityWindowStatus,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
+  type AvailabilityWindowDto, type AvailabilityWindowStatus,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -528,6 +530,202 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
   );
 }
 
+// ─── Listings panel ──────────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<AvailabilityWindowStatus, string> = {
+  Open: 'Open', Paused: 'Paused', FullyBooked: 'Fully booked', Closed: 'Closed',
+};
+
+const listingSchema = z.object({
+  slipId:           z.string().min(1, 'Required'),
+  startsAt:         z.string().min(1, 'Required'),
+  endsAt:           z.string().min(1, 'Required'),
+  basePricePerNight: z.coerce.number().positive('Must be > 0'),
+  instantBook:      z.boolean(),
+  minNights:        z.coerce.number().int().min(1).optional(),
+  maxNights:        z.coerce.number().int().min(1).optional(),
+  weeklyDiscount:   z.coerce.number().min(0).max(1).optional(),
+  monthlyDiscount:  z.coerce.number().min(0).max(1).optional(),
+  cleaningFee:      z.coerce.number().min(0).optional(),
+});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ListingFormData = z.infer<typeof listingSchema>;
+
+function ListingsPanel({ marinaId }: { marinaId: string }) {
+  const [windows, setWindows] = useState<AvailabilityWindowDto[]>([]);
+  const [slips, setSlips] = useState<SlipDto[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ListingFormData>({
+    resolver: zodResolver(listingSchema) as any,
+    defaultValues: { instantBook: true },
+  });
+
+  useEffect(() => {
+    Promise.all([
+      getAvailabilityWindows(marinaId),
+      getSlips(marinaId),
+    ]).then(([w, s]) => { setWindows(w); setSlips(s); });
+  }, [marinaId]);
+
+  async function onSubmit(data: ListingFormData) {
+    setError(null);
+    try {
+      const item = await createAvailabilityWindow(marinaId, {
+        slipId:            data.slipId,
+        listedByKind:      'Owner',
+        listedByMarinaId:  marinaId,
+        startsAt:          new Date(data.startsAt).toISOString(),
+        endsAt:            new Date(data.endsAt).toISOString(),
+        instantBook:       data.instantBook,
+        minNights:         data.minNights ?? null,
+        maxNights:         data.maxNights ?? null,
+        basePricePerNight: data.basePricePerNight,
+        weeklyDiscount:    data.weeklyDiscount ?? null,
+        monthlyDiscount:   data.monthlyDiscount ?? null,
+        cleaningFee:       data.cleaningFee ?? null,
+      });
+      setWindows((prev) => [item, ...prev]);
+      reset();
+      setShowForm(false);
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? 'Could not create listing window. Check for date overlaps.');
+    }
+  }
+
+  async function handleSetStatus(id: string, status: AvailabilityWindowStatus) {
+    const updated = await setAvailabilityWindowStatus(marinaId, id, status);
+    setWindows((prev) => prev.map((w) => w.id === id ? updated : w));
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-base font-semibold text-slate-800">Marketplace Listings</h2>
+        <button onClick={() => setShowForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+          + New listing window
+        </button>
+      </div>
+
+      {windows.length === 0 && !showForm && (
+        <p className="text-sm text-slate-400">No listing windows yet. Create one to accept transient bookings.</p>
+      )}
+
+      <ul className="divide-y divide-slate-100">
+        {windows.map((w) => (
+          <li key={w.id} className="py-3 flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-slate-800">
+                {w.slipName}
+                <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
+                  w.status === 'Open' ? 'bg-emerald-50 text-emerald-700'
+                  : w.status === 'Paused' ? 'bg-amber-50 text-amber-700'
+                  : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {STATUS_LABELS[w.status]}
+                </span>
+                {w.instantBook && (
+                  <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">Instant</span>
+                )}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {new Date(w.startsAt).toLocaleDateString()} – {new Date(w.endsAt).toLocaleDateString()}
+                {' · '}${w.basePricePerNight.toFixed(2)}/night
+                {w.cleaningFee ? ` + $${w.cleaningFee.toFixed(2)} cleaning` : ''}
+              </p>
+              {(w.minNights || w.maxNights) && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {w.minNights ? `Min ${w.minNights}n` : ''}
+                  {w.minNights && w.maxNights ? ' · ' : ''}
+                  {w.maxNights ? `Max ${w.maxNights}n` : ''}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-2 mt-1">
+              {w.status === 'Open' && (
+                <button onClick={() => handleSetStatus(w.id, 'Paused')} className="text-xs text-slate-400 hover:text-amber-600">
+                  Pause
+                </button>
+              )}
+              {w.status === 'Paused' && (
+                <button onClick={() => handleSetStatus(w.id, 'Open')} className="text-xs text-slate-400 hover:text-emerald-600">
+                  Reopen
+                </button>
+              )}
+              {w.status !== 'Closed' && (
+                <button onClick={() => handleSetStatus(w.id, 'Closed')} className="text-xs text-slate-400 hover:text-red-500">
+                  Close
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {showForm && (
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+          <h3 className="text-sm font-medium text-slate-700">New listing window</h3>
+
+          <Field label="Slip" error={errors.slipId?.message}>
+            <select {...register('slipId')} className={`${input} bg-white`}>
+              <option value="">— select slip —</option>
+              {slips.map((s) => (
+                <option key={s.id} value={s.id}>{s.name} ({s.maxLength}′)</option>
+              ))}
+            </select>
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Available from" error={errors.startsAt?.message}>
+              <input {...register('startsAt')} type="date" className={input} />
+            </Field>
+            <Field label="Available until" error={errors.endsAt?.message}>
+              <input {...register('endsAt')} type="date" className={input} />
+            </Field>
+            <Field label="Price per night ($)" error={errors.basePricePerNight?.message}>
+              <input {...register('basePricePerNight')} type="number" step="0.01" min="0.01" className={input} />
+            </Field>
+            <Field label="Cleaning fee ($, optional)">
+              <input {...register('cleaningFee')} type="number" step="0.01" min="0" className={input} />
+            </Field>
+            <Field label="Min nights (optional)">
+              <input {...register('minNights')} type="number" step="1" min="1" className={input} />
+            </Field>
+            <Field label="Max nights (optional)">
+              <input {...register('maxNights')} type="number" step="1" min="1" className={input} />
+            </Field>
+            <Field label="Weekly discount (0–1, e.g. 0.10)">
+              <input {...register('weeklyDiscount')} type="number" step="0.01" min="0" max="1" className={input} />
+            </Field>
+            <Field label="Monthly discount (0–1, e.g. 0.15)">
+              <input {...register('monthlyDiscount')} type="number" step="0.01" min="0" max="1" className={input} />
+            </Field>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input {...register('instantBook')} type="checkbox" />
+            Instant book (no approval required)
+          </label>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex gap-2">
+            <button type="submit" disabled={isSubmitting} className={btn}>
+              {isSubmitting ? 'Creating…' : 'Create listing'}
+            </button>
+            <button type="button" onClick={() => { setShowForm(false); reset(); setError(null); }} className={btnSecondary}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 // ─── Staff panel ─────────────────────────────────────────────────────────────
 
 function StaffPanel({ marinaId }: { marinaId: string }) {
@@ -655,6 +853,7 @@ export function MarinaDashboardPage() {
         <DocksPanel marinaId={marinaId} />
         <SlipsPanel marinaId={marinaId} />
         <AssignmentsPanel marinaId={marinaId} />
+        <ListingsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
     </div>
