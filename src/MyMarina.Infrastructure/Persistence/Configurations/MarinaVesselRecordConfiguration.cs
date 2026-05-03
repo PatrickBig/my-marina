@@ -32,6 +32,6 @@ public class MarinaVesselRecordConfiguration : IEntityTypeConfiguration<MarinaVe
         // One record per (marina, vessel) pair
         builder.HasIndex(r => new { r.MarinaId, r.VesselId }).IsUnique();
         builder.HasIndex(r => r.BillingAccountId)
-               .HasFilter("billing_account_id IS NOT NULL");
+               .HasFilter("\"BillingAccountId\" IS NOT NULL");
     }
 }

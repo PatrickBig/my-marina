@@ -760,3 +760,112 @@ export const recordPayment = (marinaId: string, invoiceId: string, data: RecordP
 
 export const getMyInvoices = () =>
   apiClient.get<InvoiceSummaryDto[]>('/me/invoices').then((r) => r.data);
+
+// ─── Maintenance & Announcements ──────────────────────────────────────────────
+
+export interface WorkOrderSummaryDto {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  scheduledDate: string | null;
+  completedAt: string | null;
+}
+
+export interface MaintenanceRequestDto {
+  id: string;
+  marinaId: string;
+  boaterUserId: string;
+  boaterName: string;
+  billingAccountId: string | null;
+  vesselId: string | null;
+  slipId: string | null;
+  reservationId: string | null;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  submittedAt: string;
+  resolvedAt: string | null;
+  workOrder: WorkOrderSummaryDto | null;
+}
+
+export interface WorkOrderDto {
+  id: string;
+  marinaId: string;
+  maintenanceRequestId: string | null;
+  title: string;
+  description: string;
+  assignedToUserId: string | null;
+  assignedToName: string | null;
+  status: string;
+  priority: string;
+  scheduledDate: string | null;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface AnnouncementDto {
+  id: string;
+  marinaId: string;
+  title: string;
+  body: string;
+  audience: string;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  isPinned: boolean;
+  createdByUserId: string;
+  createdAt: string;
+}
+
+// Maintenance requests
+export const submitMaintenanceRequest = (
+  marinaId: string,
+  data: { title: string; description: string; priority?: string; vesselId?: string; slipId?: string }
+) => apiClient.post<MaintenanceRequestDto>(`/marinas/${marinaId}/maintenance-requests`, data).then((r) => r.data);
+
+export const getMarinaMaintenanceRequests = (marinaId: string, status?: string) =>
+  apiClient.get<MaintenanceRequestDto[]>(`/marinas/${marinaId}/maintenance-requests`, { params: { status } }).then((r) => r.data);
+
+export const updateMaintenanceRequestStatus = (
+  marinaId: string, requestId: string, data: { status: string; priority: string }
+) => apiClient.patch<MaintenanceRequestDto>(`/marinas/${marinaId}/maintenance-requests/${requestId}`, data).then((r) => r.data);
+
+export const getMyMaintenanceRequests = () =>
+  apiClient.get<MaintenanceRequestDto[]>('/me/maintenance-requests').then((r) => r.data);
+
+// Work orders
+export const getMarinaWorkOrders = (marinaId: string, status?: string) =>
+  apiClient.get<WorkOrderDto[]>(`/marinas/${marinaId}/work-orders`, { params: { status } }).then((r) => r.data);
+
+export const createWorkOrder = (
+  marinaId: string,
+  data: { maintenanceRequestId?: string; title: string; description: string; priority?: string; scheduledDate?: string }
+) => apiClient.post<WorkOrderDto>(`/marinas/${marinaId}/work-orders`, data).then((r) => r.data);
+
+export const updateWorkOrder = (marinaId: string, workOrderId: string, data: Partial<WorkOrderDto>) =>
+  apiClient.put<WorkOrderDto>(`/marinas/${marinaId}/work-orders/${workOrderId}`, data).then((r) => r.data);
+
+// Announcements
+export const getMarinaAnnouncements = (marinaId: string) =>
+  apiClient.get<AnnouncementDto[]>(`/marinas/${marinaId}/announcements`).then((r) => r.data);
+
+export const createAnnouncement = (
+  marinaId: string,
+  data: { title: string; body: string; audience?: string; isPinned?: boolean; expiresAt?: string }
+) => apiClient.post<AnnouncementDto>(`/marinas/${marinaId}/announcements`, data).then((r) => r.data);
+
+export const updateAnnouncement = (
+  marinaId: string, announcementId: string,
+  data: { title: string; body: string; audience?: string; isPinned?: boolean; expiresAt?: string }
+) => apiClient.put<AnnouncementDto>(`/marinas/${marinaId}/announcements/${announcementId}`, data).then((r) => r.data);
+
+export const publishAnnouncement = (marinaId: string, announcementId: string) =>
+  apiClient.post<AnnouncementDto>(`/marinas/${marinaId}/announcements/${announcementId}/publish`).then((r) => r.data);
+
+export const deleteAnnouncement = (marinaId: string, announcementId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/announcements/${announcementId}`);
+
+export const getMyAnnouncements = () =>
+  apiClient.get<AnnouncementDto[]>('/me/announcements').then((r) => r.data);

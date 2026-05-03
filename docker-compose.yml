@@ -84,8 +84,6 @@ services:
     build:
       context: .
       dockerfile: src/MyMarina.Api/Dockerfile
-    ports:
-      - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=mymarina;Username=mymarina;Password=mymarina;SSL Mode=Disable;GSS Encryption Mode=Disable"

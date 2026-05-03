@@ -21,7 +21,7 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
 
         builder.HasIndex(m => m.UserId);
         builder.HasIndex(m => new { m.UserId, m.MarinaId })
-               .HasFilter("marina_id IS NOT NULL");
+               .HasFilter("\"MarinaId\" IS NOT NULL");
         builder.HasIndex(m => new { m.UserId, m.TenantId });
     }
 }

@@ -4,14 +4,36 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Infrastructure;
-using MyMarina.Infrastructure.Identity;
+using MyMarina.Infrastructure.Invoicing;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Setup;
 using Scalar.AspNetCore;
 
+// ── Setup mode ──────────────────────────────────────────────────────────────
+// Invoked as a one-shot pre-deploy job (Helm hook / docker-compose api-setup).
+// Runs migrations, seeds required accounts, registers Hangfire schedules, exits.
+if (args.Contains("--setup"))
+{
+    var setupBuilder = WebApplication.CreateBuilder(args);
+    setupBuilder.Services.AddInfrastructure(setupBuilder.Configuration, registerHangfireServer: false);
+    setupBuilder.Services.Configure<SetupOptions>(setupBuilder.Configuration.GetSection("Setup"));
+    setupBuilder.Services.AddScoped<AppSetupRunner>();
+
+    var setupApp = setupBuilder.Build();
+
+    using (var scope = setupApp.Services.CreateScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<AppSetupRunner>().RunAsync();
+        RegisterRecurringJobs(scope.ServiceProvider.GetRequiredService<IRecurringJobManager>());
+    }
+
+    return;
+}
+
+// ── Normal startup ───────────────────────────────────────────────────────────
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Controllers + OpenAPI ---
@@ -94,7 +116,6 @@ if (!string.IsNullOrWhiteSpace(appleClientId))
         options.KeyId     = builder.Configuration["Auth:Apple:KeyId"]!;
         options.TeamId    = builder.Configuration["Auth:Apple:TeamId"]!;
         options.CallbackPath = "/signin-apple";
-        // options.GenerateClientSecret — wire up private key from config in production
     });
 }
 
@@ -120,56 +141,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- Dev: apply migrations and seed platform operator ---
+// --- Dev: auto-migrate so `dotnet watch` works without running --setup ---
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
-
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-
-    // Ensure PlatformOperator role exists
-    if (!await roleManager.RoleExistsAsync("PlatformOperator"))
-        await roleManager.CreateAsync(new ApplicationRole("PlatformOperator"));
-
-    // Seed platform operator
-    const string adminEmail = "admin@mymarina.org";
-    const string adminPassword = "Admin@Marina123!";
-    var admin = await userManager.FindByEmailAsync(adminEmail);
-    if (admin is null)
-    {
-        admin = new ApplicationUser
-        {
-            Id        = Guid.CreateVersion7(),
-            UserName  = adminEmail,
-            Email     = adminEmail,
-            FirstName = "Platform",
-            LastName  = "Admin",
-            EmailConfirmed = true,
-        };
-        var result = await userManager.CreateAsync(admin, adminPassword);
-        if (result.Succeeded)
-            await userManager.AddToRoleAsync(admin, "PlatformOperator");
-    }
-
-    // Seed demo marina owner
-    const string ownerEmail = "owner@demo-marina.com";
-    const string ownerPassword = "Owner@Marina123!";
-    if (await userManager.FindByEmailAsync(ownerEmail) is null)
-    {
-        var owner = new ApplicationUser
-        {
-            Id        = Guid.CreateVersion7(),
-            UserName  = ownerEmail,
-            Email     = ownerEmail,
-            FirstName = "Demo",
-            LastName  = "Owner",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(owner, ownerPassword);
-    }
 }
 
 // --- Middleware pipeline ---
@@ -196,12 +173,17 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     Authorization = [new MyMarina.Api.Infrastructure.HangfireAuthFilter()]
 });
 
-// --- Hangfire recurring jobs ---
-RecurringJob.AddOrUpdate<MyMarina.Infrastructure.Invoicing.InvoiceOverdueJob>(
-    "invoice-overdue-check",
-    job => job.CheckOverdueAsync(),
-    Cron.Daily(2));
+RegisterRecurringJobs(app.Services.GetRequiredService<IRecurringJobManager>());
 
 app.Run();
+
+// ── Shared helpers ───────────────────────────────────────────────────────────
+static void RegisterRecurringJobs(IRecurringJobManager jobs)
+{
+    jobs.AddOrUpdate<InvoiceOverdueJob>(
+        "invoice-overdue-check",
+        job => job.CheckOverdueAsync(),
+        Cron.Daily(2));
+}
 
 public partial class Program;

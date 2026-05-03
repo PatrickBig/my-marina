@@ -10,6 +10,7 @@ import { SearchPage } from '@/pages/SearchPage';
 import { SlipDetailPage } from '@/pages/SlipDetailPage';
 import { MyTripsPage } from '@/pages/MyTripsPage';
 import { MySlipsPage } from '@/pages/MySlipsPage';
+import { MaintenancePage } from '@/pages/MaintenancePage';
 import { NavBar } from '@/components/NavBar';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
   if (path === '/trips') return <MyTripsPage />;
   if (path === '/my-slips') return <MySlipsPage />;
   if (path === '/invoices') return <MyInvoicesPage />;
+  if (path === '/maintenance') return <MaintenancePage />;
   if (path === '/boats') return <MyBoatsPage />;
   if (path === '/profile') return <ProfilePage />;
   if (path === '/marina/new') return <MarinaOnboardingPage />;

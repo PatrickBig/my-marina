@@ -36,8 +36,8 @@ public class AvailabilityWindowConfiguration : IEntityTypeConfiguration<Availabi
         // Fast lookup by slip + date range
         builder.HasIndex(w => new { w.SlipId, w.StartsAt });
         builder.HasIndex(w => w.Status)
-               .HasFilter("status IN ('Open', 'Paused')");
+               .HasFilter("\"Status\" IN ('Open', 'Paused')");
         builder.HasIndex(w => w.ListedByMarinaId)
-               .HasFilter("listed_by_marina_id IS NOT NULL");
+               .HasFilter("\"ListedByMarinaId\" IS NOT NULL");
     }
 }

@@ -27,6 +27,6 @@ public class VesselConfiguration : IEntityTypeConfiguration<Vessel>
 
         builder.HasIndex(v => v.OwnerUserId);
         builder.HasIndex(v => v.ClaimEmail)
-               .HasFilter("claim_email IS NOT NULL");
+               .HasFilter("\"ClaimEmail\" IS NOT NULL");
     }
 }

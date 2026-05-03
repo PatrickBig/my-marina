@@ -10,10 +10,13 @@ import {
   getMarinaReservations, approveReservation, declineReservation, markNoShow,
   getMarinaAbsences,
   getMarinaInvoices, createInvoice, sendInvoice, voidInvoice, recordPayment,
+  getMarinaMaintenanceRequests, updateMaintenanceRequestStatus, getMarinaWorkOrders, createWorkOrder, updateWorkOrder,
+  getMarinaAnnouncements, createAnnouncement, publishAnnouncement, deleteAnnouncement,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
   type AvailabilityWindowDto, type AvailabilityWindowStatus, type ReservationDto,
   type OwnerAbsenceDto, type InvoiceSummaryDto,
+  type MaintenanceRequestDto, type WorkOrderDto, type AnnouncementDto,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -1469,6 +1472,8 @@ export function MarinaDashboardPage() {
         <SubletPanel marinaId={marinaId} />
         <InboxPanel marinaId={marinaId} />
         <InvoicingPanel marinaId={marinaId} />
+        <MaintenancePanel marinaId={marinaId} />
+        <AnnouncementsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
     </div>
@@ -1487,6 +1492,240 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
       {children}
       {error && <p className="mt-0.5 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// ─── Maintenance panel ───────────────────────────────────────────────────────
+
+const REQ_STATUS_COLORS: Record<string, string> = {
+  Submitted:   'bg-blue-50 text-blue-700',
+  UnderReview: 'bg-yellow-50 text-yellow-700',
+  InProgress:  'bg-orange-50 text-orange-700',
+  Completed:   'bg-green-50 text-green-700',
+  Declined:    'bg-red-50 text-red-700',
+};
+
+const WO_STATUS_COLORS: Record<string, string> = {
+  Open:       'bg-slate-100 text-slate-600',
+  InProgress: 'bg-blue-50 text-blue-700',
+  OnHold:     'bg-yellow-50 text-yellow-700',
+  Completed:  'bg-green-50 text-green-700',
+  Cancelled:  'bg-red-50 text-red-700',
+};
+
+function MaintenancePanel({ marinaId }: { marinaId: string }) {
+  const [requests, setRequests]   = useState<MaintenanceRequestDto[]>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrderDto[]>([]);
+  const [activeTab, setActiveTab] = useState<'requests' | 'workOrders'>('requests');
+  const [showWoForm, setShowWoForm] = useState(false);
+  const [woTitle, setWoTitle]     = useState('');
+  const [woDesc, setWoDesc]       = useState('');
+  const [woPriority, setWoPriority] = useState('Medium');
+  const [linked, setLinked]       = useState('');
+
+  useEffect(() => {
+    getMarinaMaintenanceRequests(marinaId).then(setRequests).catch(() => {});
+    getMarinaWorkOrders(marinaId).then(setWorkOrders).catch(() => {});
+  }, [marinaId]);
+
+  async function advanceRequest(r: MaintenanceRequestDto) {
+    const next: Record<string, string> = {
+      Submitted: 'UnderReview', UnderReview: 'InProgress', InProgress: 'Completed',
+    };
+    if (!next[r.status]) return;
+    const updated = await updateMaintenanceRequestStatus(marinaId, r.id, { status: next[r.status], priority: r.priority });
+    setRequests((prev) => prev.map((x) => x.id === r.id ? updated : x));
+  }
+
+  async function handleCreateWo(e: React.FormEvent) {
+    e.preventDefault();
+    const wo = await createWorkOrder(marinaId, {
+      title: woTitle, description: woDesc, priority: woPriority,
+      maintenanceRequestId: linked || undefined,
+    });
+    setWorkOrders((prev) => [wo, ...prev]);
+    setShowWoForm(false); setWoTitle(''); setWoDesc(''); setWoPriority('Medium'); setLinked('');
+  }
+
+  async function advanceWorkOrder(w: WorkOrderDto) {
+    const next: Record<string, string> = {
+      Open: 'InProgress', InProgress: 'Completed',
+    };
+    if (!next[w.status]) return;
+    const updated = await updateWorkOrder(marinaId, w.id, { ...w, status: next[w.status] });
+    setWorkOrders((prev) => prev.map((x) => x.id === w.id ? updated : x));
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h2 className="text-base font-semibold text-slate-800 mb-4">Maintenance</h2>
+      <div className="flex gap-2 mb-4">
+        {(['requests', 'workOrders'] as const).map((t) => (
+          <button key={t} onClick={() => setActiveTab(t)}
+            className={`text-sm px-3 py-1 rounded-lg ${activeTab === t ? 'bg-slate-800 text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+            {t === 'requests' ? `Requests (${requests.length})` : `Work Orders (${workOrders.length})`}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'requests' && (
+        requests.length === 0
+          ? <p className="text-sm text-slate-400">No maintenance requests.</p>
+          : <div className="space-y-3">
+            {requests.map((r) => (
+              <div key={r.id} className="border border-slate-100 rounded-lg p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{r.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{r.boaterName} · {new Date(r.submittedAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] ?? ''}`}>{r.status}</span>
+                    {!['Completed','Declined'].includes(r.status) && (
+                      <button onClick={() => advanceRequest(r)} className="text-xs text-slate-400 hover:text-slate-700 underline">
+                        Advance
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">{r.description}</p>
+              </div>
+            ))}
+          </div>
+      )}
+
+      {activeTab === 'workOrders' && (
+        <div className="space-y-4">
+          <button onClick={() => setShowWoForm((v) => !v)} className={btn}>
+            {showWoForm ? 'Cancel' : 'New work order'}
+          </button>
+          {showWoForm && (
+            <form onSubmit={handleCreateWo} className="border border-slate-100 rounded-lg p-3 space-y-2">
+              <input value={woTitle} onChange={(e) => setWoTitle(e.target.value)} className={input} placeholder="Title" required />
+              <textarea value={woDesc} onChange={(e) => setWoDesc(e.target.value)} className={`${input} h-20 resize-none`} placeholder="Description" required />
+              <div className="flex gap-2">
+                <select value={woPriority} onChange={(e) => setWoPriority(e.target.value)} className={`${input} w-32`}>
+                  {['Low','Medium','High','Urgent'].map((p) => <option key={p}>{p}</option>)}
+                </select>
+                <select value={linked} onChange={(e) => setLinked(e.target.value)} className={input}>
+                  <option value="">No linked request</option>
+                  {requests.map((r) => <option key={r.id} value={r.id}>{r.title}</option>)}
+                </select>
+              </div>
+              <button type="submit" className={btn}>Create</button>
+            </form>
+          )}
+          {workOrders.length === 0
+            ? <p className="text-sm text-slate-400">No work orders.</p>
+            : workOrders.map((w) => (
+              <div key={w.id} className="border border-slate-100 rounded-lg p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{w.title}</p>
+                    {w.assignedToName && <p className="text-xs text-slate-500">{w.assignedToName}</p>}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${WO_STATUS_COLORS[w.status] ?? ''}`}>{w.status}</span>
+                    {!['Completed','Cancelled'].includes(w.status) && (
+                      <button onClick={() => advanceWorkOrder(w)} className="text-xs text-slate-400 hover:text-slate-700 underline">
+                        Advance
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {w.scheduledDate && <p className="text-xs text-slate-400 mt-1">Scheduled: {w.scheduledDate}</p>}
+              </div>
+            ))
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Announcements panel ─────────────────────────────────────────────────────
+
+function AnnouncementsPanel({ marinaId }: { marinaId: string }) {
+  const [announcements, setAnnouncements] = useState<AnnouncementDto[]>([]);
+  const [showForm, setShowForm]  = useState(false);
+  const [title, setTitle]        = useState('');
+  const [body, setBody]          = useState('');
+  const [audience, setAudience]  = useState('Both');
+  const [pinned, setPinned]      = useState(false);
+
+  useEffect(() => {
+    getMarinaAnnouncements(marinaId).then(setAnnouncements).catch(() => {});
+  }, [marinaId]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const a = await createAnnouncement(marinaId, { title, body, audience, isPinned: pinned });
+    setAnnouncements((prev) => [a, ...prev]);
+    setShowForm(false); setTitle(''); setBody(''); setAudience('Both'); setPinned(false);
+  }
+
+  async function handlePublish(a: AnnouncementDto) {
+    const updated = await publishAnnouncement(marinaId, a.id);
+    setAnnouncements((prev) => prev.map((x) => x.id === a.id ? updated : x));
+  }
+
+  async function handleDelete(a: AnnouncementDto) {
+    await deleteAnnouncement(marinaId, a.id);
+    setAnnouncements((prev) => prev.filter((x) => x.id !== a.id));
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-semibold text-slate-800">Announcements</h2>
+        <button onClick={() => setShowForm((v) => !v)} className={btn}>
+          {showForm ? 'Cancel' : 'New announcement'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="border border-slate-100 rounded-lg p-3 mb-4 space-y-2">
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className={input} placeholder="Title" required />
+          <textarea value={body} onChange={(e) => setBody(e.target.value)} className={`${input} h-24 resize-none`} placeholder="Body (Markdown supported)" required />
+          <div className="flex gap-2 flex-wrap">
+            <select value={audience} onChange={(e) => setAudience(e.target.value)} className={`${input} w-40`}>
+              <option value="Both">Both</option>
+              <option value="Customers">Customers</option>
+              <option value="IncomingBoaters">Incoming Boaters</option>
+            </select>
+            <label className="flex items-center gap-1 text-sm text-slate-600">
+              <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} /> Pin
+            </label>
+          </div>
+          <button type="submit" className={btn}>Save as draft</button>
+        </form>
+      )}
+
+      {announcements.length === 0
+        ? <p className="text-sm text-slate-400">No announcements yet.</p>
+        : <div className="space-y-3">
+          {announcements.map((a) => (
+            <div key={a.id} className="border border-slate-100 rounded-lg p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  {a.isPinned && <span className="text-xs text-slate-400 mr-1">📌</span>}
+                  <span className="text-sm font-medium text-slate-800">{a.title}</span>
+                  <span className="ml-2 text-xs text-slate-400">{a.audience}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {a.publishedAt
+                    ? <span className="text-xs text-green-600">Published</span>
+                    : <button onClick={() => handlePublish(a)} className="text-xs text-blue-600 hover:underline">Publish</button>
+                  }
+                  <button onClick={() => handleDelete(a)} className="text-xs text-red-400 hover:underline">Delete</button>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{a.body}</p>
+            </div>
+          ))}
+        </div>
+      }
     </div>
   );
 }

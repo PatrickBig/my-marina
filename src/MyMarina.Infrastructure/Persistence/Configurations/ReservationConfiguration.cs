@@ -49,6 +49,6 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
         builder.HasIndex(r => new { r.SlipId, r.ArrivesAt });
         builder.HasIndex(r => r.AvailabilityWindowId);
         builder.HasIndex(r => r.Status)
-               .HasFilter("status IN ('PendingApproval','PendingHostMarinaApproval','Confirmed')");
+               .HasFilter("\"Status\" IN ('PendingApproval','PendingHostMarinaApproval','Confirmed')");
     }
 }

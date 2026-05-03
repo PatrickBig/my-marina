@@ -208,14 +208,14 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 12 — Maintenance & Announcements
+### Phase 12 — Maintenance & Announcements ✅
 
 *Marina–customer communication.*
 
-- [ ] `MaintenanceRequest` CRUD (boater submits, marina triages)
-- [ ] `WorkOrder` CRUD (marina internal; optionally linked to a request)
-- [ ] `Announcement` CRUD (marina publishes, customers + incoming boaters see)
-- [ ] Boater portal: submit/view requests; view announcements feed
+- [x] `MaintenanceRequest` CRUD (boater submits, marina triages)
+- [x] `WorkOrder` CRUD (marina internal; optionally linked to a request)
+- [x] `Announcement` CRUD (marina publishes, customers + incoming boaters see)
+- [x] Boater portal: submit/view requests; view announcements feed
 
 **Deliverable:** Boaters report problems; marinas track and resolve. Marinas post news; boaters see it.
 

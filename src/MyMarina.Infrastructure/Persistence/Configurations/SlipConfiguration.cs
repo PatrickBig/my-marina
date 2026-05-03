@@ -31,6 +31,6 @@ public class SlipConfiguration : IEntityTypeConfiguration<Slip>
         builder.Property(s => s.Notes).HasMaxLength(2000);
 
         builder.HasIndex(s => s.MarinaId);
-        builder.HasIndex(s => s.DockId).HasFilter("dock_id IS NOT NULL");
+        builder.HasIndex(s => s.DockId).HasFilter("\"DockId\" IS NOT NULL");
     }
 }

@@ -20,6 +20,7 @@ export function NavBar() {
     { href: '/trips', label: 'My Trips' },
     { href: '/my-slips', label: 'My Slips' },
     { href: '/invoices', label: 'My Invoices' },
+    { href: '/maintenance', label: 'Maintenance' },
     { href: '/boats', label: 'My Boats' },
     { href: '/profile', label: 'Profile' },
   ];
