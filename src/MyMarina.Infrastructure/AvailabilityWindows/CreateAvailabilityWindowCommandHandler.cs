@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.AvailabilityWindows;
 using MyMarina.Domain.Entities;
+using MyMarina.Domain.Enums;
 using MyMarina.Domain.ValueObjects;
 using MyMarina.Infrastructure.Persistence;
 
@@ -19,7 +20,7 @@ public class CreateAvailabilityWindowCommandHandler(AppDbContext db)
             .FirstOrDefaultAsync(s => s.Id == command.SlipId && s.MarinaId == command.MarinaId, ct)
             ?? throw new KeyNotFoundException($"Slip {command.SlipId} not found.");
 
-        // Non-overlap enforcement — no two Open/Paused windows may share dates on the same slip
+        // Non-overlap enforcement
         var existing = await db.AvailabilityWindows
             .Where(w => w.SlipId == command.SlipId)
             .ToListAsync(ct);
@@ -32,11 +33,50 @@ public class CreateAvailabilityWindowCommandHandler(AppDbContext db)
                 $"Slip {slip.Name} already has a listing window overlapping the requested dates " +
                 $"({overlap.StartsAt:d} – {overlap.EndsAt:d}).");
 
-        // Default revenue split: 100% to the slip owner (the marina)
-        var revenueSplit = new List<RevenueSplitEntry>
+        List<RevenueSplitEntry> revenueSplit;
+
+        if (command.ListedByKind == ListedByKind.OwnerForHolder)
         {
-            new() { PayeeKind = "SlipOwner", PayeeId = command.MarinaId, Percent = 1.0m },
-        };
+            // Marina lists during the holder's recorded absence
+            if (command.RelatedAssignmentId is null)
+                throw new InvalidOperationException("RelatedAssignmentId is required for OwnerForHolder windows.");
+
+            var assignment = await db.SlipAssignments
+                .FirstOrDefaultAsync(a => a.Id == command.RelatedAssignmentId && a.SlipId == command.SlipId, ct)
+                ?? throw new KeyNotFoundException($"Slip assignment {command.RelatedAssignmentId} not found.");
+
+            if (!assignment.AllowOwnerSubletWhenAway)
+                throw new InvalidOperationException(
+                    "The holder's lease does not permit the marina to sublet during absences.");
+
+            var windowStart = DateOnly.FromDateTime(command.StartsAt.DateTime);
+            var windowEnd   = DateOnly.FromDateTime(command.EndsAt.DateTime);
+
+            var hasAbsence = await db.OwnerAbsences
+                .AnyAsync(a =>
+                    a.SlipAssignmentId == command.RelatedAssignmentId &&
+                    a.StartsOn <= windowStart &&
+                    a.EndsOn   >= windowEnd, ct);
+
+            if (!hasAbsence)
+                throw new InvalidOperationException(
+                    "No owner absence covers the requested window dates. " +
+                    "The holder must first mark themselves away for this period.");
+
+            revenueSplit =
+            [
+                new() { PayeeKind = "SlipOwner", PayeeId = command.MarinaId,                Percent = 1m - assignment.OwnerSubletShareToHolder },
+                new() { PayeeKind = "Holder",    PayeeId = assignment.BillingAccountId,     Percent = assignment.OwnerSubletShareToHolder },
+            ];
+        }
+        else
+        {
+            // ListedByKind.Owner — 100% to the slip owner (the marina)
+            revenueSplit =
+            [
+                new() { PayeeKind = "SlipOwner", PayeeId = command.MarinaId, Percent = 1.0m },
+            ];
+        }
 
         var window = new AvailabilityWindow
         {

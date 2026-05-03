@@ -591,3 +591,67 @@ export const cancelReservation = (id: string) =>
 
 export const markNoShow = (marinaId: string, id: string) =>
   apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/no-show`).then((r) => r.data);
+
+// ─── Sublet / Owner Absences ──────────────────────────────────────────────────
+
+export interface MySlipAssignmentDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  slipType: string;
+  marinaId: string;
+  marinaName: string;
+  billingAccountId: string;
+  vesselId: string;
+  vesselName: string;
+  assignmentType: string;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowHolderSublet: boolean;
+  allowOwnerSubletWhenAway: boolean;
+  isActive: boolean;
+}
+
+export interface OwnerAbsenceDto {
+  id: string;
+  slipAssignmentId: string;
+  slipId: string;
+  slipName: string;
+  startsOn: string;
+  endsOn: string;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateSubletWindowData {
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export const getMySlipAssignments = () =>
+  apiClient.get<MySlipAssignmentDto[]>('/me/slip-assignments').then((r) => r.data);
+
+export const getAssignmentAbsences = (assignmentId: string) =>
+  apiClient.get<OwnerAbsenceDto[]>(`/slip-assignments/${assignmentId}/absences`).then((r) => r.data);
+
+export const createOwnerAbsence = (assignmentId: string, data: { startsOn: string; endsOn: string; notes?: string | null }) =>
+  apiClient.post<OwnerAbsenceDto>(`/slip-assignments/${assignmentId}/away`, data).then((r) => r.data);
+
+export const deleteOwnerAbsence = (assignmentId: string, absenceId: string) =>
+  apiClient.delete(`/slip-assignments/${assignmentId}/absences/${absenceId}`);
+
+export const createSubletWindow = (assignmentId: string, data: CreateSubletWindowData) =>
+  apiClient.post<AvailabilityWindowDto>(`/slip-assignments/${assignmentId}/sublet-window`, data).then((r) => r.data);
+
+export const getMarinaAbsences = (marinaId: string, slipId?: string) =>
+  apiClient.get<OwnerAbsenceDto[]>(`/marinas/${marinaId}/absences`, {
+    params: slipId ? { slipId } : undefined,
+  }).then((r) => r.data);

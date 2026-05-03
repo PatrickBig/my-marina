@@ -178,15 +178,15 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 10 — Sublet Flows
+### Phase 10 — Sublet Flows ✅
 
 *Marinas and boaters can sublet leased slips.*
 
-- [ ] "I'm away" UI + endpoint (`POST /slip-assignments/{id}/away`)
-- [ ] Holder-initiated sublet listing (`AvailabilityWindow` with `ListedByKind = Holder`)
-- [ ] Owner-initiated sublet listing (`ListedByKind = OwnerForHolder`) tied to a holder's "away" entry
-- [ ] `RevenueSplit` snapshot on sublet windows (using lease policy fields)
-- [ ] Lease policy enforcement in availability-window creation
+- [x] "I'm away" UI + endpoint (`POST /slip-assignments/{id}/away`)
+- [x] Holder-initiated sublet listing (`AvailabilityWindow` with `ListedByKind = Holder`)
+- [x] Owner-initiated sublet listing (`ListedByKind = OwnerForHolder`) tied to a holder's "away" entry
+- [x] `RevenueSplit` snapshot on sublet windows (using lease policy fields)
+- [x] Lease policy enforcement in availability-window creation
 
 **Deliverable:** A long-term tenant can mark themselves away and either list it themselves or have the marina list it on their behalf, with revenue split per the lease.
 

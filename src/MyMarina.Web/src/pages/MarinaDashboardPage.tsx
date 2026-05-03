@@ -8,9 +8,11 @@ import {
   getBillingAccounts, getVesselRecords, getSlipAssignments, createSlipAssignment, endSlipAssignment,
   getAvailabilityWindows, createAvailabilityWindow, setAvailabilityWindowStatus,
   getMarinaReservations, approveReservation, declineReservation, markNoShow,
+  getMarinaAbsences,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
   type AvailabilityWindowDto, type AvailabilityWindowStatus, type ReservationDto,
+  type OwnerAbsenceDto,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -727,6 +729,160 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
   );
 }
 
+// ─── Sublet panel ────────────────────────────────────────────────────────────
+
+function SubletPanel({ marinaId }: { marinaId: string }) {
+  const [absences, setAbsences] = useState<OwnerAbsenceDto[]>([]);
+  const [assignments, setAssignments] = useState<SlipAssignmentDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showFormFor, setShowFormFor] = useState<string | null>(null); // absenceId
+  const [formState, setFormState] = useState({
+    startsAt: '', endsAt: '', basePricePerNight: '', cleaningFee: '', instantBook: true,
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      getMarinaAbsences(marinaId),
+      getSlipAssignments(marinaId, { activeOnly: true }),
+    ]).then(([abs, asgn]) => {
+      setAbsences(abs);
+      setAssignments(asgn.filter((a) => a.allowOwnerSubletWhenAway));
+    }).finally(() => setLoading(false));
+  }, [marinaId]);
+
+  // Build a lookup: absenceId → assignment
+  const assignmentBySlipId = Object.fromEntries(assignments.map((a) => [a.slipId, a]));
+
+  async function handleCreateSubletWindow(absence: OwnerAbsenceDto) {
+    setError(null);
+    setSaving(true);
+    const assignment = assignmentBySlipId[absence.slipId];
+    if (!assignment) { setError('Could not find matching assignment.'); setSaving(false); return; }
+    try {
+      await createAvailabilityWindow(marinaId, {
+        slipId:            absence.slipId,
+        listedByKind:      'OwnerForHolder',
+        listedByMarinaId:  marinaId,
+        relatedAssignmentId: assignment.id,
+        startsAt:          new Date(formState.startsAt).toISOString(),
+        endsAt:            new Date(formState.endsAt).toISOString(),
+        instantBook:       formState.instantBook,
+        basePricePerNight: Number(formState.basePricePerNight),
+        cleaningFee:       formState.cleaningFee ? Number(formState.cleaningFee) : null,
+      });
+      setShowFormFor(null);
+      setFormState({ startsAt: '', endsAt: '', basePricePerNight: '', cleaningFee: '', instantBook: true });
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? 'Could not create listing.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h2 className="text-base font-semibold text-slate-800 mb-4">Holder Absences & Sublet Opportunities</h2>
+
+      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+
+      {!loading && absences.length === 0 && (
+        <p className="text-sm text-slate-400">No holder absences reported yet.</p>
+      )}
+
+      {!loading && absences.length > 0 && (
+        <ul className="divide-y divide-slate-100">
+          {absences.map((a) => {
+            const asgn = assignmentBySlipId[a.slipId];
+            const canSublet = !!asgn;
+            return (
+              <li key={a.id} className="py-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">
+                      {a.slipName}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Away {a.startsOn} – {a.endsOn}
+                      {a.notes && ` · ${a.notes}`}
+                    </p>
+                    {!canSublet && (
+                      <p className="text-xs text-amber-600 mt-0.5">Lease does not permit sublet</p>
+                    )}
+                  </div>
+                  {canSublet && showFormFor !== a.id && (
+                    <button
+                      onClick={() => { setShowFormFor(a.id); setError(null); }}
+                      className="text-xs text-emerald-600 hover:text-emerald-800 underline mt-1"
+                    >
+                      + Create sublet listing
+                    </button>
+                  )}
+                </div>
+
+                {showFormFor === a.id && (
+                  <div className="mt-3 bg-slate-50 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-slate-700">
+                      Sublet listing for {a.slipName}
+                      <span className="font-normal text-slate-400 ml-1">
+                        (holder gets {((asgn.ownerSubletShareToHolder ?? 0) * 100).toFixed(0)}% of revenue)
+                      </span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Start</label>
+                        <input type="date" value={formState.startsAt}
+                          onChange={(e) => setFormState({ ...formState, startsAt: e.target.value })}
+                          className={input} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">End</label>
+                        <input type="date" value={formState.endsAt}
+                          onChange={(e) => setFormState({ ...formState, endsAt: e.target.value })}
+                          className={input} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Price/night ($)</label>
+                        <input type="number" step="0.01" min="0.01" value={formState.basePricePerNight}
+                          onChange={(e) => setFormState({ ...formState, basePricePerNight: e.target.value })}
+                          className={input} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Cleaning fee ($)</label>
+                        <input type="number" step="0.01" min="0" value={formState.cleaningFee}
+                          onChange={(e) => setFormState({ ...formState, cleaningFee: e.target.value })}
+                          className={input} />
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-2 text-xs text-slate-600">
+                      <input type="checkbox" checked={formState.instantBook}
+                        onChange={(e) => setFormState({ ...formState, instantBook: e.target.checked })} />
+                      Instant book
+                    </label>
+                    {error && <p className="text-xs text-red-600">{error}</p>}
+                    <div className="flex gap-2">
+                      <button onClick={() => handleCreateSubletWindow(a)} disabled={saving}
+                        className="rounded-lg bg-emerald-700 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-800 disabled:opacity-50">
+                        {saving ? 'Creating…' : 'Create listing'}
+                      </button>
+                      <button onClick={() => { setShowFormFor(null); setError(null); }}
+                        className={btnSecondary}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ─── Inbox panel ─────────────────────────────────────────────────────────────
 
 const INBOX_STATUS_BADGE: Record<string, string> = {
@@ -1016,6 +1172,7 @@ export function MarinaDashboardPage() {
         <SlipsPanel marinaId={marinaId} />
         <AssignmentsPanel marinaId={marinaId} />
         <ListingsPanel marinaId={marinaId} />
+        <SubletPanel marinaId={marinaId} />
         <InboxPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
