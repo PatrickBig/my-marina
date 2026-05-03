@@ -9,10 +9,11 @@ import {
   getAvailabilityWindows, createAvailabilityWindow, setAvailabilityWindowStatus,
   getMarinaReservations, approveReservation, declineReservation, markNoShow,
   getMarinaAbsences,
+  getMarinaInvoices, createInvoice, sendInvoice, voidInvoice, recordPayment,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
   type AvailabilityWindowDto, type AvailabilityWindowStatus, type ReservationDto,
-  type OwnerAbsenceDto,
+  type OwnerAbsenceDto, type InvoiceSummaryDto,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 
@@ -1140,6 +1141,299 @@ function StaffPanel({ marinaId }: { marinaId: string }) {
   );
 }
 
+// ─── Invoicing panel ─────────────────────────────────────────────────────────
+
+const INV_STATUS_BADGE: Record<string, string> = {
+  Draft:         'bg-slate-100 text-slate-500',
+  Sent:          'bg-blue-50 text-blue-700',
+  PartiallyPaid: 'bg-amber-50 text-amber-700',
+  Paid:          'bg-emerald-50 text-emerald-700',
+  Overdue:       'bg-red-50 text-red-700',
+  Voided:        'bg-slate-100 text-slate-400',
+};
+
+function fmtDateOnly(d: string) {
+  const [y, m, day] = d.split('-');
+  return new Date(Number(y), Number(m) - 1, Number(day)).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+}
+
+function InvoicingPanel({ marinaId }: { marinaId: string }) {
+  const [invoices, setInvoices] = useState<InvoiceSummaryDto[]>([]);
+  const [accounts, setAccounts] = useState<BillingAccountDto[]>([]);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [form, setForm] = useState({
+    billingAccountId: '', issuedDate: '', dueDate: '', taxAmount: '0', notes: '',
+    lineDesc: '', lineQty: '1', lineUnit: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  // Payment form
+  const [payingFor, setPayingFor] = useState<string | null>(null);
+  const [payForm, setPayForm] = useState({ amount: '', paidOn: '', method: 'Cash', referenceNumber: '', notes: '' });
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  useEffect(() => { getBillingAccounts(marinaId).then(setAccounts); }, [marinaId]);
+
+  useEffect(() => {
+    setLoading(true);
+    getMarinaInvoices(marinaId, statusFilter ? { status: statusFilter } : undefined)
+      .then(setInvoices)
+      .finally(() => setLoading(false));
+  }, [marinaId, statusFilter]);
+
+  async function handleCreate() {
+    if (!form.billingAccountId || !form.issuedDate || !form.dueDate || !form.lineDesc || !form.lineUnit) {
+      setCreateError('Billing account, dates, and at least one line item are required.');
+      return;
+    }
+    setCreateError(null);
+    setCreating(true);
+    try {
+      const inv = await createInvoice(marinaId, {
+        billingAccountId: form.billingAccountId,
+        issuedDate: form.issuedDate,
+        dueDate: form.dueDate,
+        taxAmount: Number(form.taxAmount) || 0,
+        notes: form.notes || null,
+        lineItems: [{
+          description: form.lineDesc,
+          quantity: Number(form.lineQty) || 1,
+          unitPrice: Number(form.lineUnit),
+        }],
+      });
+      setInvoices((prev) => [inv, ...prev]);
+      setShowCreateForm(false);
+      setForm({ billingAccountId: '', issuedDate: '', dueDate: '', taxAmount: '0', notes: '', lineDesc: '', lineQty: '1', lineUnit: '' });
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setCreateError(msg ?? 'Could not create invoice.');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleSend(invoiceId: string) {
+    if (!window.confirm('Send this invoice to the billing account?')) return;
+    await sendInvoice(marinaId, invoiceId);
+    setInvoices((prev) => prev.map((i) => i.id === invoiceId ? { ...i, status: 'Sent' } : i));
+  }
+
+  async function handleVoid(invoiceId: string) {
+    if (!window.confirm('Void this invoice? This cannot be undone.')) return;
+    await voidInvoice(marinaId, invoiceId);
+    setInvoices((prev) => prev.map((i) => i.id === invoiceId ? { ...i, status: 'Voided' } : i));
+  }
+
+  async function handleRecordPayment() {
+    if (!payingFor || !payForm.amount || !payForm.paidOn) { setPayError('Amount and date are required.'); return; }
+    setPayError(null);
+    setPaying(true);
+    try {
+      await recordPayment(marinaId, payingFor, {
+        amount: Number(payForm.amount),
+        paidOn: payForm.paidOn,
+        method: payForm.method,
+        referenceNumber: payForm.referenceNumber || null,
+        notes: payForm.notes || null,
+      });
+      // Refresh invoices to get updated amountPaid / status
+      const updated = await getMarinaInvoices(marinaId, statusFilter ? { status: statusFilter } : undefined);
+      setInvoices(updated);
+      setPayingFor(null);
+      setPayForm({ amount: '', paidOn: '', method: 'Cash', referenceNumber: '', notes: '' });
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setPayError(msg ?? 'Could not record payment.');
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-base font-semibold text-slate-800">Invoices</h2>
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-600 bg-white"
+          >
+            <option value="">All statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Sent">Sent</option>
+            <option value="PartiallyPaid">Partially paid</option>
+            <option value="Paid">Paid</option>
+            <option value="Overdue">Overdue</option>
+            <option value="Voided">Voided</option>
+          </select>
+          <button onClick={() => setShowCreateForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+            + New invoice
+          </button>
+        </div>
+      </div>
+
+      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+
+      {!loading && invoices.length === 0 && !showCreateForm && (
+        <p className="text-sm text-slate-400">No invoices found.</p>
+      )}
+
+      {!loading && (
+        <ul className="divide-y divide-slate-100">
+          {invoices.map((inv) => (
+            <li key={inv.id} className="py-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-slate-800">{inv.invoiceNumber}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${INV_STATUS_BADGE[inv.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                      {inv.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">{inv.billingAccountName}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Issued {fmtDateOnly(inv.issuedDate)} · Due {fmtDateOnly(inv.dueDate)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-slate-800">
+                    ${inv.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  {inv.balanceDue > 0 && inv.status !== 'Voided' && (
+                    <p className="text-xs text-slate-500">
+                      Balance: ${inv.balanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-2 flex gap-3">
+                {inv.status === 'Draft' && (
+                  <button onClick={() => handleSend(inv.id)} className="text-xs text-blue-600 hover:text-blue-800 underline">Send</button>
+                )}
+                {['Sent', 'PartiallyPaid', 'Overdue'].includes(inv.status) && (
+                  <button onClick={() => { setPayingFor(inv.id); setPayError(null); }} className="text-xs text-emerald-600 hover:text-emerald-800 underline">
+                    Record payment
+                  </button>
+                )}
+                {!['Paid', 'PartiallyPaid', 'Voided'].includes(inv.status) && (
+                  <button onClick={() => handleVoid(inv.id)} className="text-xs text-red-500 hover:text-red-700 underline">Void</button>
+                )}
+              </div>
+
+              {/* Payment form */}
+              {payingFor === inv.id && (
+                <div className="mt-3 bg-slate-50 rounded-lg p-3 space-y-2">
+                  <p className="text-xs font-medium text-slate-700">Record payment for {inv.invoiceNumber}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Amount ($)</label>
+                      <input type="number" step="0.01" min="0.01"
+                        value={payForm.amount}
+                        onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
+                        className={input} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                      <input type="date"
+                        value={payForm.paidOn}
+                        onChange={(e) => setPayForm({ ...payForm, paidOn: e.target.value })}
+                        className={input} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Method</label>
+                      <select value={payForm.method} onChange={(e) => setPayForm({ ...payForm, method: e.target.value })} className={`${input} bg-white`}>
+                        <option>Cash</option>
+                        <option>Check</option>
+                        <option>CreditCard</option>
+                        <option>BankTransfer</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Reference # (optional)</label>
+                      <input type="text" value={payForm.referenceNumber}
+                        onChange={(e) => setPayForm({ ...payForm, referenceNumber: e.target.value })}
+                        className={input} />
+                    </div>
+                  </div>
+                  {payError && <p className="text-xs text-red-600">{payError}</p>}
+                  <div className="flex gap-2">
+                    <button onClick={handleRecordPayment} disabled={paying}
+                      className="rounded-lg bg-emerald-700 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-800 disabled:opacity-50">
+                      {paying ? 'Saving…' : 'Record payment'}
+                    </button>
+                    <button onClick={() => { setPayingFor(null); setPayError(null); }} className={btnSecondary}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Create invoice form */}
+      {showCreateForm && (
+        <div className="mt-4 border-t border-slate-100 pt-4 space-y-3">
+          <h3 className="text-sm font-medium text-slate-700">New invoice</h3>
+          <Field label="Billing account">
+            <select value={form.billingAccountId} onChange={(e) => setForm({ ...form, billingAccountId: e.target.value })} className={`${input} bg-white`}>
+              <option value="">— select account —</option>
+              {accounts.map((a) => <option key={a.id} value={a.id}>{a.displayName}</option>)}
+            </select>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Issue date">
+              <input type="date" value={form.issuedDate} onChange={(e) => setForm({ ...form, issuedDate: e.target.value })} className={input} />
+            </Field>
+            <Field label="Due date">
+              <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className={input} />
+            </Field>
+          </div>
+          <p className="text-xs font-medium text-slate-600 mt-1">Line item</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-3 sm:col-span-1">
+              <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+              <input type="text" value={form.lineDesc} onChange={(e) => setForm({ ...form, lineDesc: e.target.value })} placeholder="Monthly slip fee" className={input} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Qty</label>
+              <input type="number" step="1" min="1" value={form.lineQty} onChange={(e) => setForm({ ...form, lineQty: e.target.value })} className={input} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Unit price ($)</label>
+              <input type="number" step="0.01" min="0.01" value={form.lineUnit} onChange={(e) => setForm({ ...form, lineUnit: e.target.value })} className={input} />
+            </div>
+          </div>
+          <Field label="Tax amount ($)">
+            <input type="number" step="0.01" min="0" value={form.taxAmount} onChange={(e) => setForm({ ...form, taxAmount: e.target.value })} className={input} />
+          </Field>
+          <Field label="Notes (optional)">
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={`${input} resize-none`} />
+          </Field>
+          {createError && <p className="text-xs text-red-600">{createError}</p>}
+          <div className="flex gap-2">
+            <button onClick={handleCreate} disabled={creating} className={btn}>
+              {creating ? 'Creating…' : 'Create invoice'}
+            </button>
+            <button onClick={() => { setShowCreateForm(false); setCreateError(null); }} className={btnSecondary}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function MarinaDashboardPage() {
@@ -1174,6 +1468,7 @@ export function MarinaDashboardPage() {
         <ListingsPanel marinaId={marinaId} />
         <SubletPanel marinaId={marinaId} />
         <InboxPanel marinaId={marinaId} />
+        <InvoicingPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
     </div>

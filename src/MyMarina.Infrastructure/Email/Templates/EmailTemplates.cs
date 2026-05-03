@@ -155,6 +155,26 @@ internal static class EmailTemplates
         </html>
         """;
 
+    public static string InvoiceSent(
+        string toEmail, string marinaName, string billingAccountName,
+        string invoiceNumber, decimal totalAmount, DateOnly dueDate,
+        Guid invoiceId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Invoice {HtmlEncode(invoiceNumber)} from {HtmlEncode(marinaName)}</h2>
+          <p>Hi {HtmlEncode(billingAccountName)},</p>
+          <p><strong>{HtmlEncode(marinaName)}</strong> has sent you invoice <strong>{HtmlEncode(invoiceNumber)}</strong>.</p>
+          <p>Amount due: <strong>${totalAmount:N2}</strong></p>
+          <p>Due date: <strong>{dueDate:MMMM d, yyyy}</strong></p>
+          <p>Please contact your marina to arrange payment.</p>
+          <p style="color: #666; font-size: 13px;">Invoice ID: {invoiceId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
     private static string HtmlEncode(string value) =>
         System.Net.WebUtility.HtmlEncode(value);
 }

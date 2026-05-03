@@ -72,4 +72,14 @@ public interface IEmailService
         DateTimeOffset departsAt,
         Guid reservationId,
         CancellationToken ct = default);
+
+    Task SendInvoiceSentAsync(
+        string toEmail,
+        string marinaName,
+        string billingAccountName,
+        string invoiceNumber,
+        decimal totalAmount,
+        DateOnly dueDate,
+        Guid invoiceId,
+        CancellationToken ct = default);
 }

@@ -96,6 +96,9 @@ public static class InfrastructureServiceExtensions
         if (registerHangfireServer)
             services.AddHangfireServer();
 
+        // --- Hangfire jobs ---
+        services.AddScoped<Invoicing.InvoiceOverdueJob>();
+
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();
 

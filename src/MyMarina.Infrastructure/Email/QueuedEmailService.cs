@@ -80,4 +80,13 @@ public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
         var body = EmailTemplates.ReservationCancelled(toEmail, slipName, marinaName, arrivesAt, departsAt, reservationId);
         return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendInvoiceSentAsync(string toEmail, string marinaName, string billingAccountName,
+        string invoiceNumber, decimal totalAmount, DateOnly dueDate,
+        Guid invoiceId, CancellationToken ct = default)
+    {
+        var subject = $"Invoice {invoiceNumber} from {marinaName}";
+        var body = EmailTemplates.InvoiceSent(toEmail, marinaName, billingAccountName, invoiceNumber, totalAmount, dueDate, invoiceId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
 }

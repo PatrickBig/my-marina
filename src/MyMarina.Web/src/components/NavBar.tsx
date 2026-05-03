@@ -19,6 +19,7 @@ export function NavBar() {
     { href: '/search', label: 'Find a slip' },
     { href: '/trips', label: 'My Trips' },
     { href: '/my-slips', label: 'My Slips' },
+    { href: '/invoices', label: 'My Invoices' },
     { href: '/boats', label: 'My Boats' },
     { href: '/profile', label: 'Profile' },
   ];

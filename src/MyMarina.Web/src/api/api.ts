@@ -655,3 +655,108 @@ export const getMarinaAbsences = (marinaId: string, slipId?: string) =>
   apiClient.get<OwnerAbsenceDto[]>(`/marinas/${marinaId}/absences`, {
     params: slipId ? { slipId } : undefined,
   }).then((r) => r.data);
+
+// ─── Invoicing ────────────────────────────────────────────────────────────────
+
+export interface InvoiceLineItemDto {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  slipAssignmentId?: string | null;
+  reservationId?: string | null;
+}
+
+export interface PaymentDto {
+  id: string;
+  amount: number;
+  paidOn: string;
+  method: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface InvoiceDto {
+  id: string;
+  marinaId: string;
+  marinaName: string;
+  billingAccountId: string;
+  billingAccountName: string;
+  reservationId?: string | null;
+  slipAssignmentId?: string | null;
+  invoiceNumber: string;
+  status: string;
+  issuedDate: string;
+  dueDate: string;
+  subTotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+  notes?: string | null;
+  createdAt: string;
+  lineItems: InvoiceLineItemDto[];
+  payments: PaymentDto[];
+}
+
+export interface InvoiceSummaryDto {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  billingAccountName: string;
+  issuedDate: string;
+  dueDate: string;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+}
+
+export interface CreateInvoiceLineItemData {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  slipAssignmentId?: string | null;
+  reservationId?: string | null;
+}
+
+export interface CreateInvoiceData {
+  billingAccountId: string;
+  reservationId?: string | null;
+  slipAssignmentId?: string | null;
+  issuedDate: string;
+  dueDate: string;
+  taxAmount: number;
+  notes?: string | null;
+  lineItems: CreateInvoiceLineItemData[];
+}
+
+export interface RecordPaymentData {
+  amount: number;
+  paidOn: string;
+  method: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
+}
+
+export const getMarinaInvoices = (marinaId: string, params?: { status?: string; billingAccountId?: string }) =>
+  apiClient.get<InvoiceSummaryDto[]>(`/marinas/${marinaId}/invoices`, { params }).then((r) => r.data);
+
+export const getMarinaInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.get<InvoiceDto>(`/marinas/${marinaId}/invoices/${invoiceId}`).then((r) => r.data);
+
+export const createInvoice = (marinaId: string, data: CreateInvoiceData) =>
+  apiClient.post<InvoiceDto>(`/marinas/${marinaId}/invoices`, data).then((r) => r.data);
+
+export const sendInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.post(`/marinas/${marinaId}/invoices/${invoiceId}/send`);
+
+export const voidInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.post(`/marinas/${marinaId}/invoices/${invoiceId}/void`);
+
+export const recordPayment = (marinaId: string, invoiceId: string, data: RecordPaymentData) =>
+  apiClient.post<PaymentDto>(`/marinas/${marinaId}/invoices/${invoiceId}/payments`, data).then((r) => r.data);
+
+export const getMyInvoices = () =>
+  apiClient.get<InvoiceSummaryDto[]>('/me/invoices').then((r) => r.data);

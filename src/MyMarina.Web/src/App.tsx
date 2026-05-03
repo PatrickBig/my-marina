@@ -2,6 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { MyBoatsPage } from '@/pages/MyBoatsPage';
+import { MyInvoicesPage } from '@/pages/MyInvoicesPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
@@ -24,6 +25,7 @@ export function App() {
   if (!isAuthenticated()) return <LoginPage />;
   if (path === '/trips') return <MyTripsPage />;
   if (path === '/my-slips') return <MySlipsPage />;
+  if (path === '/invoices') return <MyInvoicesPage />;
   if (path === '/boats') return <MyBoatsPage />;
   if (path === '/profile') return <ProfilePage />;
   if (path === '/marina/new') return <MarinaOnboardingPage />;

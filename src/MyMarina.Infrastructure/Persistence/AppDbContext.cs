@@ -22,6 +22,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<AvailabilityWindow> AvailabilityWindows => Set<AvailabilityWindow>();
     public DbSet<OwnerAbsence> OwnerAbsences => Set<OwnerAbsence>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

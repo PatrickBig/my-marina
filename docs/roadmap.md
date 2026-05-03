@@ -192,16 +192,17 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 11 — Invoicing & Payments (Manual)
+### Phase 11 — Invoicing & Payments (Manual) ✅
 
 *Marinas bill, customers pay (off-platform).*
 
-- [ ] `Invoice` CRUD (carry over from v0; updated to use `BillingAccountId` and optional `ReservationId`)
-- [ ] `InvoiceLineItem` and `Payment` (manual recording: cash, check, card, etc.)
-- [ ] Sequential invoice number per marina
-- [ ] Overdue auto-flagging (Hangfire recurring job)
-- [ ] Customer portal: "My Invoices" — view, history, balance
-- [ ] Marina invoice list, detail, void, partial payment
+- [x] `Invoice` CRUD (updated to use `BillingAccountId` and optional `ReservationId`)
+- [x] `InvoiceLineItem` and `Payment` (manual recording: cash, check, card, etc.)
+- [x] Sequential invoice number per marina
+- [x] Overdue auto-flagging (Hangfire recurring job — daily at 2 AM UTC, bulk-updates Sent→Overdue)
+- [x] Customer portal: "My Invoices" — view, history, balance
+- [x] Marina invoice list, detail, void, partial payment
+- [x] Email notification on invoice send
 
 **Deliverable:** A marina can issue invoices linked to assignments or reservations. A customer can see invoices and payment history. Money still moves off-platform.
 

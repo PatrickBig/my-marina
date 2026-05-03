@@ -71,4 +71,12 @@ public sealed class NullEmailService(ILogger<NullEmailService> logger) : IEmailS
         logger.LogDebug("NullEmailService: reservation cancelled to {Email} for slip {Slip} suppressed", toEmail, slipName);
         return Task.CompletedTask;
     }
+
+    public Task SendInvoiceSentAsync(string toEmail, string marinaName, string billingAccountName,
+        string invoiceNumber, decimal totalAmount, DateOnly dueDate,
+        Guid invoiceId, CancellationToken ct = default)
+    {
+        logger.LogDebug("NullEmailService: invoice {InvoiceNumber} sent to {Email} suppressed", invoiceNumber, toEmail);
+        return Task.CompletedTask;
+    }
 }

@@ -196,6 +196,12 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     Authorization = [new MyMarina.Api.Infrastructure.HangfireAuthFilter()]
 });
 
+// --- Hangfire recurring jobs ---
+RecurringJob.AddOrUpdate<MyMarina.Infrastructure.Invoicing.InvoiceOverdueJob>(
+    "invoice-overdue-check",
+    job => job.CheckOverdueAsync(),
+    Cron.Daily(2));
+
 app.Run();
 
 public partial class Program;
