@@ -9,8 +9,7 @@
       "Bash(xargs grep *)",
       "Bash(openspec list *)",
       "Bash(helm template *)",
-      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")",
-      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\patri\\\\source\\\\repos\\\\my-marina\\\\src\\\\MyMarina.Domain\\\\Enums\\\\\" | Select-Object Name, @{Name='Type';Expression={if\\($_.PSIsContainer\\){'Directory'}else{'File'}}})"
+      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")"
     ]
   }
 }

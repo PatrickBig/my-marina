@@ -56,6 +56,8 @@ Next: Phase 0 — Hard reset: strip out v0 code that conflicts with the new mode
 
 - **Social login:** `Microsoft.AspNetCore.Authentication.Google` / `.Apple` / `.Facebook` via standard external-login flow into Identity. `MapIdentityApi<T>()` is **intentionally rejected** — it cannot carry custom claims, cannot extend to social login, and cannot hook post-signup workflows. See `docs/auth-and-permissions.md` → "Why custom JWT issuance."
 
+- **Built to scale:** MANDATORY: Consider best practices when creating database queries. Consider how large tables could potentially get with a million+ user system. Write performant queries against the database and enable response caching when it makes sense.
+
 - **Demo tenant:** A single `Tenant.IsDemo = true` static tenant seeded by `DemoSeedScript.SeedAsync`. The `WriteAccess` authorization policy decorator blocks all non-GET endpoints when `IUserContext.IsDemo = true` (returns 403). Demo listings are excluded from real-user marketplace search. Anonymous demo sessions use a short-lived `is_demo = true` JWT. See `docs/architecture.md` → "Demo Experience."
 
 - **Demo seed script is a living artifact:** `DemoSeedScript.SeedAsync` in `MyMarina.Infrastructure` must be updated in the **same PR** as any change that adds a new entity type or major capability. It provisions the single demo tenant with rich data covering every capability the platform currently supports. A CI integration test asserts at least one record exists per known entity type — a failing seed breaks the build.
