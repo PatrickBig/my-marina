@@ -2,9 +2,9 @@ namespace MyMarina.Domain.Enums;
 
 public enum PaymentMethod
 {
-    Cash,
-    Check,
-    CreditCard,
-    BankTransfer,
-    Other
+    Cash         = 0,
+    Check        = 1,
+    CreditCard   = 2,
+    BankTransfer = 3,
+    Other        = 4,
 }

@@ -5,36 +5,31 @@ using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.SlipAssignments;
 
-public class GetSlipAssignmentsQueryHandler(AppDbContext db) : IQueryHandler<GetSlipAssignmentsQuery, IReadOnlyList<SlipAssignmentDto>>
+public class GetSlipAssignmentsQueryHandler(AppDbContext db)
+    : IQueryHandler<GetSlipAssignmentsQuery, IReadOnlyList<SlipAssignmentDto>>
 {
     public async Task<IReadOnlyList<SlipAssignmentDto>> HandleAsync(GetSlipAssignmentsQuery query, CancellationToken ct = default)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTime.Today);
 
-        return await db.SlipAssignments
+        var q = db.SlipAssignments
             .Include(a => a.Slip)
-            .Include(a => a.CustomerAccount)
-            .Include(a => a.Boat)
-            .Where(a =>
-                (query.SlipId == null || a.SlipId == query.SlipId) &&
-                (query.CustomerAccountId == null || a.CustomerAccountId == query.CustomerAccountId) &&
-                (query.MarinaId == null || a.Slip.MarinaId == query.MarinaId) &&
-                (!query.ActiveOnly || a.EndDate == null || a.EndDate >= today))
+            .Include(a => a.BillingAccount)
+            .Include(a => a.Vessel)
+            .Where(a => a.Slip.MarinaId == query.MarinaId);
+
+        if (query.SlipId.HasValue)
+            q = q.Where(a => a.SlipId == query.SlipId.Value);
+
+        if (query.BillingAccountId.HasValue)
+            q = q.Where(a => a.BillingAccountId == query.BillingAccountId.Value);
+
+        if (query.ActiveOnly)
+            q = q.Where(a => a.EndDate == null || a.EndDate >= today);
+
+        return await q
             .OrderByDescending(a => a.StartDate)
-            .Select(a => new SlipAssignmentDto(
-                a.Id,
-                a.SlipId,
-                a.Slip.Name,
-                a.CustomerAccountId,
-                a.CustomerAccount.DisplayName,
-                a.BoatId,
-                a.Boat.Name,
-                a.AssignmentType,
-                a.StartDate,
-                a.EndDate,
-                a.RateOverride,
-                a.Notes,
-                a.CreatedAt))
+            .Select(a => SlipAssignmentHelper.ToDto(a))
             .ToListAsync(ct);
     }
 }

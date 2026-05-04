@@ -2,8 +2,8 @@ namespace MyMarina.Domain.Enums;
 
 public enum AssignmentType
 {
-    Seasonal,
-    Annual,
-    Monthly,
-    Transient
+    Transient = 0,
+    Monthly   = 1,
+    Seasonal  = 2,
+    Annual    = 3,
 }

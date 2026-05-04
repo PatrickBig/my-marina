@@ -1,19 +1,15 @@
-using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// A billing record issued to a CustomerAccount for charges at a specific Marina.
-/// </summary>
-public class Invoice : TenantEntity
+public class Invoice
 {
-    public required Guid MarinaId { get; init; }
-    public Guid CustomerAccountId { get; init; }
-
-    /// <summary>Human-readable invoice number, sequential per tenant.</summary>
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid MarinaId { get; set; }
+    public Guid BillingAccountId { get; set; }
+    public Guid? ReservationId { get; set; }
+    public Guid? SlipAssignmentId { get; set; }
     public required string InvoiceNumber { get; set; }
-
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
     public DateOnly IssuedDate { get; set; }
     public DateOnly DueDate { get; set; }
@@ -23,8 +19,11 @@ public class Invoice : TenantEntity
     public decimal AmountPaid { get; set; }
     public decimal BalanceDue => TotalAmount - AmountPaid;
     public string? Notes { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
-    public CustomerAccount CustomerAccount { get; init; } = null!;
-    public ICollection<InvoiceLineItem> LineItems { get; init; } = [];
-    public ICollection<Payment> Payments { get; init; } = [];
+    // Navigation
+    public Marina Marina { get; set; } = null!;
+    public BillingAccount BillingAccount { get; set; } = null!;
+    public ICollection<InvoiceLineItem> LineItems { get; set; } = [];
+    public ICollection<Payment> Payments { get; set; } = [];
 }

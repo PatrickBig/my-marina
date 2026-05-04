@@ -8,10 +8,14 @@ public class InvoiceLineItemConfiguration : IEntityTypeConfiguration<InvoiceLine
 {
     public void Configure(EntityTypeBuilder<InvoiceLineItem> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Description).HasMaxLength(500).IsRequired();
-        builder.Property(e => e.Quantity).HasPrecision(12, 4);
-        builder.Property(e => e.UnitPrice).HasPrecision(12, 2);
-        builder.Property(e => e.LineTotal).HasPrecision(12, 2);
+        builder.ToTable("invoice_line_items");
+        builder.HasKey(l => l.Id);
+
+        builder.Property(l => l.Description).HasMaxLength(500).IsRequired();
+        builder.Property(l => l.Quantity).HasColumnType("numeric(18,4)");
+        builder.Property(l => l.UnitPrice).HasColumnType("numeric(18,2)");
+        builder.Property(l => l.LineTotal).HasColumnType("numeric(18,2)");
+
+        builder.HasIndex(l => l.InvoiceId);
     }
 }

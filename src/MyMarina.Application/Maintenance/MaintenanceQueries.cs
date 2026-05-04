@@ -1,38 +1,29 @@
-using MyMarina.Application.Abstractions;
-using MyMarina.Domain.Enums;
-
 namespace MyMarina.Application.Maintenance;
 
-/// <param name="Status">Filter by status. Null = all statuses.</param>
-/// <param name="Priority">Filter by priority. Null = all priorities.</param>
-public sealed record GetMaintenanceRequestsQuery(
-    MaintenanceStatus? Status,
-    Priority? Priority);
+public sealed record GetMarinaMaintenanceRequestsQuery(
+    Guid MarinaId,
+    string? Status = null
+);
 
-public sealed record GetMaintenanceRequestQuery(Guid MaintenanceRequestId);
+public sealed record GetMaintenanceRequestQuery(
+    Guid MarinaId,
+    Guid RequestId
+);
 
-// ── DTOs ──────────────────────────────────────────────────────────────────────
+public sealed record GetMyMaintenanceRequestsQuery;
 
-public sealed record MaintenanceRequestDto(
-    Guid Id,
-    Guid CustomerAccountId,
-    string CustomerDisplayName,
-    Guid? SlipId,
-    string? SlipName,
-    Guid? BoatId,
-    string? BoatName,
-    string Title,
-    string Description,
-    MaintenanceStatus Status,
-    Priority Priority,
-    DateTimeOffset SubmittedAt,
-    DateTimeOffset? ResolvedAt,
-    Guid? WorkOrderId);
+public sealed record GetMarinaWorkOrdersQuery(
+    Guid MarinaId,
+    string? Status = null
+);
 
-// ── Handler interfaces ────────────────────────────────────────────────────────
+public sealed record GetWorkOrderQuery(
+    Guid MarinaId,
+    Guid WorkOrderId
+);
 
-public interface IGetMaintenanceRequestsQueryHandler
-    : IQueryHandler<GetMaintenanceRequestsQuery, IReadOnlyList<MaintenanceRequestDto>>;
+public sealed record GetMarinaAnnouncementsQuery(
+    Guid MarinaId
+);
 
-public interface IGetMaintenanceRequestQueryHandler
-    : IQueryHandler<GetMaintenanceRequestQuery, MaintenanceRequestDto?>;
+public sealed record GetMyAnnouncementsQuery;

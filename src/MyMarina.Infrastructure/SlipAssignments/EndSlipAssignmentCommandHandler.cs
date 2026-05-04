@@ -5,19 +5,23 @@ using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.SlipAssignments;
 
-public class EndSlipAssignmentCommandHandler(AppDbContext db) : ICommandHandler<EndSlipAssignmentCommand>
+public class EndSlipAssignmentCommandHandler(AppDbContext db)
+    : ICommandHandler<EndSlipAssignmentCommand, SlipAssignmentDto>
 {
-    public async Task HandleAsync(EndSlipAssignmentCommand command, CancellationToken ct = default)
+    public async Task<SlipAssignmentDto> HandleAsync(EndSlipAssignmentCommand command, CancellationToken ct = default)
     {
-        var assignment = await db.SlipAssignments.FirstOrDefaultAsync(a => a.Id == command.SlipAssignmentId, ct)
-            ?? throw new KeyNotFoundException($"SlipAssignment {command.SlipAssignmentId} not found.");
+        var assignment = await db.SlipAssignments
+            .Include(a => a.Slip)
+            .Include(a => a.BillingAccount)
+            .Include(a => a.Vessel)
+            .FirstOrDefaultAsync(a => a.Id == command.Id && a.Slip.MarinaId == command.MarinaId, ct)
+            ?? throw new KeyNotFoundException($"SlipAssignment {command.Id} not found.");
 
-        if (assignment.EndDate.HasValue && assignment.EndDate < command.EndDate)
-            throw new InvalidOperationException("The provided end date is after the assignment's existing end date.");
+        if (assignment.EndDate.HasValue && assignment.EndDate < DateOnly.FromDateTime(DateTime.Today))
+            throw new InvalidOperationException("Assignment is already ended.");
 
         assignment.EndDate = command.EndDate;
-        assignment.UpdatedAt = DateTimeOffset.UtcNow;
-
         await db.SaveChangesAsync(ct);
+        return SlipAssignmentHelper.ToDto(assignment);
     }
 }

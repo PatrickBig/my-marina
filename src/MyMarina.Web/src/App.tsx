@@ -1,12 +1,39 @@
-function App() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">MyMarina</h1>
-        <p className="mt-2 text-gray-500">Marina management platform</p>
-      </div>
-    </div>
-  )
-}
+import { useAuthStore } from '@/store/authStore';
+import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { MyBoatsPage } from '@/pages/MyBoatsPage';
+import { MyInvoicesPage } from '@/pages/MyInvoicesPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
+import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
+import { SearchPage } from '@/pages/SearchPage';
+import { SlipDetailPage } from '@/pages/SlipDetailPage';
+import { MyTripsPage } from '@/pages/MyTripsPage';
+import { MySlipsPage } from '@/pages/MySlipsPage';
+import { MaintenancePage } from '@/pages/MaintenancePage';
+import { PlatformOperatorPage } from '@/pages/PlatformOperatorPage';
+import { HomePage } from '@/pages/HomePage';
 
-export default App
+export function App() {
+  const { isAuthenticated } = useAuthStore();
+  const path = window.location.pathname;
+
+  // Public routes — no authentication required
+  if (path === '/auth/callback') return <AuthCallbackPage />;
+  if (path === '/search') return <SearchPage />;
+  if (path.startsWith('/slips/')) return <SlipDetailPage />;
+
+  if (path === '/login') return <LoginPage />;
+  if (!isAuthenticated()) return <LoginPage />;
+  if (path === '/trips') return <MyTripsPage />;
+  if (path === '/my-slips') return <MySlipsPage />;
+  if (path === '/invoices') return <MyInvoicesPage />;
+  if (path === '/maintenance') return <MaintenancePage />;
+  if (path === '/admin') return <PlatformOperatorPage />;
+  if (path === '/boats') return <MyBoatsPage />;
+  if (path === '/profile') return <ProfilePage />;
+  if (path === '/marina/new') return <MarinaOnboardingPage />;
+  if (path.startsWith('/marina/')) return <MarinaDashboardPage />;
+
+  return <HomePage />;
+}

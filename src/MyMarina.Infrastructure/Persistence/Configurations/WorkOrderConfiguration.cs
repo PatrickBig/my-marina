@@ -8,13 +8,21 @@ public class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrder>
 {
     public void Configure(EntityTypeBuilder<WorkOrder> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Title).HasMaxLength(300).IsRequired();
-        builder.Property(e => e.Description).HasMaxLength(4000).IsRequired();
-        builder.Property(e => e.Notes).HasMaxLength(4000);
-        builder.HasOne(e => e.MaintenanceRequest)
-            .WithOne(mr => mr.WorkOrder)
-            .HasForeignKey<WorkOrder>(e => e.MaintenanceRequestId)
-            .OnDelete(DeleteBehavior.SetNull);
+        builder.ToTable("work_orders");
+        builder.HasKey(w => w.Id);
+
+        builder.Property(w => w.Title).HasMaxLength(200).IsRequired();
+        builder.Property(w => w.Description).HasMaxLength(4000).IsRequired();
+        builder.Property(w => w.Notes).HasMaxLength(4000);
+        builder.Property(w => w.Status).HasConversion<string>();
+        builder.Property(w => w.Priority).HasConversion<string>();
+
+        builder.HasOne(w => w.Marina)
+               .WithMany()
+               .HasForeignKey(w => w.MarinaId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(w => w.MarinaId);
+        builder.HasIndex(w => new { w.MarinaId, w.Status });
     }
 }

@@ -1,43 +1,46 @@
-using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// An individual boat berth or mooring. DockId is nullable — a null DockId
-/// indicates a free-standing mooring or anchorage with no dock parent.
-/// MarinaId is always set regardless.
-/// </summary>
-public class Slip : TenantEntity
+public class Slip
 {
-    public Guid MarinaId { get; init; }
-
-    /// <summary>Null for free-standing moorings and anchorages.</summary>
-    public Guid? DockId { get; init; }
-
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid MarinaId { get; set; }
+    public Guid? HostMarinaId { get; set; }
+    public HostMarinaPolicy HostMarinaPolicy { get; set; } = HostMarinaPolicy.None;
+    public Guid? DockId { get; set; }
     public required string Name { get; set; }
-    public SlipType SlipType { get; set; }
+    public SlipType SlipType { get; set; } = SlipType.Floating;
     public decimal MaxLength { get; set; }
     public decimal MaxBeam { get; set; }
     public decimal MaxDraft { get; set; }
     public bool HasElectric { get; set; }
-    public ElectricService? Electric { get; set; }
+    public ElectricAmperage? Electric { get; set; }
     public bool HasWater { get; set; }
-    public RateType RateType { get; set; }
-    public decimal? DailyRate { get; set; }
-    public decimal? MonthlyRate { get; set; }
-    public decimal? AnnualRate { get; set; }
-    public SlipStatus Status { get; set; } = SlipStatus.Available;
+    public SlipStatus Status { get; set; } = SlipStatus.Active;
 
-    /// <summary>GPS latitude — useful for mooring/anchorage map views.</summary>
+    // Location — required for marketplace, optional during initial setup
     public decimal? Latitude { get; set; }
-
-    /// <summary>GPS longitude — useful for mooring/anchorage map views.</summary>
     public decimal? Longitude { get; set; }
 
-    public string? Notes { get; set; }
+    // Address override for private docks (null = inherit from marina)
+    public string? AddressStreet { get; set; }
+    public string? AddressCity { get; set; }
+    public string? AddressState { get; set; }
+    public string? AddressZip { get; set; }
+    public string? AddressCountry { get; set; }
 
-    public Marina Marina { get; init; } = null!;
-    public Dock? Dock { get; init; }
-    public ICollection<SlipAssignment> Assignments { get; init; } = [];
+    // Transient default rate — when set, slip is implicitly available for transient booking
+    // any time it has no active SlipAssignment or confirmed Reservation.
+    public RateKind? DefaultTransientRateKind { get; set; }   // null = not listed for transient
+    public decimal? DefaultTransientBaseRate { get; set; }
+    public decimal? DefaultTransientMinCharge { get; set; }
+
+    // Lease default rate — when set, slip appears in lease searches.
+    public RateKind? DefaultLeaseRateKind { get; set; }       // null = not listed for lease
+    public decimal? DefaultLeaseBaseRate { get; set; }
+    public LeaseTerm? DefaultLeaseTerm { get; set; }
+
+    public string? Notes { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 }

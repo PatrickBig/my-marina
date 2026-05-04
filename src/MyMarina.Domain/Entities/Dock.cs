@@ -1,17 +1,11 @@
-using MyMarina.Domain.Common;
-
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// A named section of a marina containing slips (e.g., "Dock A", "North Dock").
-/// </summary>
-public class Dock : TenantEntity
+public class Dock
 {
-    public Guid MarinaId { get; init; }
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid MarinaId { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
     public int SortOrder { get; set; }
-
-    public Marina Marina { get; init; } = null!;
-    public ICollection<Slip> Slips { get; init; } = [];
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 }

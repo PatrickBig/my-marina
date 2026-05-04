@@ -1,185 +1,771 @@
-import { apiClient } from "./client";
-import type { components } from "./schema";
+import { apiClient } from './client';
 
-type BaseLoginResult = components["schemas"]["LoginResult"];
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export type LoginResult = BaseLoginResult & {
-  availableContexts?: AvailableContext[];
-};
-export type MarinaDto = components["schemas"]["MarinaDto"];
-export type DockDto = components["schemas"]["DockDto"];
-export type SlipDto = components["schemas"]["SlipDto"];
-export type CustomerAccountDto = components["schemas"]["CustomerAccountDto"];
-export type BoatDto = components["schemas"]["BoatDto"];
-export type SlipAssignmentDto = components["schemas"]["SlipAssignmentDto"];
-export type AddressDto = components["schemas"]["AddressDto"];
-export type InviteStaffResult = components["schemas"]["InviteStaffResult"];
-export type HealthTargetsDto = components["schemas"]["HealthTargetsDto"];
-export type MarinaMetricsDto = components["schemas"]["MarinaMetricsDto"];
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  user: UserProfileDto;
+}
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
+export interface UserProfileDto {
+  id: string;
+  email: string;
+  emailConfirmed: boolean;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string | null;
+  profilePhotoUrl?: string | null;
+  marketingOptIn: boolean;
+  createdAt: string;
+  lastLoginAt?: string | null;
+}
 
-export type AvailableContext = {
-  displayName: string;
-  role: string;
+export interface MeResponse extends UserProfileDto {
+  memberships: MembershipClaim[];
+  billingAccounts: BillingAccountMemberClaim[];
+  isPlatformOperator: boolean;
+}
+
+export interface MembershipClaim {
+  scope: 'Marina' | 'Tenant';
   tenantId: string;
   marinaId?: string | null;
-  customerAccountId?: string | null;
-};
+  marinaName?: string | null;
+  role: 'Owner' | 'Manager' | 'Staff';
+  tier?: string | null;
+}
 
-export type ContextToken = {
-  token: string;
-  expiresAt: string;
-};
+export interface BillingAccountMemberClaim {
+  billingAccountId: string;
+  marinaId: string;
+  role: 'Owner' | 'CoOwner' | 'Member';
+}
 
 export const login = (email: string, password: string) =>
-  apiClient.post<LoginResult>("/auth/login", { email, password }).then((r) => r.data);
+  apiClient.post<AuthResponse>('/auth/login', { email, password }).then((r) => r.data);
 
-export const chooseContext = (userId: string, context: AvailableContext) =>
-  apiClient.post<ContextToken>("/auth/choose-context", { userId, context }).then((r) => r.data);
+export const register = (data: {
+  email: string; password: string;
+  firstName: string; lastName: string;
+  marketingOptIn: boolean; termsAccepted: boolean;
+}) => apiClient.post('/auth/register', data);
+
+export const refresh = (refreshToken: string) =>
+  apiClient.post<AuthResponse>('/auth/refresh', { refreshToken }).then((r) => r.data);
+
+export const logout = (refreshToken: string) =>
+  apiClient.post('/auth/logout', { refreshToken });
+
+export const forgotPassword = (email: string) =>
+  apiClient.post('/auth/forgot-password', { email });
+
+export const resetPassword = (email: string, token: string, newPassword: string) =>
+  apiClient.post('/auth/reset-password', { email, token, newPassword });
 
 export const confirmEmail = (userId: string, token: string) =>
-  apiClient.get<{ message: string }>("/auth/confirm-email", { params: { userId, token } }).then((r) => r.data);
+  apiClient.post('/auth/confirm-email', { userId, token });
 
-export const resendConfirmationEmail = () =>
-  apiClient.post<{ message: string }>("/auth/resend-confirmation").then((r) => r.data);
+export const resendConfirmation = (email: string) =>
+  apiClient.post('/auth/resend-confirmation', { email });
 
-// ─── Marinas ─────────────────────────────────────────────────────────────────
+// ─── Me ───────────────────────────────────────────────────────────────────────
 
-export const getMarinas = () =>
-  apiClient.get<MarinaDto[]>("/marinas").then((r) => r.data);
+export const getMe = () =>
+  apiClient.get<MeResponse>('/me').then((r) => r.data);
 
-export const getMarina = (id: string) =>
-  apiClient.get<MarinaDto>(`/marinas/${id}`).then((r) => r.data);
+export const updateProfile = (data: {
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  marketingOptIn?: boolean | null;
+}) => apiClient.patch('/me', data);
 
-export const createMarina = (data: {
-  name: string; address: AddressDto; phoneNumber: string; email: string;
-  timeZoneId: string; website?: string | null; description?: string | null;
-}) => apiClient.post<string>("/marinas", data).then((r) => r.data);
+// ─── Vessels ──────────────────────────────────────────────────────────────────
 
-export const updateMarina = (id: string, data: {
-  name: string; address: AddressDto; phoneNumber: string; email: string;
-  timeZoneId: string; website?: string | null; description?: string | null;
-}) => apiClient.put(`/marinas/${id}`, data);
+export type BoatType = 'Sailboat' | 'Powerboat' | 'Catamaran' | 'Dinghy' | 'Pwc' | 'Other';
 
-export const getMarinaHealthTargets = (marinaId: string) =>
-  apiClient.get<HealthTargetsDto>(`/marinas/${marinaId}/health-targets`).then((r) => r.data);
+export interface VesselDto {
+  id: string;
+  name: string;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  length: number;
+  beam: number;
+  draft: number;
+  boatType: BoatType;
+  hullColor?: string | null;
+  registrationNumber?: string | null;
+  registrationState?: string | null;
+  isArchived: boolean;
+  createdAt: string;
+}
 
-export const updateMarinaHealthTargets = (marinaId: string, data: HealthTargetsDto) =>
-  apiClient.put(`/marinas/${marinaId}/health-targets`, data);
+export interface CreateVesselData {
+  name: string;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  length: number;
+  beam: number;
+  draft: number;
+  boatType: BoatType;
+  hullColor?: string | null;
+  registrationNumber?: string | null;
+  registrationState?: string | null;
+}
 
-export const getMarinaMetrics = (marinaId: string) =>
-  apiClient.get<MarinaMetricsDto>(`/marinas/${marinaId}/metrics`).then((r) => r.data);
+export const getVessels = () =>
+  apiClient.get<VesselDto[]>('/vessels').then((r) => r.data);
 
-// ─── Docks ───────────────────────────────────────────────────────────────────
+export const getVessel = (id: string) =>
+  apiClient.get<VesselDto>(`/vessels/${id}`).then((r) => r.data);
+
+export const createVessel = (data: CreateVesselData) =>
+  apiClient.post<VesselDto>('/vessels', data).then((r) => r.data);
+
+export const updateVessel = (id: string, data: Partial<CreateVesselData>) =>
+  apiClient.patch(`/vessels/${id}`, data);
+
+export const archiveVessel = (id: string) =>
+  apiClient.delete(`/vessels/${id}`);
+
+// ─── Marinas ──────────────────────────────────────────────────────────────────
+
+export type MarinaType = 'Commercial' | 'YachtClub' | 'PrivateCommunity' | 'Dockominium' | 'PrivateDock';
+export type SlipType = 'Floating' | 'Fixed' | 'Mooring' | 'DryStorage' | 'Anchorage';
+export type SlipStatus = 'Active' | 'UnderMaintenance' | 'Inactive';
+export type MembershipRole = 'Staff' | 'Manager' | 'Owner';
+export type RateKind = 'Flat' | 'PerFoot';
+export type LeaseTerm = 'Monthly' | 'Seasonal' | 'Annual';
+export type ListingKind = 'Transient' | 'Lease';
+export type LeaseInquiryStatus = 'Pending' | 'UnderReview' | 'Approved' | 'Declined' | 'Withdrawn';
+
+export interface TenantDto {
+  id: string;
+  name: string;
+  slug: string;
+  subscriptionTier: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface MarinaDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  slug: string;
+  addressStreet?: string | null;
+  addressCity?: string | null;
+  addressState?: string | null;
+  addressZip?: string | null;
+  addressCountry?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phoneNumber?: string | null;
+  email?: string | null;
+  website?: string | null;
+  description?: string | null;
+  timeZoneId: string;
+  marinaType: MarinaType;
+  isListed: boolean;
+  createdAt: string;
+}
+
+export interface DockDto {
+  id: string;
+  marinaId: string;
+  name: string;
+  description?: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface SlipDto {
+  id: string;
+  marinaId: string;
+  dockId?: string | null;
+  name: string;
+  slipType: SlipType;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  hasElectric: boolean;
+  electric?: number | null;
+  hasWater: boolean;
+  status: SlipStatus;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface MarinaSignupResponse {
+  tenant: TenantDto;
+  marina: MarinaDto;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+}
+
+export interface MembershipDto {
+  id: string;
+  userId: string;
+  userEmail?: string | null;
+  userFirstName?: string | null;
+  userLastName?: string | null;
+  tenantId: string;
+  marinaId?: string | null;
+  scope: string;
+  role: MembershipRole;
+  invitedAt: string;
+  acceptedAt?: string | null;
+  isPending: boolean;
+}
+
+export interface MyMarinaDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  addressCity?: string | null;
+  addressState?: string | null;
+  marinaType: MarinaType;
+  isListed: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  userRole?: string | null;
+  relationshipKind: 'Staff' | 'BillingAccount';
+}
+
+export const getMyMarinas = () =>
+  apiClient.get<MyMarinaDto[]>('/marinas').then((r) => r.data);
+
+export const signupMarina = (data: { tenantName: string; marinaName: string; marinaType: MarinaType }) =>
+  apiClient.post<MarinaSignupResponse>('/marinas/signup', data).then((r) => r.data);
+
+export const getMarina = (marinaId: string) =>
+  apiClient.get<MarinaDto>(`/marinas/${marinaId}`).then((r) => r.data);
+
+export const updateMarina = (marinaId: string, data: Partial<Omit<MarinaDto, 'id' | 'tenantId' | 'slug' | 'createdAt' | 'isListed' | 'marinaType'>>) =>
+  apiClient.patch<MarinaDto>(`/marinas/${marinaId}`, data).then((r) => r.data);
 
 export const getDocks = (marinaId: string) =>
   apiClient.get<DockDto[]>(`/marinas/${marinaId}/docks`).then((r) => r.data);
 
-export const createDock = (marinaId: string, data: { name: string; description?: string | null; sortOrder?: number }) =>
-  apiClient.post<string>(`/marinas/${marinaId}/docks`, data).then((r) => r.data);
+export const createDock = (marinaId: string, data: { name: string; description?: string | null; sortOrder: number }) =>
+  apiClient.post<DockDto>(`/marinas/${marinaId}/docks`, data).then((r) => r.data);
 
-export const updateDock = (dockId: string, data: { name: string; description?: string | null; sortOrder?: number }) =>
-  apiClient.put(`/docks/${dockId}`, data);
+export const updateDock = (marinaId: string, dockId: string, data: { name?: string; description?: string | null; sortOrder?: number }) =>
+  apiClient.patch<DockDto>(`/marinas/${marinaId}/docks/${dockId}`, data).then((r) => r.data);
 
-export const deleteDock = (dockId: string) =>
-  apiClient.delete(`/docks/${dockId}`);
+export const deleteDock = (marinaId: string, dockId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/docks/${dockId}`);
 
-// ─── Slips ───────────────────────────────────────────────────────────────────
+export const getSlips = (marinaId: string, dockId?: string) =>
+  apiClient.get<SlipDto[]>(`/marinas/${marinaId}/slips`, { params: dockId ? { dockId } : undefined }).then((r) => r.data);
 
-export type CreateSlipData = components["schemas"]["CreateSlipRequest"];
-export type UpdateSlipData = components["schemas"]["UpdateSlipRequest"];
+export const createSlip = (marinaId: string, data: {
+  dockId?: string | null; name: string; slipType?: SlipType;
+  maxLength: number; maxBeam: number; maxDraft: number;
+  hasElectric: boolean; electric?: number | null; hasWater: boolean; notes?: string | null;
+}) => apiClient.post<SlipDto>(`/marinas/${marinaId}/slips`, data).then((r) => r.data);
 
-export const getSlips = (marinaId: string) =>
-  apiClient.get<SlipDto[]>(`/marinas/${marinaId}/slips`).then((r) => r.data);
+export const updateSlip = (marinaId: string, slipId: string, data: {
+  dockId?: string | null; name?: string; slipType?: SlipType;
+  maxLength?: number; maxBeam?: number; maxDraft?: number;
+  hasElectric?: boolean; electric?: number | null; hasWater?: boolean;
+  status?: SlipStatus;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  clearTransientRate?: boolean;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
+  clearLeaseRate?: boolean;
+  notes?: string | null;
+}) => apiClient.patch<SlipDto>(`/marinas/${marinaId}/slips/${slipId}`, data).then((r) => r.data);
 
-export const createSlip = (marinaId: string, data: CreateSlipData) =>
-  apiClient.post<string>(`/marinas/${marinaId}/slips`, data).then((r) => r.data);
+export const deleteSlip = (marinaId: string, slipId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/slips/${slipId}`);
 
-export const updateSlip = (slipId: string, data: UpdateSlipData) =>
-  apiClient.put(`/slips/${slipId}`, data);
+export const getMarinaStaff = (marinaId: string) =>
+  apiClient.get<MembershipDto[]>(`/marinas/${marinaId}/staff`).then((r) => r.data);
 
-export const deleteSlip = (slipId: string) =>
-  apiClient.delete(`/slips/${slipId}`);
+export const inviteStaff = (marinaId: string, data: { email: string; role: MembershipRole }) =>
+  apiClient.post<MembershipDto>(`/marinas/${marinaId}/staff/invite`, data).then((r) => r.data);
 
-export const getAvailableSlips = (
-  marinaId: string,
-  params: { boatLength: number; boatBeam: number; boatDraft: number; startDate: string; endDate?: string }
-) => apiClient.get<SlipDto[]>(`/marinas/${marinaId}/slips/available`, { params }).then((r) => r.data);
+export const revokeStaff = (marinaId: string, membershipId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/staff/${membershipId}`);
 
-// ─── Customers ───────────────────────────────────────────────────────────────
+export const getMyMemberships = () =>
+  apiClient.get<MembershipDto[]>('/me/memberships').then((r) => r.data);
 
-export type CreateCustomerData = components["schemas"]["CreateCustomerAccountCommand"];
-export type UpdateCustomerData = components["schemas"]["UpdateCustomerRequest"];
+export const acceptMembership = (membershipId: string) =>
+  apiClient.post(`/memberships/${membershipId}/accept`);
 
-export const getCustomers = () =>
-  apiClient.get<CustomerAccountDto[]>("/customers").then((r) => r.data);
+// ─── Billing Accounts ─────────────────────────────────────────────────────────
 
-export const getCustomer = (id: string) =>
-  apiClient.get<CustomerAccountDto>(`/customers/${id}`).then((r) => r.data);
+export interface BillingAccountDto {
+  id: string;
+  marinaId: string;
+  displayName: string;
+  billingEmail: string;
+  billingPhone?: string | null;
+  billingAddressStreet?: string | null;
+  billingAddressCity?: string | null;
+  billingAddressState?: string | null;
+  billingAddressZip?: string | null;
+  billingAddressCountry?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
 
-export const createCustomer = (data: CreateCustomerData) =>
-  apiClient.post<string>("/customers", data).then((r) => r.data);
+export interface BillingAccountMemberDto {
+  id: string;
+  billingAccountId: string;
+  userId: string;
+  userEmail: string;
+  userName?: string | null;
+  role: string;
+  invitedAt: string;
+  acceptedAt?: string | null;
+}
 
-export const updateCustomer = (id: string, data: UpdateCustomerData) =>
-  apiClient.put(`/customers/${id}`, data);
+export const getBillingAccounts = (marinaId: string) =>
+  apiClient.get<BillingAccountDto[]>(`/marinas/${marinaId}/billing-accounts`).then((r) => r.data);
 
-export const deactivateCustomer = (id: string) =>
-  apiClient.post(`/customers/${id}/deactivate`);
+export const createBillingAccount = (marinaId: string, data: {
+  displayName: string; billingEmail: string; billingPhone?: string | null;
+  billingAddressStreet?: string | null; billingAddressCity?: string | null;
+  billingAddressState?: string | null; billingAddressZip?: string | null;
+  emergencyContactName?: string | null; emergencyContactPhone?: string | null;
+  notes?: string | null;
+}) => apiClient.post<BillingAccountDto>(`/marinas/${marinaId}/billing-accounts`, data).then((r) => r.data);
 
-// ─── Boats ───────────────────────────────────────────────────────────────────
+export const updateBillingAccount = (marinaId: string, accountId: string, data: Partial<{
+  displayName: string; billingEmail: string; billingPhone: string | null;
+  billingAddressStreet: string | null; billingAddressCity: string | null;
+  billingAddressState: string | null; billingAddressZip: string | null;
+  emergencyContactName: string | null; emergencyContactPhone: string | null;
+  notes: string | null; isActive: boolean;
+}>) => apiClient.patch<BillingAccountDto>(`/marinas/${marinaId}/billing-accounts/${accountId}`, data).then((r) => r.data);
 
-export type CreateBoatData = components["schemas"]["CreateBoatRequest"];
-export type UpdateBoatData = components["schemas"]["UpdateBoatRequest"];
+export const getBillingAccountMembers = (marinaId: string, accountId: string) =>
+  apiClient.get<BillingAccountMemberDto[]>(`/marinas/${marinaId}/billing-accounts/${accountId}/members`).then((r) => r.data);
 
-export const getBoats = (customerAccountId: string) =>
-  apiClient.get<BoatDto[]>(`/customers/${customerAccountId}/boats`).then((r) => r.data);
+export const inviteAccountMember = (marinaId: string, accountId: string, email: string, role = 'Member') =>
+  apiClient.post<BillingAccountMemberDto>(`/marinas/${marinaId}/billing-accounts/${accountId}/members/invite`, { email, role }).then((r) => r.data);
 
-export const createBoat = (customerAccountId: string, data: CreateBoatData) =>
-  apiClient.post<string>(`/customers/${customerAccountId}/boats`, data).then((r) => r.data);
+export const removeAccountMember = (marinaId: string, accountId: string, memberId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/billing-accounts/${accountId}/members/${memberId}`);
 
-export const updateBoat = (boatId: string, data: UpdateBoatData) =>
-  apiClient.put(`/boats/${boatId}`, data);
+// ─── Vessel Records ───────────────────────────────────────────────────────────
 
-export const deleteBoat = (boatId: string) =>
-  apiClient.delete(`/boats/${boatId}`);
+export interface VesselRecordDto {
+  id: string;
+  marinaId: string;
+  vesselId: string;
+  billingAccountId?: string | null;
+  vesselName: string;
+  vesselMake?: string | null;
+  vesselModel?: string | null;
+  vesselYear?: number | null;
+  vesselLength: number;
+  vesselBoatType: string;
+  vesselIsGhost: boolean;
+  insuranceProvider?: string | null;
+  insurancePolicyNumber?: string | null;
+  insuranceExpiresOn?: string | null;
+  insuranceVerifiedAt?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export const getVesselRecords = (marinaId: string, billingAccountId?: string) =>
+  apiClient.get<VesselRecordDto[]>(`/marinas/${marinaId}/vessel-records`, {
+    params: billingAccountId ? { billingAccountId } : undefined,
+  }).then((r) => r.data);
+
+export const createVesselRecord = (marinaId: string, data: {
+  billingAccountId?: string | null;
+  vesselId?: string | null;
+  claimEmail?: string | null;
+  vesselName?: string | null;
+  vesselMake?: string | null;
+  vesselModel?: string | null;
+  vesselYear?: number | null;
+  vesselLength?: number | null;
+  vesselBeam?: number | null;
+  vesselDraft?: number | null;
+  vesselBoatType?: string | null;
+  insuranceProvider?: string | null;
+  insurancePolicyNumber?: string | null;
+  insuranceExpiresOn?: string | null;
+  notes?: string | null;
+}) => apiClient.post<VesselRecordDto>(`/marinas/${marinaId}/vessel-records`, data).then((r) => r.data);
 
 // ─── Slip Assignments ─────────────────────────────────────────────────────────
 
-export type CreateAssignmentData = components["schemas"]["CreateSlipAssignmentCommand"];
+export type AssignmentType = 'Transient' | 'Monthly' | 'Seasonal' | 'Annual';
 
-export const getAssignments = (params?: {
-  slipId?: string; customerAccountId?: string; marinaId?: string; activeOnly?: boolean;
-}) => apiClient.get<SlipAssignmentDto[]>("/slip-assignments", { params }).then((r) => r.data);
-
-export const createAssignment = (data: CreateAssignmentData) =>
-  apiClient.post<string>("/slip-assignments", data).then((r) => r.data);
-
-export const endAssignment = (assignmentId: string, endDate: string) =>
-  apiClient.post(`/slip-assignments/${assignmentId}/end`, { endDate });
-
-// ─── Invoices ────────────────────────────────────────────────────────────────
-
-export type InvoiceStatus = 0 | 1 | 2 | 3 | 4 | 5; // Draft|Sent|PartiallyPaid|Paid|Overdue|Voided
-export type PaymentMethod = 0 | 1 | 2 | 3 | 4;     // Cash|Check|CreditCard|BankTransfer|Other
-
-export interface InvoiceDto {
+export interface SlipAssignmentDto {
   id: string;
-  invoiceNumber: string;
-  customerAccountId: string;
-  customerDisplayName: string;
-  status: InvoiceStatus;
-  issuedDate: string;
-  dueDate: string;
-  subTotal: number;
-  taxAmount: number;
-  totalAmount: number;
-  amountPaid: number;
-  balanceDue: number;
-  notes: string | null;
+  slipId: string;
+  slipName: string;
+  billingAccountId: string;
+  billingAccountDisplayName: string;
+  vesselId: string;
+  vesselName: string;
+  assignmentType: AssignmentType;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowOwnerSubletWhenAway: boolean;
+  allowHolderSublet: boolean;
+  ownerSubletShareToHolder: number;
+  holderSubletShareToOwner: number;
+  notes?: string | null;
+  isActive: boolean;
   createdAt: string;
-  marinaId: string;
 }
+
+export interface CreateSlipAssignmentData {
+  slipId: string;
+  billingAccountId: string;
+  vesselId: string;
+  assignmentType: AssignmentType;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowOwnerSubletWhenAway: boolean;
+  allowHolderSublet: boolean;
+  ownerSubletShareToHolder: number;
+  holderSubletShareToOwner: number;
+  notes?: string | null;
+}
+
+export const getSlipAssignments = (marinaId: string, params?: { slipId?: string; billingAccountId?: string; activeOnly?: boolean }) =>
+  apiClient.get<SlipAssignmentDto[]>(`/marinas/${marinaId}/slip-assignments`, { params }).then((r) => r.data);
+
+export const createSlipAssignment = (marinaId: string, data: CreateSlipAssignmentData) =>
+  apiClient.post<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments`, data).then((r) => r.data);
+
+export const updateSlipAssignment = (marinaId: string, id: string, data: Partial<CreateSlipAssignmentData>) =>
+  apiClient.patch<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments/${id}`, data).then((r) => r.data);
+
+export const endSlipAssignment = (marinaId: string, id: string, endDate?: string) =>
+  apiClient.post<SlipAssignmentDto>(`/marinas/${marinaId}/slip-assignments/${id}/end`, { endDate: endDate ?? null }).then((r) => r.data);
+
+// ─── Availability Windows ─────────────────────────────────────────────────────
+
+export type ListedByKind = 'Owner' | 'Holder' | 'OwnerForHolder';
+export type AvailabilityWindowStatus = 'Open' | 'Paused' | 'FullyBooked' | 'Closed';
+
+export interface RevenueSplitEntryDto {
+  payeeKind: string;
+  payeeId?: string | null;
+  percent: number;
+}
+
+export interface AvailabilityWindowDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  listedByKind: ListedByKind;
+  listedByMarinaId?: string | null;
+  listedByBillingAccountId?: string | null;
+  relatedAssignmentId?: string | null;
+  listingKind: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind: RateKind;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  minCharge?: number | null;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+  revenueSplit: RevenueSplitEntryDto[];
+  status: AvailabilityWindowStatus;
+  createdAt: string;
+}
+
+export interface CreateAvailabilityWindowData {
+  slipId: string;
+  listedByKind: ListedByKind;
+  listedByMarinaId?: string | null;
+  listedByBillingAccountId?: string | null;
+  relatedAssignmentId?: string | null;
+  listingKind?: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind?: RateKind;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  minCharge?: number | null;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export const getAvailabilityWindows = (marinaId: string, params?: { slipId?: string; status?: string }) =>
+  apiClient.get<AvailabilityWindowDto[]>(`/marinas/${marinaId}/availability-windows`, { params }).then((r) => r.data);
+
+export const getAvailabilityWindow = (marinaId: string, id: string) =>
+  apiClient.get<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}`).then((r) => r.data);
+
+export const createAvailabilityWindow = (marinaId: string, data: CreateAvailabilityWindowData) =>
+  apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows`, data).then((r) => r.data);
+
+export const updateAvailabilityWindow = (marinaId: string, id: string, data: Partial<Omit<CreateAvailabilityWindowData, 'slipId' | 'listedByKind'>>) =>
+  apiClient.patch<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}`, data).then((r) => r.data);
+
+export const setAvailabilityWindowStatus = (marinaId: string, id: string, status: AvailabilityWindowStatus) =>
+  apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}/status`, { status }).then((r) => r.data);
+
+// ─── Slip Search (public) ─────────────────────────────────────────────────────
+
+export interface SlipSearchResultDto {
+  slipId: string;
+  slipName: string;
+  slipType: string;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  hasElectric: boolean;
+  hasWater: boolean;
+  latitude: number;
+  longitude: number;
+  marinaId: string;
+  marinaName: string;
+  marinaCity?: string | null;
+  marinaState?: string | null;
+  bestWindowId?: string | null;
+  listingKind: ListingKind;
+  rateKind: RateKind;
+  basePricePerNight: number;
+  minCharge?: number | null;
+  leaseTerm?: LeaseTerm | null;
+  instantBook: boolean;
+  cleaningFee?: number | null;
+  minNights?: number | null;
+  maxNights?: number | null;
+  distanceMiles: number;
+}
+
+export interface PublicWindowSummaryDto {
+  id: string;
+  listingKind: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind: RateKind;
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  minCharge?: number | null;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export interface SlipDetailDto {
+  id: string;
+  name: string;
+  slipType: string;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  hasElectric: boolean;
+  electric?: number | null;
+  hasWater: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  addressCity?: string | null;
+  addressState?: string | null;
+  marinaId: string;
+  marinaName: string;
+  marinaDescription?: string | null;
+  marinaPhoneNumber?: string | null;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  transientBookingAvailable: boolean;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
+  leaseInquiryAvailable: boolean;
+  openWindows: PublicWindowSummaryDto[];
+}
+
+export interface SlipSearchParams {
+  lat: number;
+  lon: number;
+  radiusMiles?: number;
+  listingKind?: ListingKind;
+  arrivesAt?: string;
+  departsAt?: string;
+  leaseTerm?: LeaseTerm;
+  vesselLength?: number;
+  vesselBeam?: number;
+  vesselDraft?: number;
+  slipType?: string;
+  hasElectric?: boolean;
+  hasWater?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export const searchSlips = (params: SlipSearchParams) =>
+  apiClient.get<SlipSearchResultDto[]>('/slips/search', { params }).then((r) => r.data);
+
+export const getPublicSlipDetail = (slipId: string) =>
+  apiClient.get<SlipDetailDto>(`/slips/${slipId}`).then((r) => r.data);
+
+// ─── Reservations ─────────────────────────────────────────────────────────────
+
+export interface ReservationDto {
+  id: string;
+  boaterUserId: string;
+  vesselId: string;
+  vesselName: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  availabilityWindowId: string;
+  arrivesAt: string;
+  departsAt: string;
+  nights: number;
+  status: string;
+  basePrice: number;
+  fees: number;
+  taxes: number;
+  total: number;
+  paymentStatus: string;
+  instantBook: boolean;
+  requestedAt: string;
+  confirmedAt?: string | null;
+  declinedAt?: string | null;
+  cancelledAt?: string | null;
+  cancelledByUserId?: string | null;
+  notes?: string | null;
+}
+
+export interface CreateReservationData {
+  vesselId: string;
+  availabilityWindowId?: string | null;  // null when using direct slip rate
+  slipId?: string | null;                // set when booking via direct default rate
+  arrivesAt: string;
+  departsAt: string;
+  notes?: string | null;
+}
+
+export const createReservation = (data: CreateReservationData) =>
+  apiClient.post<ReservationDto>('/reservations', data).then((r) => r.data);
+
+export const getMyTrips = (status?: string) =>
+  apiClient.get<ReservationDto[]>('/reservations/my-trips', { params: status ? { status } : undefined }).then((r) => r.data);
+
+export const getReservation = (id: string) =>
+  apiClient.get<ReservationDto>(`/reservations/${id}`).then((r) => r.data);
+
+export const getMarinaReservations = (marinaId: string, status?: string) =>
+  apiClient.get<ReservationDto[]>(`/marinas/${marinaId}/reservations`, { params: status ? { status } : undefined }).then((r) => r.data);
+
+export const approveReservation = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/approve`).then((r) => r.data);
+
+export const declineReservation = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/decline`).then((r) => r.data);
+
+export const cancelReservation = (id: string) =>
+  apiClient.post<ReservationDto>(`/reservations/${id}/cancel`).then((r) => r.data);
+
+export const markNoShow = (marinaId: string, id: string) =>
+  apiClient.post<ReservationDto>(`/marinas/${marinaId}/reservations/${id}/no-show`).then((r) => r.data);
+
+// ─── Sublet / Owner Absences ──────────────────────────────────────────────────
+
+export interface MySlipAssignmentDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  slipType: string;
+  marinaId: string;
+  marinaName: string;
+  billingAccountId: string;
+  vesselId: string;
+  vesselName: string;
+  assignmentType: string;
+  startDate: string;
+  endDate?: string | null;
+  baseRate: number;
+  allowHolderSublet: boolean;
+  allowOwnerSubletWhenAway: boolean;
+  isActive: boolean;
+}
+
+export interface OwnerAbsenceDto {
+  id: string;
+  slipAssignmentId: string;
+  slipId: string;
+  slipName: string;
+  startsOn: string;
+  endsOn: string;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateSubletWindowData {
+  startsAt: string;
+  endsAt: string;
+  instantBook: boolean;
+  minNights?: number | null;
+  maxNights?: number | null;
+  basePricePerNight: number;
+  weeklyDiscount?: number | null;
+  monthlyDiscount?: number | null;
+  cleaningFee?: number | null;
+}
+
+export const getMySlipAssignments = () =>
+  apiClient.get<MySlipAssignmentDto[]>('/me/slip-assignments').then((r) => r.data);
+
+export const getAssignmentAbsences = (assignmentId: string) =>
+  apiClient.get<OwnerAbsenceDto[]>(`/slip-assignments/${assignmentId}/absences`).then((r) => r.data);
+
+export const createOwnerAbsence = (assignmentId: string, data: { startsOn: string; endsOn: string; notes?: string | null }) =>
+  apiClient.post<OwnerAbsenceDto>(`/slip-assignments/${assignmentId}/away`, data).then((r) => r.data);
+
+export const deleteOwnerAbsence = (assignmentId: string, absenceId: string) =>
+  apiClient.delete(`/slip-assignments/${assignmentId}/absences/${absenceId}`);
+
+export const createSubletWindow = (assignmentId: string, data: CreateSubletWindowData) =>
+  apiClient.post<AvailabilityWindowDto>(`/slip-assignments/${assignmentId}/sublet-window`, data).then((r) => r.data);
+
+export const getMarinaAbsences = (marinaId: string, slipId?: string) =>
+  apiClient.get<OwnerAbsenceDto[]>(`/marinas/${marinaId}/absences`, {
+    params: slipId ? { slipId } : undefined,
+  }).then((r) => r.data);
+
+// ─── Invoicing ────────────────────────────────────────────────────────────────
 
 export interface InvoiceLineItemDto {
   id: string;
@@ -187,370 +773,277 @@ export interface InvoiceLineItemDto {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
-  slipAssignmentId: string | null;
+  slipAssignmentId?: string | null;
+  reservationId?: string | null;
 }
 
 export interface PaymentDto {
   id: string;
   amount: number;
   paidOn: string;
-  method: PaymentMethod;
-  referenceNumber: string | null;
-  notes: string | null;
-  recordedByUserId: string;
+  method: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
   createdAt: string;
 }
 
-export interface InvoiceDetailDto extends InvoiceDto {
+export interface InvoiceDto {
+  id: string;
+  marinaId: string;
+  marinaName: string;
+  billingAccountId: string;
+  billingAccountName: string;
+  reservationId?: string | null;
+  slipAssignmentId?: string | null;
+  invoiceNumber: string;
+  status: string;
+  issuedDate: string;
+  dueDate: string;
+  subTotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+  notes?: string | null;
+  createdAt: string;
   lineItems: InvoiceLineItemDto[];
   payments: PaymentDto[];
 }
 
-export const getInvoices = (params?: {
-  customerAccountId?: string;
-  status?: InvoiceStatus;
-  issuedFrom?: string;
-  issuedTo?: string;
-  marinaId?: string;
-  sortBy?: string;
-  sortDescending?: boolean;
-}) => apiClient.get<InvoiceDto[]>("/invoices", { params }).then((r) => r.data);
-
-export const getInvoice = (id: string) =>
-  apiClient.get<InvoiceDetailDto>(`/invoices/${id}`).then((r) => r.data);
-
-export const createInvoice = (data: {
-  customerAccountId: string; issuedDate: string; dueDate: string; notes?: string | null;
-}) => apiClient.post<string>("/invoices", data).then((r) => r.data);
-
-export const updateInvoiceDraft = (id: string, data: {
-  issuedDate: string; dueDate: string; notes?: string | null;
-}) => apiClient.put(`/invoices/${id}`, data);
-
-export const sendInvoice = (id: string) =>
-  apiClient.post(`/invoices/${id}/send`);
-
-export const voidInvoice = (id: string) =>
-  apiClient.post(`/invoices/${id}/void`);
-
-export const addLineItem = (invoiceId: string, data: {
-  description: string; quantity: number; unitPrice: number; slipAssignmentId?: string | null;
-}) => apiClient.post<string>(`/invoices/${invoiceId}/line-items`, data).then((r) => r.data);
-
-export const updateLineItem = (invoiceId: string, lineItemId: string, data: {
-  description: string; quantity: number; unitPrice: number;
-}) => apiClient.put(`/invoices/${invoiceId}/line-items/${lineItemId}`, data);
-
-export const removeLineItem = (invoiceId: string, lineItemId: string) =>
-  apiClient.delete(`/invoices/${invoiceId}/line-items/${lineItemId}`);
-
-export const recordPayment = (invoiceId: string, data: {
-  amount: number; paidOn: string; method: PaymentMethod; referenceNumber?: string | null; notes?: string | null;
-}) => apiClient.post<string>(`/invoices/${invoiceId}/payments`, data).then((r) => r.data);
-
-// ─── Staff ───────────────────────────────────────────────────────────────────
-
-export const inviteStaff = (data: {
-  marinaId: string; email: string; firstName: string; lastName: string; role: number;
-}) => apiClient.post<InviteStaffResult>("/staff/invite", data).then((r) => r.data);
-
-export const inviteCustomer = (customerAccountId: string) =>
-  apiClient.post<{ userId: string; temporaryPassword: string }>(
-    `/customers/${customerAccountId}/invite`
-  ).then((r) => r.data);
-
-// ─── Portal (Customer self-service) ──────────────────────────────────────────
-
-export interface PortalMeDto {
-  userId: string; email: string; firstName: string; lastName: string;
-  customerAccountId: string; accountDisplayName: string; billingEmail: string; billingPhone: string | null;
-}
-
-export interface PortalSlipDto {
-  id: string; slipId: string; slipName: string; dockName: string | null; marinaName: string;
-  boatName: string; assignmentType: number; startDate: string; endDate: string | null;
-  rateOverride: number | null; notes: string | null;
-}
-
-export interface PortalBoatDto {
-  id: string; name: string; make: string | null; model: string | null; year: number | null;
-  length: number; beam: number; draft: number; boatType: number;
-  registrationNumber: string | null; insuranceExpiresOn: string | null;
-}
-
-export interface PortalInvoiceDto {
-  id: string; invoiceNumber: string; status: InvoiceStatus;
-  issuedDate: string; dueDate: string; totalAmount: number;
-  amountPaid: number; balanceDue: number; notes: string | null; createdAt: string;
-}
-
-export interface PortalLineItemDto {
-  description: string; quantity: number; unitPrice: number; lineTotal: number;
-}
-
-export interface PortalPaymentDto {
-  amount: number; paidOn: string; method: PaymentMethod; referenceNumber: string | null;
-}
-
-export interface PortalInvoiceDetailDto extends PortalInvoiceDto {
-  subTotal: number; taxAmount: number;
-  lineItems: PortalLineItemDto[];
-  payments: PortalPaymentDto[];
-}
-
-export interface PortalMaintenanceRequestDto {
-  id: string; title: string; description: string; status: number; priority: number;
-  slipId: string | null; slipName: string | null; boatId: string | null; boatName: string | null;
-  submittedAt: string; resolvedAt: string | null;
-}
-
-export interface PortalAnnouncementDto {
-  id: string; title: string; body: string; isPinned: boolean;
-  publishedAt: string; expiresAt: string | null; marinaName: string;
-}
-
-export const getPortalMe = () =>
-  apiClient.get<PortalMeDto>("/portal/me").then((r) => r.data);
-
-export const getPortalSlip = () =>
-  apiClient.get<PortalSlipDto>("/portal/slip").then((r) => r.data).catch(() => null);
-
-export const getPortalBoats = () =>
-  apiClient.get<PortalBoatDto[]>("/portal/boats").then((r) => r.data);
-
-export const getPortalInvoices = () =>
-  apiClient.get<PortalInvoiceDto[]>("/portal/invoices").then((r) => r.data);
-
-export const getPortalInvoice = (id: string) =>
-  apiClient.get<PortalInvoiceDetailDto>(`/portal/invoices/${id}`).then((r) => r.data);
-
-export const getPortalMaintenanceRequests = () =>
-  apiClient.get<PortalMaintenanceRequestDto[]>("/portal/maintenance-requests").then((r) => r.data);
-
-export const submitMaintenanceRequest = (data: {
-  title: string; description: string; priority: number; slipId?: string | null; boatId?: string | null;
-}) => apiClient.post<string>("/portal/maintenance-requests", data).then((r) => r.data);
-
-export const getPortalAnnouncements = () =>
-  apiClient.get<PortalAnnouncementDto[]>("/portal/announcements").then((r) => r.data);
-
-// ─── Announcements (Operator) ─────────────────────────────────────────────────
-
-export interface AnnouncementDto {
+export interface InvoiceSummaryDto {
   id: string;
-  marinaId: string;
-  title: string;
-  body: string;
-  isPinned: boolean;
-  isPublished: boolean;
-  publishedAt: string | null;
-  expiresAt: string | null;
-  createdByUserId: string;
-  createdAt: string;
+  invoiceNumber: string;
+  status: string;
+  billingAccountName: string;
+  issuedDate: string;
+  dueDate: string;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
 }
 
-export const getAnnouncements = (marinaId: string, params?: {
-  includeDrafts?: boolean; includeExpired?: boolean;
-}) => apiClient.get<AnnouncementDto[]>(`/marinas/${marinaId}/announcements`, { params }).then((r) => r.data);
+export interface CreateInvoiceLineItemData {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  slipAssignmentId?: string | null;
+  reservationId?: string | null;
+}
 
-export const getAnnouncement = (marinaId: string, id: string) =>
-  apiClient.get<AnnouncementDto>(`/marinas/${marinaId}/announcements/${id}`).then((r) => r.data);
+export interface CreateInvoiceData {
+  billingAccountId: string;
+  reservationId?: string | null;
+  slipAssignmentId?: string | null;
+  issuedDate: string;
+  dueDate: string;
+  taxAmount: number;
+  notes?: string | null;
+  lineItems: CreateInvoiceLineItemData[];
+}
 
-export const createAnnouncement = (marinaId: string, data: {
-  title: string; body: string; publish: boolean; isPinned: boolean; expiresAt?: string | null;
-}) => apiClient.post<string>(`/marinas/${marinaId}/announcements`, data).then((r) => r.data);
+export interface RecordPaymentData {
+  amount: number;
+  paidOn: string;
+  method: string;
+  referenceNumber?: string | null;
+  notes?: string | null;
+}
 
-export const updateAnnouncement = (marinaId: string, id: string, data: {
-  title: string; body: string; isPinned: boolean; expiresAt?: string | null;
-}) => apiClient.put(`/marinas/${marinaId}/announcements/${id}`, data);
+export const getMarinaInvoices = (marinaId: string, params?: { status?: string; billingAccountId?: string }) =>
+  apiClient.get<InvoiceSummaryDto[]>(`/marinas/${marinaId}/invoices`, { params }).then((r) => r.data);
 
-export const publishAnnouncement = (marinaId: string, id: string) =>
-  apiClient.post(`/marinas/${marinaId}/announcements/${id}/publish`);
+export const getMarinaInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.get<InvoiceDto>(`/marinas/${marinaId}/invoices/${invoiceId}`).then((r) => r.data);
 
-export const unpublishAnnouncement = (marinaId: string, id: string) =>
-  apiClient.post(`/marinas/${marinaId}/announcements/${id}/unpublish`);
+export const createInvoice = (marinaId: string, data: CreateInvoiceData) =>
+  apiClient.post<InvoiceDto>(`/marinas/${marinaId}/invoices`, data).then((r) => r.data);
 
-export const deleteAnnouncement = (marinaId: string, id: string) =>
-  apiClient.delete(`/marinas/${marinaId}/announcements/${id}`);
+export const sendInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.post(`/marinas/${marinaId}/invoices/${invoiceId}/send`);
 
-// ─── Maintenance Requests (Operator) ─────────────────────────────────────────
+export const voidInvoice = (marinaId: string, invoiceId: string) =>
+  apiClient.post(`/marinas/${marinaId}/invoices/${invoiceId}/void`);
 
-export type MaintenanceStatus = 0 | 1 | 2 | 3 | 4; // Submitted|UnderReview|InProgress|Completed|Declined
-export type Priority = 0 | 1 | 2 | 3;              // Low|Medium|High|Urgent
+export const recordPayment = (marinaId: string, invoiceId: string, data: RecordPaymentData) =>
+  apiClient.post<PaymentDto>(`/marinas/${marinaId}/invoices/${invoiceId}/payments`, data).then((r) => r.data);
+
+export const getMyInvoices = () =>
+  apiClient.get<InvoiceSummaryDto[]>('/me/invoices').then((r) => r.data);
+
+// ─── Maintenance & Announcements ──────────────────────────────────────────────
+
+export interface WorkOrderSummaryDto {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  scheduledDate: string | null;
+  completedAt: string | null;
+}
 
 export interface MaintenanceRequestDto {
   id: string;
-  customerAccountId: string;
-  customerDisplayName: string;
+  marinaId: string;
+  boaterUserId: string;
+  boaterName: string;
+  billingAccountId: string | null;
+  vesselId: string | null;
   slipId: string | null;
-  slipName: string | null;
-  boatId: string | null;
-  boatName: string | null;
+  reservationId: string | null;
   title: string;
   description: string;
-  status: MaintenanceStatus;
-  priority: Priority;
+  status: string;
+  priority: string;
   submittedAt: string;
   resolvedAt: string | null;
-  workOrderId: string | null;
+  workOrder: WorkOrderSummaryDto | null;
 }
-
-export const getMaintenanceRequests = (params?: {
-  status?: MaintenanceStatus; priority?: Priority;
-}) => apiClient.get<MaintenanceRequestDto[]>("/maintenance-requests", { params }).then((r) => r.data);
-
-export const getMaintenanceRequest = (id: string) =>
-  apiClient.get<MaintenanceRequestDto>(`/maintenance-requests/${id}`).then((r) => r.data);
-
-export const updateMaintenanceStatus = (id: string, status: MaintenanceStatus) =>
-  apiClient.post(`/maintenance-requests/${id}/status`, { status });
-
-// ─── Work Orders ──────────────────────────────────────────────────────────────
-
-export type WorkOrderStatus = 0 | 1 | 2 | 3 | 4; // Open|InProgress|OnHold|Completed|Cancelled
 
 export interface WorkOrderDto {
   id: string;
+  marinaId: string;
   maintenanceRequestId: string | null;
-  maintenanceRequestTitle: string | null;
   title: string;
   description: string;
   assignedToUserId: string | null;
   assignedToName: string | null;
-  status: WorkOrderStatus;
-  priority: Priority;
+  status: string;
+  priority: string;
   scheduledDate: string | null;
   completedAt: string | null;
   notes: string | null;
   createdAt: string;
 }
 
-export const getWorkOrders = (params?: {
-  status?: WorkOrderStatus; assignedToUserId?: string;
-}) => apiClient.get<WorkOrderDto[]>("/work-orders", { params }).then((r) => r.data);
-
-export const getWorkOrder = (id: string) =>
-  apiClient.get<WorkOrderDto>(`/work-orders/${id}`).then((r) => r.data);
-
-export const createWorkOrder = (data: {
-  title: string; description: string; priority: Priority;
-  maintenanceRequestId?: string | null; assignedToUserId?: string | null;
-  scheduledDate?: string | null; notes?: string | null;
-}) => apiClient.post<string>("/work-orders", data).then((r) => r.data);
-
-export const updateWorkOrder = (id: string, data: {
-  title: string; description: string; priority: Priority; status: WorkOrderStatus;
-  assignedToUserId?: string | null; scheduledDate?: string | null; notes?: string | null;
-}) => apiClient.put(`/work-orders/${id}`, data);
-
-export const completeWorkOrder = (id: string, notes?: string | null) =>
-  apiClient.post(`/work-orders/${id}/complete`, { notes });
-
-// ─── Tenants (Platform) ───────────────────────────────────────────────────────
-
-export type SubscriptionTier = 0 | 1 | 2 | 3; // Free|Starter|Pro|Enterprise
-
-export interface TenantDto {
+export interface AnnouncementDto {
   id: string;
-  name: string;
-  slug: string;
-  isActive: boolean;
-  subscriptionTier: SubscriptionTier;
+  marinaId: string;
+  title: string;
+  body: string;
+  audience: string;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  isPinned: boolean;
+  createdByUserId: string;
   createdAt: string;
 }
 
-export interface TenantMarinaDto {
+// Maintenance requests
+export const submitMaintenanceRequest = (
+  marinaId: string,
+  data: { title: string; description: string; priority?: string; vesselId?: string; slipId?: string }
+) => apiClient.post<MaintenanceRequestDto>(`/marinas/${marinaId}/maintenance-requests`, data).then((r) => r.data);
+
+export const getMarinaMaintenanceRequests = (marinaId: string, status?: string) =>
+  apiClient.get<MaintenanceRequestDto[]>(`/marinas/${marinaId}/maintenance-requests`, { params: { status } }).then((r) => r.data);
+
+export const updateMaintenanceRequestStatus = (
+  marinaId: string, requestId: string, data: { status: string; priority: string }
+) => apiClient.patch<MaintenanceRequestDto>(`/marinas/${marinaId}/maintenance-requests/${requestId}`, data).then((r) => r.data);
+
+export const getMyMaintenanceRequests = () =>
+  apiClient.get<MaintenanceRequestDto[]>('/me/maintenance-requests').then((r) => r.data);
+
+// Work orders
+export const getMarinaWorkOrders = (marinaId: string, status?: string) =>
+  apiClient.get<WorkOrderDto[]>(`/marinas/${marinaId}/work-orders`, { params: { status } }).then((r) => r.data);
+
+export const createWorkOrder = (
+  marinaId: string,
+  data: { maintenanceRequestId?: string; title: string; description: string; priority?: string; scheduledDate?: string }
+) => apiClient.post<WorkOrderDto>(`/marinas/${marinaId}/work-orders`, data).then((r) => r.data);
+
+export const updateWorkOrder = (marinaId: string, workOrderId: string, data: Partial<WorkOrderDto>) =>
+  apiClient.put<WorkOrderDto>(`/marinas/${marinaId}/work-orders/${workOrderId}`, data).then((r) => r.data);
+
+// Announcements
+export const getMarinaAnnouncements = (marinaId: string) =>
+  apiClient.get<AnnouncementDto[]>(`/marinas/${marinaId}/announcements`).then((r) => r.data);
+
+export const createAnnouncement = (
+  marinaId: string,
+  data: { title: string; body: string; audience?: string; isPinned?: boolean; expiresAt?: string }
+) => apiClient.post<AnnouncementDto>(`/marinas/${marinaId}/announcements`, data).then((r) => r.data);
+
+export const updateAnnouncement = (
+  marinaId: string, announcementId: string,
+  data: { title: string; body: string; audience?: string; isPinned?: boolean; expiresAt?: string }
+) => apiClient.put<AnnouncementDto>(`/marinas/${marinaId}/announcements/${announcementId}`, data).then((r) => r.data);
+
+export const publishAnnouncement = (marinaId: string, announcementId: string) =>
+  apiClient.post<AnnouncementDto>(`/marinas/${marinaId}/announcements/${announcementId}/publish`).then((r) => r.data);
+
+export const deleteAnnouncement = (marinaId: string, announcementId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/announcements/${announcementId}`);
+
+export const getMyAnnouncements = () =>
+  apiClient.get<AnnouncementDto[]>('/me/announcements').then((r) => r.data);
+
+// ─── Lease Inquiries ──────────────────────────────────────────────────────────
+
+export interface LeaseInquiryDto {
   id: string;
-  name: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  requestingUserId: string;
+  requestingUserName: string;
+  requestingUserEmail: string;
+  vesselId?: string | null;
+  vesselName?: string | null;
+  desiredTerm: LeaseTerm;
+  desiredStartDate?: string | null;
+  message?: string | null;
+  agreedRateKind?: RateKind | null;
+  agreedBaseRate?: number | null;
+  assignmentStartDate?: string | null;
+  assignmentEndDate?: string | null;
+  marinaNote?: string | null;
+  status: LeaseInquiryStatus;
+  reviewedByUserName?: string | null;
+  reviewedAt?: string | null;
+  approvedByUserName?: string | null;
+  approvedAt?: string | null;
+  declinedByUserName?: string | null;
+  declinedAt?: string | null;
+  slipAssignmentId?: string | null;
+  billingAccountId?: string | null;
   createdAt: string;
 }
 
-export interface TenantOwnerDto {
-  userId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  isActive: boolean;
-}
+export const createLeaseInquiry = (slipId: string, data: {
+  vesselId?: string | null;
+  desiredTerm: LeaseTerm;
+  desiredStartDate?: string | null;
+  message?: string | null;
+}) => apiClient.post<LeaseInquiryDto>(`/slips/${slipId}/lease-inquiries`, data).then((r) => r.data);
 
-export interface TenantDetailDto extends TenantDto {
-  marinas: TenantMarinaDto[];
-  owner: TenantOwnerDto | null;
-}
+export const getMyLeaseInquiries = () =>
+  apiClient.get<LeaseInquiryDto[]>('/me/lease-inquiries').then((r) => r.data);
 
-export const getTenants = () =>
-  apiClient.get<TenantDto[]>("/tenants").then((r) => r.data);
+export const getMarinaLeaseInquiries = (marinaId: string, params?: { slipId?: string; status?: string }) =>
+  apiClient.get<LeaseInquiryDto[]>(`/marinas/${marinaId}/lease-inquiries`, { params }).then((r) => r.data);
 
-export const getTenant = (id: string) =>
-  apiClient.get<TenantDetailDto>(`/tenants/${id}`).then((r) => r.data);
+export const updateLeaseInquiry = (marinaId: string, id: string, data: {
+  agreedRateKind?: string | null;
+  agreedBaseRate?: number | null;
+  assignmentStartDate?: string | null;
+  assignmentEndDate?: string | null;
+  marinaNote?: string | null;
+  markUnderReview?: boolean;
+}) => apiClient.patch<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}`, data).then((r) => r.data);
 
-export const createTenant = (data: {
-  name: string; slug: string;
-  ownerEmail: string; ownerFirstName: string; ownerLastName: string; ownerPassword: string;
-  subscriptionTier?: SubscriptionTier;
-}) => apiClient.post<{ tenantId: string; ownerId: string }>("/tenants", data).then((r) => r.data);
+export const approveLeaseInquiry = (marinaId: string, id: string) =>
+  apiClient.post<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}/approve`).then((r) => r.data);
 
-export const updateTenant = (id: string, data: {
-  name: string; isActive: boolean; subscriptionTier: SubscriptionTier;
-}) => apiClient.put(`/tenants/${id}`, data);
+export const declineLeaseInquiry = (marinaId: string, id: string, reason?: string) =>
+  apiClient.post<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}/decline`, { reason }).then((r) => r.data);
 
-export const suspendTenant = (id: string) =>
-  apiClient.post(`/tenants/${id}/suspend`);
+export const withdrawLeaseInquiry = (id: string) =>
+  apiClient.post<LeaseInquiryDto>(`/lease-inquiries/${id}/withdraw`).then((r) => r.data);
 
-export const reactivateTenant = (id: string) =>
-  apiClient.post(`/tenants/${id}/reactivate`);
-
-// ─── Platform Users ───────────────────────────────────────────────────────────
-
-export type UserRole = 0 | 1 | 2 | 3; // PlatformOperator|MarinaOwner|MarinaStaff|Customer
-
-export interface PlatformUserDto {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  tenantId: string | null;
-  tenantName: string | null;
-  marinaId: string | null;
-  marinaName: string | null;
-  isActive: boolean;
-  createdAt: string;
-  lastLoginAt: string | null;
-}
-
-export const getPlatformUsers = (params?: {
-  search?: string; tenantId?: string; role?: UserRole;
-}) => apiClient.get<PlatformUserDto[]>("/platform/users", { params }).then((r) => r.data);
-
-export const getPlatformUser = (id: string) =>
-  apiClient.get<PlatformUserDto>(`/platform/users/${id}`).then((r) => r.data);
-
-export const resetUserPassword = (id: string, newPassword: string) =>
-  apiClient.post(`/platform/users/${id}/reset-password`, { newPassword });
-
-export const deactivatePlatformUser = (id: string) =>
-  apiClient.post(`/platform/users/${id}/deactivate`);
-
-export const reactivatePlatformUser = (id: string) =>
-  apiClient.post(`/platform/users/${id}/reactivate`);
-
-// ─── Audit Logs ───────────────────────────────────────────────────────────────
-
-export interface AuditLogDto {
-  id: string;
-  tenantId: string | null;
-  tenantName: string | null;
-  userId: string;
-  userEmail: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  before: string | null;
-  after: string | null;
-  ipAddress: string | null;
-  timestamp: string;
-}
+// ─── Platform Operator ────────────────────────────────────────────────────────
 
 export interface PagedResult<T> {
   items: T[];
@@ -559,30 +1052,91 @@ export interface PagedResult<T> {
   pageSize: number;
 }
 
-export const getAuditLogs = (params?: {
-  tenantId?: string; userId?: string; action?: string; entityType?: string;
-  from?: string; to?: string; page?: number; pageSize?: number;
-}) => apiClient.get<PagedResult<AuditLogDto>>("/platform/audit-logs", { params }).then((r) => r.data);
-
-// ─── Profile ──────────────────────────────────────────────────────────────────
-
-export interface ProfileDto {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string | null;
-  emailConfirmed: boolean;
+export interface TenantSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  subscriptionTier: string;
+  isActive: boolean;
   isDemo: boolean;
+  suspendedAt: string | null;
+  createdAt: string;
+  marinaCount: number;
 }
 
-export const getProfile = () =>
-  apiClient.get<ProfileDto>("/profile").then((r) => r.data);
+export interface UserSummaryDto {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  emailConfirmed: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+  isPlatformOperator: boolean;
+}
 
-export const updateProfile = (data: { firstName: string; lastName: string; phoneNumber?: string | null }) =>
-  apiClient.put<ProfileDto>("/profile", data).then((r) => r.data);
+export interface AuditLogEntryDto {
+  id: string;
+  tenantId: string | null;
+  actorUserId: string | null;
+  actorName: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  details: string | null;
+  occurredAt: string;
+}
 
-export const changeEmail = (data: { newEmail: string; currentPassword: string }) =>
-  apiClient.post("/profile/change-email", data);
+export interface ListingModerationDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  tenantId: string;
+  tenantName: string;
+  status: string;
+  startsAt: string;
+  endsAt: string;
+  basePricePerNight: number;
+  listedByKind: string;
+  createdAt: string;
+}
 
-export const changePassword = (data: { currentPassword: string; newPassword: string }) =>
-  apiClient.post("/profile/change-password", data);
+// Tenants
+export const getPlatformTenants = (search?: string, page = 1, pageSize = 25) =>
+  apiClient.get<PagedResult<TenantSummaryDto>>('/platform/tenants', { params: { search, page, pageSize } }).then((r) => r.data);
+
+export const createPlatformTenant = (data: { name: string; slug: string; billingEmail?: string; subscriptionTier?: string }) =>
+  apiClient.post<{ id: string; name: string; slug: string }>('/platform/tenants', data).then((r) => r.data);
+
+export const suspendTenant = (tenantId: string, reason?: string) =>
+  apiClient.patch(`/platform/tenants/${tenantId}/suspend`, { reason });
+
+export const reactivateTenant = (tenantId: string) =>
+  apiClient.patch(`/platform/tenants/${tenantId}/reactivate`, {});
+
+// Users
+export const searchPlatformUsers = (q?: string, page = 1, pageSize = 25) =>
+  apiClient.get<PagedResult<UserSummaryDto>>('/platform/users', { params: { q, page, pageSize } }).then((r) => r.data);
+
+export const forceSignOut = (userId: string) =>
+  apiClient.post(`/platform/users/${userId}/force-signout`);
+
+export const deactivatePlatformUser = (userId: string, reason?: string) =>
+  apiClient.patch(`/platform/users/${userId}/deactivate`, { reason });
+
+export const activatePlatformUser = (userId: string) =>
+  apiClient.patch(`/platform/users/${userId}/activate`, {});
+
+// Audit log
+export const getPlatformAuditLog = (tenantId?: string, page = 1, pageSize = 50) =>
+  apiClient.get<PagedResult<AuditLogEntryDto>>('/platform/audit-log', { params: { tenantId, page, pageSize } }).then((r) => r.data);
+
+// Listings
+export const getPlatformListings = (page = 1, pageSize = 50) =>
+  apiClient.get<PagedResult<ListingModerationDto>>('/platform/listings', { params: { page, pageSize } }).then((r) => r.data);
+
+export const removePlatformListing = (listingId: string, reason?: string) =>
+  apiClient.delete(`/platform/listings/${listingId}`, { data: { reason } });

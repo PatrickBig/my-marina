@@ -8,26 +8,32 @@ public class MarinaConfiguration : IEntityTypeConfiguration<Marina>
 {
     public void Configure(EntityTypeBuilder<Marina> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
-        builder.Property(e => e.Email).HasMaxLength(200).IsRequired();
-        builder.Property(e => e.PhoneNumber).HasMaxLength(50).IsRequired();
-        builder.Property(e => e.TimeZoneId).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.Website).HasMaxLength(500);
+        builder.ToTable("marinas");
+        builder.HasKey(m => m.Id);
 
-        builder.Property(e => e.OccupancyWarningThreshold).HasColumnType("numeric(5,2)");
-        builder.Property(e => e.OccupancyAlertThreshold).HasColumnType("numeric(5,2)");
+        builder.Property(m => m.Name).HasMaxLength(200).IsRequired();
+        builder.Property(m => m.Slug).HasMaxLength(100).IsRequired();
+        builder.Property(m => m.AddressStreet).HasMaxLength(200);
+        builder.Property(m => m.AddressCity).HasMaxLength(100);
+        builder.Property(m => m.AddressState).HasMaxLength(100);
+        builder.Property(m => m.AddressZip).HasMaxLength(20);
+        builder.Property(m => m.AddressCountry).HasMaxLength(100);
+        builder.Property(m => m.PhoneNumber).HasMaxLength(50);
+        builder.Property(m => m.Email).HasMaxLength(256);
+        builder.Property(m => m.Website).HasMaxLength(500);
+        builder.Property(m => m.Description).HasMaxLength(2000);
+        builder.Property(m => m.TimeZoneId).HasMaxLength(100).IsRequired();
+        builder.Property(m => m.MarinaType).HasConversion<string>();
 
-        builder.OwnsOne(e => e.Address, addr =>
-        {
-            addr.Property(a => a.Street).HasMaxLength(200).HasColumnName("AddressStreet");
-            addr.Property(a => a.City).HasMaxLength(100).HasColumnName("AddressCity");
-            addr.Property(a => a.State).HasMaxLength(100).HasColumnName("AddressState");
-            addr.Property(a => a.Zip).HasMaxLength(20).HasColumnName("AddressZip");
-            addr.Property(a => a.Country).HasMaxLength(100).HasColumnName("AddressCountry");
-        });
-        builder.HasMany(e => e.Docks).WithOne(d => d.Marina).HasForeignKey(d => d.MarinaId);
-        builder.HasMany(e => e.Slips).WithOne(s => s.Marina).HasForeignKey(s => s.MarinaId);
-        builder.HasMany(e => e.Announcements).WithOne(a => a.Marina).HasForeignKey(a => a.MarinaId);
+        builder.Property(m => m.Latitude).HasPrecision(9, 6);
+        builder.Property(m => m.Longitude).HasPrecision(9, 6);
+
+        builder.HasOne(m => m.Tenant)
+               .WithMany()
+               .HasForeignKey(m => m.TenantId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(m => m.Slug).IsUnique();
+        builder.HasIndex(m => m.TenantId);
     }
 }

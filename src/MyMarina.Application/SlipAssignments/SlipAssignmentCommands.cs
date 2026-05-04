@@ -1,21 +1,63 @@
-using MyMarina.Application.Abstractions;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Application.SlipAssignments;
 
 public sealed record CreateSlipAssignmentCommand(
+    Guid MarinaId,
+    Guid RequestingUserId,
     Guid SlipId,
-    Guid CustomerAccountId,
-    Guid BoatId,
+    Guid BillingAccountId,
+    Guid VesselId,
     AssignmentType AssignmentType,
     DateOnly StartDate,
     DateOnly? EndDate,
-    decimal? RateOverride,
-    string? Notes);
+    decimal BaseRate,
+    bool AllowOwnerSubletWhenAway,
+    bool AllowHolderSublet,
+    decimal OwnerSubletShareToHolder,
+    decimal HolderSubletShareToOwner,
+    string? Notes
+);
+
+public sealed record UpdateSlipAssignmentCommand(
+    Guid Id,
+    Guid MarinaId,
+    Guid RequestingUserId,
+    AssignmentType? AssignmentType,
+    DateOnly? StartDate,
+    DateOnly? EndDate,
+    decimal? BaseRate,
+    bool? AllowOwnerSubletWhenAway,
+    bool? AllowHolderSublet,
+    decimal? OwnerSubletShareToHolder,
+    decimal? HolderSubletShareToOwner,
+    string? Notes
+);
 
 public sealed record EndSlipAssignmentCommand(
-    Guid SlipAssignmentId,
-    DateOnly EndDate);
+    Guid Id,
+    Guid MarinaId,
+    Guid RequestingUserId,
+    DateOnly EndDate
+);
 
-public interface ICreateSlipAssignmentCommandHandler : ICommandHandler<CreateSlipAssignmentCommand, Guid>;
-public interface IEndSlipAssignmentCommandHandler : ICommandHandler<EndSlipAssignmentCommand>;
+public sealed record GetSlipAssignmentsQuery(
+    Guid MarinaId,
+    Guid RequestingUserId,
+    Guid? SlipId = null,
+    Guid? BillingAccountId = null,
+    bool ActiveOnly = false
+);
+
+public sealed record GetSlipAssignmentQuery(Guid Id, Guid MarinaId, Guid RequestingUserId);
+
+public sealed record CheckSlipAvailabilityQuery(
+    Guid SlipId,
+    Guid MarinaId,
+    DateOnly StartDate,
+    DateOnly? EndDate,
+    decimal? VesselLength = null,
+    decimal? VesselBeam = null,
+    decimal? VesselDraft = null,
+    Guid? ExcludeAssignmentId = null
+);

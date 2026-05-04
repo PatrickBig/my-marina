@@ -1,162 +1,63 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
-using MyMarina.Application.Announcements;
-using MyMarina.Domain.Enums;
+using MyMarina.Application.Maintenance;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
-[Route("marinas/{marinaId:guid}/announcements")]
-[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
+[Authorize]
 public class AnnouncementsController(
-    ICommandHandler<CreateAnnouncementCommand, Guid> createHandler,
-    ICommandHandler<UpdateAnnouncementCommand> updateHandler,
-    ICommandHandler<PublishAnnouncementCommand> publishHandler,
-    ICommandHandler<UnpublishAnnouncementCommand> unpublishHandler,
-    ICommandHandler<DeleteAnnouncementCommand> deleteHandler,
-    IQueryHandler<GetAnnouncementsQuery, IReadOnlyList<AnnouncementDto>> getListHandler,
-    IQueryHandler<GetAnnouncementQuery, AnnouncementDto?> getOneHandler) : ControllerBase
+    ICommandHandler<CreateAnnouncementCommand, AnnouncementDto> create,
+    ICommandHandler<UpdateAnnouncementCommand, AnnouncementDto> update,
+    ICommandHandler<PublishAnnouncementCommand, AnnouncementDto> publish,
+    ICommandHandler<DeleteAnnouncementCommand> delete,
+    IQueryHandler<GetMarinaAnnouncementsQuery, IReadOnlyList<AnnouncementDto>> getMarina,
+    IQueryHandler<GetMyAnnouncementsQuery, IReadOnlyList<AnnouncementDto>> getMy)
+    : ControllerBase
 {
-    // ── Queries ───────────────────────────────────────────────────────────────
+    // ── Boater: view published announcements ─────────────────────────────────
 
-    [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<AnnouncementDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
-        Guid marinaId,
-        [FromQuery] bool includeDrafts = true,
-        [FromQuery] bool includeExpired = true,
-        CancellationToken ct = default)
-    {
-        var items = await getListHandler.HandleAsync(
-            new GetAnnouncementsQuery(marinaId, includeDrafts, includeExpired), ct);
-        return Ok(items);
-    }
+    [HttpGet("me/announcements")]
+    public async Task<IActionResult> GetMyAnnouncements(CancellationToken ct)
+        => Ok(await getMy.HandleAsync(new GetMyAnnouncementsQuery(), ct));
 
-    [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(AnnouncementDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(Guid marinaId, Guid id, CancellationToken ct)
-    {
-        var dto = await getOneHandler.HandleAsync(new GetAnnouncementQuery(id), ct);
-        return dto is null ? NotFound() : Ok(dto);
-    }
+    // ── Marina: manage announcements ─────────────────────────────────────────
 
-    // ── Create ────────────────────────────────────────────────────────────────
+    [HttpGet("marinas/{marinaId:guid}/announcements")]
+    public async Task<IActionResult> GetMarinaAnnouncements(Guid marinaId, CancellationToken ct)
+        => Ok(await getMarina.HandleAsync(new GetMarinaAnnouncementsQuery(marinaId), ct));
 
-    [HttpPost]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("marinas/{marinaId:guid}/announcements")]
     public async Task<IActionResult> Create(
-        Guid marinaId, [FromBody] CreateAnnouncementRequest request, CancellationToken ct)
+        Guid marinaId, [FromBody] AnnouncementBody body, CancellationToken ct)
     {
-        var userIdStr = User.FindFirstValue("sub");
-        if (!Guid.TryParse(userIdStr, out var userId))
-            return Unauthorized();
-
-        var id = await createHandler.HandleAsync(
-            new CreateAnnouncementCommand(
-                marinaId,
-                request.Title,
-                request.Body,
-                request.Publish,
-                request.IsPinned,
-                request.ExpiresAt,
-                userId),
-            ct);
-        return CreatedAtAction(nameof(GetById), new { marinaId, id }, id);
+        var dto = await create.HandleAsync(new CreateAnnouncementCommand(
+            marinaId, body.Title, body.Body, body.Audience, body.IsPinned, body.ExpiresAt), ct);
+        return CreatedAtAction(nameof(GetMarinaAnnouncements), new { marinaId }, dto);
     }
 
-    // ── Update ────────────────────────────────────────────────────────────────
-
-    [HttpPut("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpPut("marinas/{marinaId:guid}/announcements/{announcementId:guid}")]
     public async Task<IActionResult> Update(
-        Guid marinaId, Guid id, [FromBody] UpdateAnnouncementRequest request, CancellationToken ct)
+        Guid marinaId, Guid announcementId, [FromBody] AnnouncementBody body, CancellationToken ct)
+        => Ok(await update.HandleAsync(new UpdateAnnouncementCommand(
+            marinaId, announcementId, body.Title, body.Body,
+            body.Audience, body.IsPinned, body.ExpiresAt), ct));
+
+    [HttpPost("marinas/{marinaId:guid}/announcements/{announcementId:guid}/publish")]
+    public async Task<IActionResult> Publish(
+        Guid marinaId, Guid announcementId, CancellationToken ct)
+        => Ok(await publish.HandleAsync(new PublishAnnouncementCommand(marinaId, announcementId), ct));
+
+    [HttpDelete("marinas/{marinaId:guid}/announcements/{announcementId:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid marinaId, Guid announcementId, CancellationToken ct)
     {
-        try
-        {
-            await updateHandler.HandleAsync(
-                new UpdateAnnouncementCommand(id, request.Title, request.Body, request.IsPinned, request.ExpiresAt), ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
+        await delete.HandleAsync(new DeleteAnnouncementCommand(marinaId, announcementId), ct);
+        return NoContent();
     }
 
-    // ── Publish / Unpublish ───────────────────────────────────────────────────
-
-    [HttpPost("{id:guid}/publish")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Publish(Guid marinaId, Guid id, CancellationToken ct)
-    {
-        try
-        {
-            await publishHandler.HandleAsync(new PublishAnnouncementCommand(id), ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-    }
-
-    [HttpPost("{id:guid}/unpublish")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Unpublish(Guid marinaId, Guid id, CancellationToken ct)
-    {
-        try
-        {
-            await unpublishHandler.HandleAsync(new UnpublishAnnouncementCommand(id), ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
-
-    // ── Delete ────────────────────────────────────────────────────────────────
-
-    [HttpDelete("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(Guid marinaId, Guid id, CancellationToken ct)
-    {
-        try
-        {
-            await deleteHandler.HandleAsync(new DeleteAnnouncementCommand(id), ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
+    public record AnnouncementBody(
+        string Title, string Body, string Audience = "Both",
+        bool IsPinned = false, DateTimeOffset? ExpiresAt = null);
 }
-
-// ── Request models ────────────────────────────────────────────────────────────
-
-public sealed record CreateAnnouncementRequest(
-    string Title,
-    string Body,
-    bool Publish,
-    bool IsPinned,
-    DateTimeOffset? ExpiresAt);
-
-public sealed record UpdateAnnouncementRequest(
-    string Title,
-    string Body,
-    bool IsPinned,
-    DateTimeOffset? ExpiresAt);

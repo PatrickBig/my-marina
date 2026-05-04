@@ -1,281 +1,110 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import axios from "axios";
-import { useRouter } from "@tanstack/react-router";
-import { ArrowLeft, MailWarning } from "lucide-react";
-import { getProfile, updateProfile, changeEmail, changePassword, resendConfirmationEmail } from "@/api/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { updateProfile } from '@/api/api';
+import { useAuthStore } from '@/store/authStore';
+import { NavBar } from '@/components/NavBar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// ─── Schemas ──────────────────────────────────────────────────────────────────
-
-const profileSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phoneNumber: z.string().optional().nullable(),
+const schema = z.object({
+  firstName: z.string().min(1, 'Required'),
+  lastName:  z.string().min(1, 'Required'),
+  phoneNumber: z.string().optional(),
 });
-type ProfileForm = z.infer<typeof profileSchema>;
 
-const emailSchema = z.object({
-  newEmail: z.string().email("Invalid email address"),
-  currentPassword: z.string().min(1, "Current password is required"),
-});
-type EmailForm = z.infer<typeof emailSchema>;
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(10, "Password must be at least 10 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your new password"),
-  })
-  .refine((d) => d.newPassword === d.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-type PasswordForm = z.infer<typeof passwordSchema>;
-
-// ─── Field helper ─────────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      {children}
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+type FormValues = z.infer<typeof schema>;
 
 export function ProfilePage() {
-  const router = useRouter();
-  const qc = useQueryClient();
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: getProfile,
-  });
+  const { user, setAuth, accessToken, refreshToken, expiresAt } = useAuthStore();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
-  // ── Personal info form ─────────────────────────────────────────────────────
-  const {
-    register: regProfile,
-    handleSubmit: submitProfile,
-    reset: resetProfile,
-    formState: { errors: profileErrors, isSubmitting: profileSubmitting, isDirty: profileDirty },
-  } = useForm<ProfileForm>({ resolver: zodResolver(profileSchema) });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } =
+    useForm<FormValues>({
+      resolver: zodResolver(schema),
+      defaultValues: {
+        firstName:   user?.firstName ?? '',
+        lastName:    user?.lastName  ?? '',
+        phoneNumber: user?.phoneNumber ?? '',
+      },
+    });
 
-  useEffect(() => {
-    if (profile)
-      resetProfile({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        phoneNumber: profile.phoneNumber ?? "",
-      });
-  }, [profile, resetProfile]);
-
-  const updateProfileMut = useMutation({
-    mutationFn: (values: ProfileForm) =>
-      updateProfile({
-        firstName: values.firstName,
-        lastName: values.lastName,
+  const onSubmit = async (values: FormValues) => {
+    setServerError(null);
+    setSaved(false);
+    try {
+      await updateProfile({
+        firstName:   values.firstName,
+        lastName:    values.lastName,
         phoneNumber: values.phoneNumber || null,
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Profile updated");
-    },
-    onError: () => toast.error("Failed to update profile"),
-  });
-
-  // ── Change email form ──────────────────────────────────────────────────────
-  const {
-    register: regEmail,
-    handleSubmit: submitEmail,
-    reset: resetEmail,
-    setError: setEmailError,
-    formState: { errors: emailErrors, isSubmitting: emailSubmitting },
-  } = useForm<EmailForm>({ resolver: zodResolver(emailSchema) });
-
-  const changeEmailMut = useMutation({
-    mutationFn: (values: EmailForm) =>
-      changeEmail({ newEmail: values.newEmail, currentPassword: values.currentPassword }),
-    onSuccess: () => {
-      toast.success("Email updated. Please log in again with your new email.");
-      resetEmail();
-    },
-    onError: (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setEmailError("newEmail", { message: "This email address is already in use" });
-      } else if (axios.isAxiosError(error) && error.response?.status === 400) {
-        setEmailError("currentPassword", {
-          message: error.response.data?.message ?? "Incorrect password",
+      });
+      if (user && accessToken && refreshToken && expiresAt) {
+        setAuth(accessToken, refreshToken, expiresAt, {
+          ...user,
+          firstName:   values.firstName,
+          lastName:    values.lastName,
+          phoneNumber: values.phoneNumber || null,
         });
-      } else {
-        toast.error("Failed to update email");
       }
-    },
-  });
-
-  // ── Change password form ───────────────────────────────────────────────────
-  const {
-    register: regPassword,
-    handleSubmit: submitPassword,
-    reset: resetPassword,
-    setError: setPasswordError,
-    formState: { errors: passwordErrors, isSubmitting: passwordSubmitting },
-  } = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) });
-
-  const changePasswordMut = useMutation({
-    mutationFn: (values: PasswordForm) =>
-      changePassword({ currentPassword: values.currentPassword, newPassword: values.newPassword }),
-    onSuccess: () => {
-      toast.success("Password changed successfully");
-      resetPassword();
-    },
-    onError: (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        const errors: string[] = error.response.data?.errors ?? [];
-        const message = errors.length > 0 ? errors.join(" ") : (error.response.data?.message ?? "Password change failed");
-        setPasswordError("newPassword", { message });
-      } else {
-        toast.error("Failed to change password");
-      }
-    },
-  });
-
-  const resendMut = useMutation({
-    mutationFn: resendConfirmationEmail,
-    onSuccess: () => toast.success("Confirmation email sent — check your inbox."),
-    onError: () => toast.error("Failed to send confirmation email."),
-  });
-
-  if (isLoading) return <div className="p-8 text-muted-foreground">Loading…</div>;
+      setSaved(true);
+    } catch {
+      setServerError('Something went wrong. Please try again.');
+    }
+  };
 
   return (
-    <div className="p-8 max-w-2xl space-y-8">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.history.back()} aria-label="Go back">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">My Profile</h1>
+    <div className="min-h-screen bg-slate-50">
+      <NavBar />
+      <div className="max-w-4xl mx-auto py-10 px-4">
+        <h1 className="text-xl font-semibold text-slate-800 mb-6">Profile</h1>
+
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-base">Personal information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="firstName">First name</Label>
+                  <Input id="firstName" {...register('firstName')} />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-600">{errors.firstName.message}</p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="lastName">Last name</Label>
+                  <Input id="lastName" {...register('lastName')} />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-600">{errors.lastName.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={user?.email ?? ''} disabled />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="phoneNumber">Phone number</Label>
+                <Input id="phoneNumber" type="tel" {...register('phoneNumber')} />
+              </div>
+
+              {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+              {saved && <p className="text-sm text-green-600">Saved.</p>}
+
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving…' : 'Save changes'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Demo account notice */}
-      {profile?.isDemo && (
-        <div className="rounded-lg border border-blue-300 bg-blue-50 px-4 py-3 text-blue-800 text-sm">
-          This is a demo account. Profile changes are disabled.
-        </div>
-      )}
-
-      {/* Email verification banner */}
-      {profile && !profile.emailConfirmed && (
-        <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800">
-          <MailWarning className="h-5 w-5 shrink-0" />
-          <p className="flex-1 text-sm">
-            Your email address <strong>{profile.email}</strong> has not been verified.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-yellow-400 bg-white text-yellow-800 hover:bg-yellow-100"
-            disabled={resendMut.isPending || resendMut.isSuccess}
-            onClick={() => resendMut.mutate()}
-          >
-            {resendMut.isPending ? "Sending…" : resendMut.isSuccess ? "Email sent!" : "Resend verification"}
-          </Button>
-        </div>
-      )}
-
-      {/* Personal Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitProfile((v) => updateProfileMut.mutate(v))} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="First Name" error={profileErrors.firstName?.message}>
-                <Input {...regProfile("firstName")} />
-              </Field>
-              <Field label="Last Name" error={profileErrors.lastName?.message}>
-                <Input {...regProfile("lastName")} />
-              </Field>
-            </div>
-            <Field label="Phone Number" error={profileErrors.phoneNumber?.message}>
-              <Input {...regProfile("phoneNumber")} placeholder="Optional" />
-            </Field>
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={!profileDirty || profileSubmitting || updateProfileMut.isPending || profile?.isDemo}
-              >
-                {updateProfileMut.isPending ? "Saving…" : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Change Email */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Change Email</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitEmail((v) => changeEmailMut.mutate(v))} className="space-y-4">
-            <Field label="New Email Address" error={emailErrors.newEmail?.message}>
-              <Input {...regEmail("newEmail")} type="email" />
-            </Field>
-            <Field label="Current Password" error={emailErrors.currentPassword?.message}>
-              <Input {...regEmail("currentPassword")} type="password" />
-            </Field>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={emailSubmitting || changeEmailMut.isPending || profile?.isDemo}>
-                {changeEmailMut.isPending ? "Updating…" : "Update Email"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Change Password */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitPassword((v) => changePasswordMut.mutate(v))} className="space-y-4">
-            <Field label="Current Password" error={passwordErrors.currentPassword?.message}>
-              <Input {...regPassword("currentPassword")} type="password" />
-            </Field>
-            <Field label="New Password" error={passwordErrors.newPassword?.message}>
-              <Input {...regPassword("newPassword")} type="password" />
-            </Field>
-            <Field label="Confirm New Password" error={passwordErrors.confirmPassword?.message}>
-              <Input {...regPassword("confirmPassword")} type="password" />
-            </Field>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={passwordSubmitting || changePasswordMut.isPending || profile?.isDemo}>
-                {changePasswordMut.isPending ? "Changing…" : "Change Password"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   );
 }

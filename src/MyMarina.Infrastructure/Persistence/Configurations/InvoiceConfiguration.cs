@@ -8,25 +8,43 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 {
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.InvoiceNumber).HasMaxLength(50).IsRequired();
-        builder.HasIndex(e => new { e.TenantId, e.InvoiceNumber }).IsUnique();
-        builder.Property(e => e.SubTotal).HasPrecision(12, 2);
-        builder.Property(e => e.TaxAmount).HasPrecision(12, 2);
-        builder.Property(e => e.TotalAmount).HasPrecision(12, 2);
-        builder.Property(e => e.AmountPaid).HasPrecision(12, 2);
+        builder.ToTable("invoices");
+        builder.HasKey(i => i.Id);
 
-        // BalanceDue is a computed property — not persisted
-        builder.Ignore(e => e.BalanceDue);
+        builder.Property(i => i.InvoiceNumber).HasMaxLength(50).IsRequired();
+        builder.Property(i => i.Status).IsRequired();
+        builder.Property(i => i.SubTotal).HasColumnType("numeric(18,2)");
+        builder.Property(i => i.TaxAmount).HasColumnType("numeric(18,2)");
+        builder.Property(i => i.TotalAmount).HasColumnType("numeric(18,2)");
+        builder.Property(i => i.AmountPaid).HasColumnType("numeric(18,2)");
+        builder.Property(i => i.Notes).HasMaxLength(2000);
 
-        builder.HasOne<Marina>()
-            .WithMany()
-            .HasForeignKey(e => e.MarinaId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // BalanceDue is computed in code; ignore for persistence
+        builder.Ignore(i => i.BalanceDue);
 
-        builder.HasMany(e => e.LineItems).WithOne(li => li.Invoice)
-            .HasForeignKey(li => li.InvoiceId);
-        builder.HasMany(e => e.Payments).WithOne(p => p.Invoice)
-            .HasForeignKey(p => p.InvoiceId);
+        builder.HasOne(i => i.Marina)
+               .WithMany()
+               .HasForeignKey(i => i.MarinaId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(i => i.BillingAccount)
+               .WithMany()
+               .HasForeignKey(i => i.BillingAccountId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(i => i.LineItems)
+               .WithOne(l => l.Invoice)
+               .HasForeignKey(l => l.InvoiceId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(i => i.Payments)
+               .WithOne(p => p.Invoice)
+               .HasForeignKey(p => p.InvoiceId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(i => i.MarinaId);
+        builder.HasIndex(i => i.BillingAccountId);
+        builder.HasIndex(i => new { i.MarinaId, i.InvoiceNumber }).IsUnique();
+        builder.HasIndex(i => new { i.MarinaId, i.Status });
     }
 }

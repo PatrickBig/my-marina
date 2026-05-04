@@ -1,66 +1,69 @@
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
-using MyMarina.Application.Auth;
+using MyMarina.Application.Identity;
 
 namespace MyMarina.IntegrationTests;
 
-/// <summary>
-/// Tests for POST /auth/login.
-/// Uses the platform operator seeded by ApiWebApplicationFactory so that
-/// at least one real user exists in the DB.
-/// </summary>
 public class AuthTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebApplicationFactory>
 {
-    private readonly HttpClient _client = factory.CreateClient();
-
     [Fact]
-    public async Task Login_with_valid_credentials_returns_200_and_token()
+    public async Task Register_ValidRequest_Returns204()
     {
-        var response = await _client.PostAsJsonAsync("/auth/login", new
+        var client = factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email    = ApiWebApplicationFactory.PlatformOperatorEmail,
-            Password = ApiWebApplicationFactory.PlatformOperatorPassword,
+            email = $"new-{Guid.NewGuid():N}@example.com",
+            password = "TestPass!word1",
+            firstName = "Test",
+            lastName = "User",
+            marketingOptIn = false,
+            termsAccepted = true,
         });
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.Content.ReadFromJsonAsync<LoginResult>();
-        body.Should().NotBeNull();
-        body!.Token.Should().NotBeNullOrWhiteSpace();
-        body.Email.Should().Be(ApiWebApplicationFactory.PlatformOperatorEmail);
-        body.Role.Should().Be("PlatformAdmin");
-        body.ExpiresAt.Should().BeAfter(DateTimeOffset.UtcNow);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
-    public async Task Login_with_wrong_password_returns_401()
+    public async Task Login_ValidCredentials_ReturnsTokens()
     {
-        var response = await _client.PostAsJsonAsync("/auth/login", new
+        var client = factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email    = ApiWebApplicationFactory.PlatformOperatorEmail,
-            Password = "WrongPassword!99",
+            email = ApiWebApplicationFactory.PlatformOperatorEmail,
+            password = ApiWebApplicationFactory.PlatformOperatorPassword,
         });
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(body?.AccessToken);
+        Assert.NotNull(body?.RefreshToken);
     }
 
     [Fact]
-    public async Task Login_with_unknown_email_returns_401()
+    public async Task Login_InvalidCredentials_Returns401()
     {
-        var response = await _client.PostAsJsonAsync("/auth/login", new
+        var client = factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email    = "nobody@nowhere.io",
-            Password = "whatever",
+            email = "nobody@example.com",
+            password = "WrongPass!word1",
         });
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
-    public async Task Accessing_protected_endpoint_without_token_returns_401()
+    public async Task GetMe_WithValidToken_ReturnsProfile()
     {
-        var response = await _client.GetAsync("/tenants");
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var client = factory.CreatePlatformOperatorClient();
+        var response = await client.GetAsync("/me");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<MeResponse>();
+        Assert.Equal(ApiWebApplicationFactory.PlatformOperatorEmail, body?.Email);
+    }
+
+    [Fact]
+    public async Task GetMe_Unauthenticated_Returns401()
+    {
+        var client = factory.CreateClient();
+        var response = await client.GetAsync("/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

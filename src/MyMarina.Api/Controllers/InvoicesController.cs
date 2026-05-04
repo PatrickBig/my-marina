@@ -1,257 +1,253 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
-using MyMarina.Application.Invoices;
-using MyMarina.Domain.Enums;
+using MyMarina.Application.Invoicing;
 
 namespace MyMarina.Api.Controllers;
 
 [ApiController]
-[Route("invoices")]
-[Authorize(Roles = "TenantOwner,MarinaManager,MarinaStaff")]
+[Authorize]
 public class InvoicesController(
-    ICommandHandler<CreateInvoiceCommand, Guid> createHandler,
-    ICommandHandler<UpdateInvoiceDraftCommand> updateDraftHandler,
-    ICommandHandler<AddLineItemCommand, Guid> addLineItemHandler,
-    ICommandHandler<UpdateLineItemCommand> updateLineItemHandler,
-    ICommandHandler<RemoveLineItemCommand> removeLineItemHandler,
-    ICommandHandler<SendInvoiceCommand> sendHandler,
-    ICommandHandler<VoidInvoiceCommand> voidHandler,
-    ICommandHandler<RecordPaymentCommand, Guid> recordPaymentHandler,
-    IQueryHandler<GetInvoicesQuery, IReadOnlyList<InvoiceDto>> getInvoicesHandler,
-    IQueryHandler<GetInvoiceQuery, InvoiceDetailDto?> getInvoiceHandler) : ControllerBase
+    ICommandHandler<CreateInvoiceCommand, InvoiceDto> createInvoice,
+    ICommandHandler<AddLineItemCommand, InvoiceLineItemDto> addLineItem,
+    ICommandHandler<RemoveLineItemCommand> removeLineItem,
+    ICommandHandler<SendInvoiceCommand> sendInvoice,
+    ICommandHandler<VoidInvoiceCommand> voidInvoice,
+    ICommandHandler<RecordPaymentCommand, PaymentDto> recordPayment,
+    IQueryHandler<GetInvoicesQuery, IReadOnlyList<InvoiceSummaryDto>> getInvoices,
+    IQueryHandler<GetInvoiceQuery, InvoiceDto> getInvoice,
+    IQueryHandler<GetMyInvoicesQuery, IReadOnlyList<InvoiceSummaryDto>> getMyInvoices,
+    IUserContext userContext)
+    : ControllerBase
 {
-    // ── Queries ───────────────────────────────────────────────────────────────
+    // ─── Marina-side endpoints ──────────────────────────────────────────────────
 
-    [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<InvoiceDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] Guid? customerAccountId,
-        [FromQuery] InvoiceStatus? status,
-        [FromQuery] DateOnly? issuedFrom,
-        [FromQuery] DateOnly? issuedTo,
-        [FromQuery] Guid? marinaId,
-        [FromQuery] string? sortBy,
-        [FromQuery] bool sortDescending = true,
-        CancellationToken ct = default)
+    // POST /marinas/{marinaId}/invoices
+    [HttpPost("marinas/{marinaId:guid}/invoices")]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreateInvoice(Guid marinaId, [FromBody] CreateInvoiceRequest request, CancellationToken ct)
     {
-        var invoices = await getInvoicesHandler.HandleAsync(
-            new GetInvoicesQuery(customerAccountId, status, issuedFrom, issuedTo, marinaId, sortBy, sortDescending), ct);
-        return Ok(invoices);
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
+        var result = await createInvoice.HandleAsync(new CreateInvoiceCommand(
+            MarinaId: marinaId,
+            BillingAccountId: request.BillingAccountId,
+            ReservationId: request.ReservationId,
+            SlipAssignmentId: request.SlipAssignmentId,
+            IssuedDate: request.IssuedDate,
+            DueDate: request.DueDate,
+            TaxAmount: request.TaxAmount,
+            Notes: request.Notes,
+            LineItems: request.LineItems.Select(l => new CreateInvoiceLineItemData(
+                l.Description, l.Quantity, l.UnitPrice, l.SlipAssignmentId, l.ReservationId)).ToList(),
+            RequestingUserId: userContext.UserId!.Value), ct);
+
+        return CreatedAtAction(nameof(GetInvoice), new { marinaId, invoiceId = result.Id }, result);
     }
 
-    [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(InvoiceDetailDto), StatusCodes.Status200OK)]
+    // GET /marinas/{marinaId}/invoices
+    [HttpGet("marinas/{marinaId:guid}/invoices")]
+    [ProducesResponseType(typeof(IReadOnlyList<InvoiceSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetInvoices(
+        Guid marinaId,
+        [FromQuery] string? status,
+        [FromQuery] Guid? billingAccountId,
+        CancellationToken ct)
+    {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
+        var result = await getInvoices.HandleAsync(new GetInvoicesQuery(marinaId, status, billingAccountId), ct);
+        return Ok(result);
+    }
+
+    // GET /marinas/{marinaId}/invoices/{invoiceId}
+    [HttpGet("marinas/{marinaId:guid}/invoices/{invoiceId:guid}")]
+    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    public async Task<IActionResult> GetInvoice(Guid marinaId, Guid invoiceId, CancellationToken ct)
     {
-        var invoice = await getInvoiceHandler.HandleAsync(new GetInvoiceQuery(id), ct);
-        return invoice is null ? NotFound() : Ok(invoice);
-    }
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
 
-    // ── Invoice lifecycle ─────────────────────────────────────────────────────
-
-    [HttpPost]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreateInvoiceCommand command, CancellationToken ct)
-    {
         try
         {
-            var id = await createHandler.HandleAsync(command, ct);
-            return CreatedAtAction(nameof(GetById), new { id }, id);
+            var result = await getInvoice.HandleAsync(new GetInvoiceQuery(invoiceId, marinaId), ct);
+            return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (InvalidOperationException)
         {
-            return BadRequest(new { message = ex.Message });
+            return NotFound();
         }
     }
 
-    [HttpPut("{id:guid}")]
+    // POST /marinas/{marinaId}/invoices/{invoiceId}/line-items
+    [HttpPost("marinas/{marinaId:guid}/invoices/{invoiceId:guid}/line-items")]
+    [ProducesResponseType(typeof(InvoiceLineItemDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> AddLineItem(Guid marinaId, Guid invoiceId, [FromBody] AddLineItemRequest request, CancellationToken ct)
+    {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
+        try
+        {
+            var result = await addLineItem.HandleAsync(new AddLineItemCommand(
+                InvoiceId: invoiceId,
+                MarinaId: marinaId,
+                Description: request.Description,
+                Quantity: request.Quantity,
+                UnitPrice: request.UnitPrice,
+                SlipAssignmentId: request.SlipAssignmentId,
+                ReservationId: request.ReservationId,
+                RequestingUserId: userContext.UserId!.Value), ct);
+
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ProblemDetails { Detail = ex.Message });
+        }
+    }
+
+    // DELETE /marinas/{marinaId}/invoices/{invoiceId}/line-items/{lineItemId}
+    [HttpDelete("marinas/{marinaId:guid}/invoices/{invoiceId:guid}/line-items/{lineItemId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> UpdateDraft(Guid id, [FromBody] UpdateInvoiceDraftRequest request, CancellationToken ct)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RemoveLineItem(Guid marinaId, Guid invoiceId, Guid lineItemId, CancellationToken ct)
     {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
         try
         {
-            await updateDraftHandler.HandleAsync(
-                new UpdateInvoiceDraftCommand(id, request.IssuedDate, request.DueDate, request.Notes), ct);
+            await removeLineItem.HandleAsync(new RemoveLineItemCommand(invoiceId, lineItemId, marinaId, userContext.UserId!.Value), ct);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return BadRequest(new ProblemDetails { Detail = ex.Message });
         }
     }
 
-    [HttpPost("{id:guid}/send")]
+    // POST /marinas/{marinaId}/invoices/{invoiceId}/send
+    [HttpPost("marinas/{marinaId:guid}/invoices/{invoiceId:guid}/send")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Send(Guid id, CancellationToken ct)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> SendInvoice(Guid marinaId, Guid invoiceId, CancellationToken ct)
     {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
         try
         {
-            await sendHandler.HandleAsync(new SendInvoiceCommand(id), ct);
+            await sendInvoice.HandleAsync(new SendInvoiceCommand(invoiceId, marinaId, userContext.UserId!.Value), ct);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return BadRequest(new ProblemDetails { Detail = ex.Message });
         }
     }
 
-    [HttpPost("{id:guid}/void")]
-    [Authorize(Roles = "TenantOwner,MarinaManager")]
+    // POST /marinas/{marinaId}/invoices/{invoiceId}/void
+    [HttpPost("marinas/{marinaId:guid}/invoices/{invoiceId:guid}/void")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Void(Guid id, CancellationToken ct)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> VoidInvoice(Guid marinaId, Guid invoiceId, CancellationToken ct)
     {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
         try
         {
-            await voidHandler.HandleAsync(new VoidInvoiceCommand(id), ct);
+            await voidInvoice.HandleAsync(new VoidInvoiceCommand(invoiceId, marinaId, userContext.UserId!.Value), ct);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return BadRequest(new ProblemDetails { Detail = ex.Message });
         }
     }
 
-    // ── Line items ────────────────────────────────────────────────────────────
-
-    [HttpPost("{id:guid}/line-items")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> AddLineItem(Guid id, [FromBody] AddLineItemRequest request, CancellationToken ct)
+    // POST /marinas/{marinaId}/invoices/{invoiceId}/payments
+    [HttpPost("marinas/{marinaId:guid}/invoices/{invoiceId:guid}/payments")]
+    [ProducesResponseType(typeof(PaymentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RecordPayment(Guid marinaId, Guid invoiceId, [FromBody] RecordPaymentRequest request, CancellationToken ct)
     {
+        if (!userContext.HasMarinaAccess(marinaId))
+            return Forbid();
+
         try
         {
-            var lineItemId = await addLineItemHandler.HandleAsync(
-                new AddLineItemCommand(id, request.Description, request.Quantity, request.UnitPrice, request.SlipAssignmentId),
-                ct);
-            return CreatedAtAction(nameof(GetById), new { id }, lineItemId);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
+            var result = await recordPayment.HandleAsync(new RecordPaymentCommand(
+                InvoiceId: invoiceId,
+                MarinaId: marinaId,
+                Amount: request.Amount,
+                PaidOn: request.PaidOn,
+                Method: request.Method,
+                ReferenceNumber: request.ReferenceNumber,
+                Notes: request.Notes,
+                RequestingUserId: userContext.UserId!.Value), ct);
+
+            return StatusCode(StatusCodes.Status201Created, result);
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return BadRequest(new ProblemDetails { Detail = ex.Message });
         }
     }
 
-    [HttpPut("{id:guid}/line-items/{lineItemId:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> UpdateLineItem(
-        Guid id, Guid lineItemId, [FromBody] UpdateLineItemRequest request, CancellationToken ct)
+    // ─── Boater (customer) side ─────────────────────────────────────────────────
+
+    // GET /me/invoices
+    [HttpGet("me/invoices")]
+    [ProducesResponseType(typeof(IReadOnlyList<InvoiceSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyInvoices(CancellationToken ct)
     {
-        try
-        {
-            await updateLineItemHandler.HandleAsync(
-                new UpdateLineItemCommand(id, lineItemId, request.Description, request.Quantity, request.UnitPrice),
-                ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-    }
+        var billingAccountIds = userContext.BillingAccounts
+            .Select(b => b.BillingAccountId)
+            .ToList();
 
-    [HttpDelete("{id:guid}/line-items/{lineItemId:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> RemoveLineItem(Guid id, Guid lineItemId, CancellationToken ct)
-    {
-        try
-        {
-            await removeLineItemHandler.HandleAsync(new RemoveLineItemCommand(id, lineItemId), ct);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
-    }
-
-    // ── Payments ──────────────────────────────────────────────────────────────
-
-    [HttpPost("{id:guid}/payments")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> RecordPayment(Guid id, [FromBody] RecordPaymentRequest request, CancellationToken ct)
-    {
-        var userIdStr = User.FindFirstValue("sub");
-        if (!Guid.TryParse(userIdStr, out var userId))
-            return Unauthorized();
-
-        try
-        {
-            var paymentId = await recordPaymentHandler.HandleAsync(
-                new RecordPaymentCommand(id, request.Amount, request.PaidOn, request.Method,
-                    request.ReferenceNumber, request.Notes, userId),
-                ct);
-            return CreatedAtAction(nameof(GetById), new { id }, paymentId);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return ex.Message.Contains("exceeds")
-                ? BadRequest(new { message = ex.Message })
-                : Conflict(new { message = ex.Message });
-        }
+        var result = await getMyInvoices.HandleAsync(new GetMyInvoicesQuery(billingAccountIds), ct);
+        return Ok(result);
     }
 }
 
-// ── Request models ────────────────────────────────────────────────────────────
+// ─── Request DTOs ─────────────────────────────────────────────────────────────
 
-public sealed record UpdateInvoiceDraftRequest(DateOnly IssuedDate, DateOnly DueDate, string? Notes);
+public sealed record InvoiceLineItemRequest(
+    string Description,
+    decimal Quantity,
+    decimal UnitPrice,
+    Guid? SlipAssignmentId,
+    Guid? ReservationId);
+
+public sealed record CreateInvoiceRequest(
+    Guid BillingAccountId,
+    Guid? ReservationId,
+    Guid? SlipAssignmentId,
+    DateOnly IssuedDate,
+    DateOnly DueDate,
+    decimal TaxAmount,
+    string? Notes,
+    IReadOnlyList<InvoiceLineItemRequest> LineItems);
 
 public sealed record AddLineItemRequest(
     string Description,
     decimal Quantity,
     decimal UnitPrice,
-    Guid? SlipAssignmentId);
-
-public sealed record UpdateLineItemRequest(string Description, decimal Quantity, decimal UnitPrice);
+    Guid? SlipAssignmentId,
+    Guid? ReservationId);
 
 public sealed record RecordPaymentRequest(
     decimal Amount,
     DateOnly PaidOn,
-    PaymentMethod Method,
+    string Method,
     string? ReferenceNumber,
     string? Notes);

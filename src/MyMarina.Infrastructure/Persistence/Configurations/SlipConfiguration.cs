@@ -8,20 +8,36 @@ public class SlipConfiguration : IEntityTypeConfiguration<Slip>
 {
     public void Configure(EntityTypeBuilder<Slip> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Name).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.MaxLength).HasPrecision(8, 2);
-        builder.Property(e => e.MaxBeam).HasPrecision(8, 2);
-        builder.Property(e => e.MaxDraft).HasPrecision(8, 2);
-        builder.Property(e => e.DailyRate).HasPrecision(10, 2);
-        builder.Property(e => e.MonthlyRate).HasPrecision(10, 2);
-        builder.Property(e => e.AnnualRate).HasPrecision(10, 2);
-        builder.Property(e => e.Latitude).HasPrecision(10, 7);
-        builder.Property(e => e.Longitude).HasPrecision(11, 7);
+        builder.ToTable("slips");
+        builder.HasKey(s => s.Id);
 
-        // DockId is nullable — null = free-standing mooring or anchorage
-        builder.HasOne(e => e.Dock).WithMany(d => d.Slips)
-            .HasForeignKey(e => e.DockId)
-            .IsRequired(false);
+        builder.Property(s => s.Name).HasMaxLength(100).IsRequired();
+        builder.Property(s => s.SlipType).HasConversion<string>();
+        builder.Property(s => s.Status).HasConversion<string>();
+        builder.Property(s => s.HostMarinaPolicy).HasConversion<string>();
+        builder.Property(s => s.Electric).HasConversion<int?>();
+
+        builder.Property(s => s.MaxLength).HasPrecision(8, 2);
+        builder.Property(s => s.MaxBeam).HasPrecision(8, 2);
+        builder.Property(s => s.MaxDraft).HasPrecision(8, 2);
+        builder.Property(s => s.Latitude).HasPrecision(9, 6);
+        builder.Property(s => s.Longitude).HasPrecision(9, 6);
+
+        builder.Property(s => s.AddressStreet).HasMaxLength(200);
+        builder.Property(s => s.AddressCity).HasMaxLength(100);
+        builder.Property(s => s.AddressState).HasMaxLength(100);
+        builder.Property(s => s.AddressZip).HasMaxLength(20);
+        builder.Property(s => s.AddressCountry).HasMaxLength(100);
+        builder.Property(s => s.Notes).HasMaxLength(2000);
+
+        builder.Property(s => s.DefaultTransientRateKind).HasConversion<string?>();
+        builder.Property(s => s.DefaultTransientBaseRate).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultTransientMinCharge).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultLeaseRateKind).HasConversion<string?>();
+        builder.Property(s => s.DefaultLeaseBaseRate).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultLeaseTerm).HasConversion<string?>();
+
+        builder.HasIndex(s => s.MarinaId);
+        builder.HasIndex(s => s.DockId).HasFilter("\"DockId\" IS NOT NULL");
     }
 }

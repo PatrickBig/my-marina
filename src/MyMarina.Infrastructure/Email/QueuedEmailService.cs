@@ -3,33 +3,101 @@ using MyMarina.Infrastructure.Email.Templates;
 
 namespace MyMarina.Infrastructure.Email;
 
-/// <summary>
-/// IEmailService implementation that enqueues email sends as Hangfire background jobs via IMessageBus.
-/// The actual SMTP send happens in SmtpEmailMessageHandler on a worker thread.
-/// </summary>
 public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
 {
-    public Task SendCustomerInviteAsync(string toEmail, string customerName, string marinaName,
-        string temporaryPassword, string confirmationLink, CancellationToken ct = default)
-    {
-        var subject = $"Welcome to {marinaName} — activate your account";
-        var body = EmailTemplates.CustomerInvite(customerName, marinaName, temporaryPassword, confirmationLink);
-        return messageBus.PublishAsync(new SendEmailMessage(toEmail, customerName, subject, body), ct);
-    }
-
-    public Task SendStaffInviteAsync(string toEmail, string staffName, string marinaName,
-        string role, string temporaryPassword, string confirmationLink, CancellationToken ct = default)
-    {
-        var subject = $"You've been invited to {marinaName}";
-        var body = EmailTemplates.StaffInvite(staffName, marinaName, role, temporaryPassword, confirmationLink);
-        return messageBus.PublishAsync(new SendEmailMessage(toEmail, staffName, subject, body), ct);
-    }
-
-    public Task SendEmailConfirmationAsync(string toEmail, string recipientName,
-        string confirmationLink, CancellationToken ct = default)
+    public Task SendEmailConfirmationAsync(string toEmail, string userId, string token,
+        CancellationToken ct = default)
     {
         const string subject = "Confirm your MyMarina email address";
-        var body = EmailTemplates.EmailConfirmation(recipientName, confirmationLink);
-        return messageBus.PublishAsync(new SendEmailMessage(toEmail, recipientName, subject, body), ct);
+        var body = EmailTemplates.EmailConfirmation(toEmail, userId, token);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendPasswordResetAsync(string toEmail, string userId, string token,
+        CancellationToken ct = default)
+    {
+        const string subject = "Reset your MyMarina password";
+        var body = EmailTemplates.PasswordReset(toEmail, userId, token);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendMembershipInviteAsync(string toEmail, string marinaName, string invitedByName,
+        Guid membershipId, CancellationToken ct = default)
+    {
+        var subject = $"You've been invited to join {marinaName} on MyMarina";
+        var body = EmailTemplates.MembershipInvite(toEmail, marinaName, invitedByName, membershipId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendGhostVesselClaimAsync(string toEmail, string marinaName, string vesselName,
+        Guid vesselId, CancellationToken ct = default)
+    {
+        var subject = $"Your boat has been added at {marinaName}";
+        var body = EmailTemplates.GhostVesselClaim(toEmail, marinaName, vesselName, vesselId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendBillingAccountInviteAsync(string toEmail, string marinaName, string invitedByName,
+        Guid memberId, CancellationToken ct = default)
+    {
+        var subject = $"You've been added to a billing account at {marinaName}";
+        var body = EmailTemplates.BillingAccountInvite(toEmail, marinaName, invitedByName, memberId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendReservationRequestAsync(string toHostEmail, string marinaName, string boaterName,
+        string slipName, DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"New booking request for {slipName} at {marinaName}";
+        var body = EmailTemplates.ReservationRequest(toHostEmail, marinaName, boaterName, slipName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toHostEmail, toHostEmail, subject, body), ct);
+    }
+
+    public Task SendReservationConfirmedAsync(string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt, decimal total,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Your booking at {marinaName} is confirmed";
+        var body = EmailTemplates.ReservationConfirmed(toBoaterEmail, slipName, marinaName, arrivesAt, departsAt, total, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toBoaterEmail, toBoaterEmail, subject, body), ct);
+    }
+
+    public Task SendReservationDeclinedAsync(string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Your booking request at {marinaName} was declined";
+        var body = EmailTemplates.ReservationDeclined(toBoaterEmail, slipName, marinaName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toBoaterEmail, toBoaterEmail, subject, body), ct);
+    }
+
+    public Task SendReservationCancelledAsync(string toEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId, CancellationToken ct = default)
+    {
+        var subject = $"Booking cancelled — {slipName} at {marinaName}";
+        var body = EmailTemplates.ReservationCancelled(toEmail, slipName, marinaName, arrivesAt, departsAt, reservationId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendInvoiceSentAsync(string toEmail, string marinaName, string billingAccountName,
+        string invoiceNumber, decimal totalAmount, DateOnly dueDate,
+        Guid invoiceId, CancellationToken ct = default)
+    {
+        var subject = $"Invoice {invoiceNumber} from {marinaName}";
+        var body = EmailTemplates.InvoiceSent(toEmail, marinaName, billingAccountName, invoiceNumber, totalAmount, dueDate, invoiceId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendLeaseApprovedAsync(string toEmail, string marinaName, string slipName,
+        string leaseTerm, Guid inquiryId, CancellationToken ct = default)
+    {
+        var subject = $"Your {leaseTerm} lease at {marinaName} has been approved!";
+        var body = EmailTemplates.LeaseApproved(toEmail, marinaName, slipName, leaseTerm, inquiryId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendGenericAsync(string toEmail, string subject, string body, CancellationToken ct = default)
+        => messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
 }

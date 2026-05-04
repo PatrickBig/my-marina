@@ -1,26 +1,19 @@
-using MyMarina.Domain.Common;
+using MyMarina.Domain.Enums;
 
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// A news/update post from a marina to its customers.
-/// </summary>
-public class Announcement : TenantEntity
+public class Announcement
 {
-    public Guid MarinaId { get; init; }
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid MarinaId { get; set; }
     public required string Title { get; set; }
-
-    /// <summary>Markdown or rich text body.</summary>
     public required string Body { get; set; }
-
-    /// <summary>Null = draft; set when published.</summary>
+    public AnnouncementAudience Audience { get; set; } = AnnouncementAudience.Both;
     public DateTimeOffset? PublishedAt { get; set; }
-
-    /// <summary>Optional — hide the announcement after this date.</summary>
     public DateTimeOffset? ExpiresAt { get; set; }
-
     public bool IsPinned { get; set; }
-    public Guid CreatedByUserId { get; init; }
+    public Guid CreatedByUserId { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
-    public Marina Marina { get; init; } = null!;
+    public Marina Marina { get; set; } = null!;
 }

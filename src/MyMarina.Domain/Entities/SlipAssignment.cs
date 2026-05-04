@@ -1,26 +1,31 @@
-using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// Links a slip to a customer account and boat for a period of time.
-/// </summary>
-public class SlipAssignment : TenantEntity
+public class SlipAssignment
 {
-    public Guid SlipId { get; init; }
-    public Guid CustomerAccountId { get; init; }
-    public Guid BoatId { get; init; }
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+
+    public Guid SlipId { get; set; }
+    public Guid BillingAccountId { get; set; }
+    public Guid VesselId { get; set; }
+
     public AssignmentType AssignmentType { get; set; }
     public DateOnly StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
+    public decimal BaseRate { get; set; }
 
-    /// <summary>Overrides the slip's standard rate when set.</summary>
-    public decimal? RateOverride { get; set; }
+    // Sublet policy flags — negotiated at lease signing
+    public bool AllowOwnerSubletWhenAway { get; set; }
+    public bool AllowHolderSublet { get; set; }
+    public decimal OwnerSubletShareToHolder { get; set; }
+    public decimal HolderSubletShareToOwner { get; set; }
 
     public string? Notes { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
-    public Slip Slip { get; init; } = null!;
-    public CustomerAccount CustomerAccount { get; init; } = null!;
-    public Boat Boat { get; init; } = null!;
+    // Navigation
+    public Slip Slip { get; set; } = null!;
+    public BillingAccount BillingAccount { get; set; } = null!;
+    public Vessel Vessel { get; set; } = null!;
 }

@@ -2,10 +2,10 @@ namespace MyMarina.Domain.Enums;
 
 public enum InvoiceStatus
 {
-    Draft,
-    Sent,
-    PartiallyPaid,
-    Paid,
-    Overdue,
-    Voided
+    Draft          = 0,
+    Sent           = 1,
+    PartiallyPaid  = 2,
+    Paid           = 3,
+    Overdue        = 4,
+    Voided         = 5,
 }

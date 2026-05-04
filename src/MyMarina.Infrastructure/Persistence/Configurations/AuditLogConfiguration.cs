@@ -8,17 +8,14 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 {
     public void Configure(EntityTypeBuilder<AuditLog> builder)
     {
-        builder.HasKey(e => e.Id);
-        builder.Property(e => e.Action).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.EntityType).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.IpAddress).HasMaxLength(45);
-
-        // Before/After stored as JSONB in Postgres
-        builder.Property(e => e.Before).HasColumnType("jsonb");
-        builder.Property(e => e.After).HasColumnType("jsonb");
-
-        builder.HasIndex(e => e.TenantId);
-        builder.HasIndex(e => e.EntityId);
-        builder.HasIndex(e => e.Timestamp);
+        builder.ToTable("AuditLogs", "mymarina");
+        builder.HasKey(a => a.Id);
+        builder.Property(a => a.Action).HasMaxLength(100).IsRequired();
+        builder.Property(a => a.TargetType).HasMaxLength(50);
+        builder.Property(a => a.TargetId).HasMaxLength(100);
+        builder.Property(a => a.Details).HasMaxLength(2000);
+        builder.HasIndex(a => a.OccurredAt);
+        builder.HasIndex(a => a.TenantId);
+        builder.HasIndex(a => a.ActorUserId);
     }
 }

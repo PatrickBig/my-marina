@@ -2,8 +2,7 @@ namespace MyMarina.Domain.Enums;
 
 public enum SlipStatus
 {
-    Available,
-    Occupied,
-    UnderMaintenance,
-    Inactive
+    Active             = 0,
+    UnderMaintenance   = 1,
+    Inactive           = 2,
 }

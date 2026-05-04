@@ -1,64 +1,53 @@
 using System.Text;
+using AspNet.Security.OAuth.Apple;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
-using MyMarina.Infrastructure.Demo;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MyMarina.Domain.Entities;
 using MyMarina.Infrastructure;
-using MyMarina.Infrastructure.Identity;
+using MyMarina.Infrastructure.Invoicing;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Setup;
 using Scalar.AspNetCore;
 
-// --setup mode: apply migrations + seed users, then exit.
-// Designed to run as a Kubernetes pre-install/pre-upgrade Job or Helm hook.
-// Config comes from the "Setup" config section; supply secrets via env vars:
-//   Setup__PlatformOperator__Email, Setup__PlatformOperator__Password
-//   Setup__InitialMarina__TenantName, Setup__InitialMarina__TenantSlug,
-//   Setup__InitialMarina__OwnerEmail, Setup__InitialMarina__OwnerPassword
-var isSetupMode = args.Contains("--setup");
+// ── Setup mode ──────────────────────────────────────────────────────────────
+// Invoked as a one-shot pre-deploy job (Helm hook / docker-compose api-setup).
+// Runs migrations, seeds required accounts, registers Hangfire schedules, exits.
+if (args.Contains("--setup"))
+{
+    var setupBuilder = WebApplication.CreateBuilder(args);
+    setupBuilder.Services.AddInfrastructure(setupBuilder.Configuration, registerHangfireServer: false);
+    setupBuilder.Services.Configure<SetupOptions>(setupBuilder.Configuration.GetSection("Setup"));
+    setupBuilder.Services.AddScoped<AppSetupRunner>();
 
+    var setupApp = setupBuilder.Build();
+
+    using (var scope = setupApp.Services.CreateScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<AppSetupRunner>().RunAsync();
+        RegisterRecurringJobs(scope.ServiceProvider.GetRequiredService<IRecurringJobManager>());
+    }
+
+    return;
+}
+
+// ── Normal startup ───────────────────────────────────────────────────────────
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Controllers + OpenAPI ---
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// --- Infrastructure (EF Core, Identity, Redis, Hangfire, multi-tenancy) ---
-// In setup mode the Hangfire server is skipped so no Redis connection is required.
-builder.Services.AddInfrastructure(builder.Configuration, registerHangfireServer: !isSetupMode);
-
-// --- Setup mode: bind options and register the hosted service ---
-if (isSetupMode)
-{
-    builder.Services.Configure<SetupOptions>(
-        builder.Configuration.GetSection(SetupOptions.Section));
-    builder.Services.AddHostedService<SetupHostedService>();
-}
-
-// --- Demo options ---
-builder.Services.Configure<DemoOptions>(builder.Configuration.GetSection(DemoOptions.Section));
-
-// --- Rate limiting (for demo session endpoint) ---
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("demo-session", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 5;
-        limiterOptions.Window = TimeSpan.FromHours(1);
-        limiterOptions.QueueLimit = 0;
-    });
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-});
+// --- Infrastructure (EF Core, Identity, Redis, Hangfire, user context) ---
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // --- JWT Bearer authentication ---
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is required.");
 
-builder.Services.AddAuthentication(options =>
+var authBuilder = builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -75,7 +64,6 @@ builder.Services.AddAuthentication(options =>
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            RoleClaimType = "role",
             NameClaimType = "sub",
         };
 
@@ -85,39 +73,51 @@ builder.Services.AddAuthentication(options =>
             {
                 OnAuthenticationFailed = ctx =>
                 {
-                    var log = ctx.HttpContext.RequestServices
+                    ctx.HttpContext.RequestServices
                         .GetRequiredService<ILoggerFactory>()
-                        .CreateLogger("JwtAuth");
-                    log.LogWarning("JWT authentication failed for {Path}: {Error}",
-                        ctx.HttpContext.Request.Path, ctx.Exception.Message);
-                    return Task.CompletedTask;
-                },
-                OnTokenValidated = ctx =>
-                {
-                    var log = ctx.HttpContext.RequestServices
-                        .GetRequiredService<ILoggerFactory>()
-                        .CreateLogger("JwtAuth");
-                    if (log.IsEnabled(LogLevel.Debug))
-                    {
-                        var claims = ctx.Principal?.Claims.Select(c => $"{c.Type}={c.Value}");
-                        log.LogDebug("JWT validated for {Path}. Claims: {Claims}",
-                            ctx.HttpContext.Request.Path, string.Join(", ", claims ?? []));
-                    }
-                    return Task.CompletedTask;
-                },
-                OnForbidden = ctx =>
-                {
-                    var log = ctx.HttpContext.RequestServices
-                        .GetRequiredService<ILoggerFactory>()
-                        .CreateLogger("JwtAuth");
-                    var role = ctx.HttpContext.User.FindFirst("role")?.Value ?? "(none)";
-                    log.LogWarning("403 Forbidden for {Path}. role claim={Role}",
-                        ctx.HttpContext.Request.Path, role);
+                        .CreateLogger("JwtAuth")
+                        .LogWarning("JWT auth failed for {Path}: {Error}",
+                            ctx.HttpContext.Request.Path, ctx.Exception.Message);
                     return Task.CompletedTask;
                 },
             };
         }
     });
+
+// --- Social login providers (only registered when credentials are configured) ---
+var googleClientId = builder.Configuration["Auth:Google:ClientId"];
+if (!string.IsNullOrWhiteSpace(googleClientId))
+{
+    authBuilder.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId     = googleClientId;
+        options.ClientSecret = builder.Configuration["Auth:Google:ClientSecret"]!;
+        options.CallbackPath = "/signin-google";
+    });
+}
+
+var facebookAppId = builder.Configuration["Auth:Facebook:AppId"];
+if (!string.IsNullOrWhiteSpace(facebookAppId))
+{
+    authBuilder.AddFacebook(FacebookDefaults.AuthenticationScheme, options =>
+    {
+        options.AppId     = facebookAppId;
+        options.AppSecret = builder.Configuration["Auth:Facebook:AppSecret"]!;
+        options.CallbackPath = "/signin-facebook";
+    });
+}
+
+var appleClientId = builder.Configuration["Auth:Apple:ClientId"];
+if (!string.IsNullOrWhiteSpace(appleClientId))
+{
+    authBuilder.AddApple(AppleAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId  = appleClientId;
+        options.KeyId     = builder.Configuration["Auth:Apple:KeyId"]!;
+        options.TeamId    = builder.Configuration["Auth:Apple:TeamId"]!;
+        options.CallbackPath = "/signin-apple";
+    });
+}
 
 builder.Services.AddAuthorization();
 
@@ -129,7 +129,7 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!)
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
-// --- CORS (dev: allow Vite dev server; prod: tighten via config) ---
+// --- CORS ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -141,13 +141,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- Dev seed (test users with multi-context scenarios) ---
+// --- Dev: auto-migrate so `dotnet watch` works without running --setup ---
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var seedService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
-    await seedService.SeedAsync();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
 }
+
 // --- Middleware pipeline ---
 if (app.Environment.IsDevelopment())
 {
@@ -159,12 +160,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-//app.UseHttpsRedirection();
 app.UseCors();
-app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapHealthChecks("/ready");
@@ -175,11 +173,17 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     Authorization = [new MyMarina.Api.Infrastructure.HangfireAuthFilter()]
 });
 
-// Recurring jobs are registered by the --setup pass on each deployment,
-// not at application startup. Hangfire stores them in its backend (Redis/Postgres)
-// so they survive restarts without re-registration.
+RegisterRecurringJobs(app.Services.GetRequiredService<IRecurringJobManager>());
 
 app.Run();
 
-// Needed for WebApplicationFactory in integration tests
+// ── Shared helpers ───────────────────────────────────────────────────────────
+static void RegisterRecurringJobs(IRecurringJobManager jobs)
+{
+    jobs.AddOrUpdate<InvoiceOverdueJob>(
+        "invoice-overdue-check",
+        job => job.CheckOverdueAsync(),
+        Cron.Daily(2));
+}
+
 public partial class Program;

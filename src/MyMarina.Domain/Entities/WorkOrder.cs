@@ -1,25 +1,22 @@
-using MyMarina.Domain.Common;
 using MyMarina.Domain.Enums;
 
 namespace MyMarina.Domain.Entities;
 
-/// <summary>
-/// Marina's internal work order. Optionally linked to a customer
-/// MaintenanceRequest; can also be created internally with no request.
-/// </summary>
-public class WorkOrder : TenantEntity
+public class WorkOrder
 {
-    /// <summary>Null when the work order was created internally without a customer request.</summary>
-    public Guid? MaintenanceRequestId { get; init; }
-
+    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid MarinaId { get; set; }
+    public Guid? MaintenanceRequestId { get; set; }
     public required string Title { get; set; }
     public required string Description { get; set; }
     public Guid? AssignedToUserId { get; set; }
     public WorkOrderStatus Status { get; set; } = WorkOrderStatus.Open;
-    public Priority Priority { get; set; } = Priority.Medium;
+    public MaintenancePriority Priority { get; set; } = MaintenancePriority.Medium;
     public DateOnly? ScheduledDate { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public string? Notes { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
-    public MaintenanceRequest? MaintenanceRequest { get; init; }
+    public Marina Marina { get; set; } = null!;
+    public MaintenanceRequest? MaintenanceRequest { get; set; }
 }

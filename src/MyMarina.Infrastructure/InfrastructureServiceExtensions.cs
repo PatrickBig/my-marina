@@ -6,12 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Abstractions;
+using MyMarina.Application.Leases;
 using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
-using MyMarina.Infrastructure.MultiTenancy;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Services;
+using MyMarina.Infrastructure.UserContext;
 
 namespace MyMarina.Infrastructure;
 
@@ -37,14 +38,14 @@ public static class InfrastructureServiceExtensions
         var emailProvider = configuration.GetValue<string>("Email:Provider") ?? "null";
         if (string.Equals(emailProvider, "smtp2go", StringComparison.OrdinalIgnoreCase))
         {
-            var host         = configuration.GetValue<string>("Email:Host");
-            var username     = configuration.GetValue<string>("Email:Username");
-            var password     = configuration.GetValue<string>("Email:Password");
-            var fromAddress  = configuration.GetValue<string>("Email:FromAddress");
+            var host        = configuration.GetValue<string>("Email:Host");
+            var username    = configuration.GetValue<string>("Email:Username");
+            var password    = configuration.GetValue<string>("Email:Password");
+            var fromAddress = configuration.GetValue<string>("Email:FromAddress");
             if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) ||
                 string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fromAddress))
                 throw new InvalidOperationException(
-                    "Email:Provider is 'smtp2go' but one or more required fields are missing: Host, Username, Password, FromAddress.");
+                    "Email:Provider is 'smtp2go' but Host, Username, Password, FromAddress are required.");
             services.AddScoped<IEmailService, QueuedEmailService>();
             services.AddScoped<IMessageHandler<SendEmailMessage>, SmtpEmailMessageHandler>();
         }
@@ -65,17 +66,11 @@ public static class InfrastructureServiceExtensions
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        // --- Multi-tenancy ---
+        // --- User context (replaces v0 multi-tenancy) ---
         services.AddHttpContextAccessor();
-        services.AddScoped<HttpTenantContext>();
-        services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<HttpTenantContext>());
-        services.AddScoped<IMarinaContext>(sp => sp.GetRequiredService<HttpTenantContext>());
-        services.AddScoped<ICustomerContext>(sp => sp.GetRequiredService<HttpTenantContext>());
+        services.AddScoped<IUserContext, HttpUserContext>();
 
         // --- Hangfire storage (feature flag: Hangfire:UseRedis) ---
-        // Configuration is read lazily inside the callback so that test-time overrides
-        // (e.g. setting Hangfire:UseRedis=false via WebApplicationFactory) take effect
-        // before the storage is initialised.
         services.AddHangfire((sp, config) =>
         {
             var conf     = sp.GetRequiredService<IConfiguration>();
@@ -87,33 +82,29 @@ public static class InfrastructureServiceExtensions
 
             if (useRedis)
             {
-                var redisConnectionString = conf.GetConnectionString("Redis")
-                    ?? throw new InvalidOperationException("Redis connection string is required when Hangfire:UseRedis is true.");
-                config.UseRedisStorage(redisConnectionString);
+                var redisCs = conf.GetConnectionString("Redis")
+                    ?? throw new InvalidOperationException("Redis connection string required when Hangfire:UseRedis=true.");
+                config.UseRedisStorage(redisCs);
             }
             else
             {
-                var pgConnection = conf.GetConnectionString("Postgres")
-                    ?? throw new InvalidOperationException("Postgres connection string is required when Hangfire:UseRedis is false.");
-                config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(pgConnection));
+                var pgCs = conf.GetConnectionString("Postgres")
+                    ?? throw new InvalidOperationException("Postgres connection string required when Hangfire:UseRedis=false.");
+                config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(pgCs));
             }
         });
 
         if (registerHangfireServer)
             services.AddHangfireServer();
 
+        // --- Hangfire jobs ---
+        services.AddScoped<Invoicing.InvoiceOverdueJob>();
+
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();
 
         // --- JWT token service ---
         services.AddScoped<IJwtTokenService, JwtTokenService>();
-
-        // --- Seed data service ---
-        services.AddScoped<SeedDataService>();
-
-        // --- Demo services ---
-        services.AddScoped<Demo.DemoSeedScript>();
-        services.AddSingleton<Demo.DeleteExpiredDemoTenantsJob>();
 
         // --- Command and query handlers (auto-registered via Scrutor) ---
         services.Scan(scan => scan
@@ -125,6 +116,12 @@ public static class InfrastructureServiceExtensions
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
             .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo(typeof(IMessageHandler<>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo<ILeaseOnboardingStep>(), publicOnly: false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 

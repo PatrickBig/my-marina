@@ -1,28 +1,18 @@
 namespace MyMarina.Application.Abstractions;
 
-/// <summary>
-/// Generates signed JWT tokens for authenticated users.
-/// Implemented in Infrastructure to keep token signing concerns out of Application.
-/// </summary>
 public interface IJwtTokenService
 {
-    string GenerateToken(UserTokenInfo user);
+    string GenerateAccessToken(UserTokenInfo user);
 }
 
-/// <summary>
-/// Caller-assembled user identity snapshot used by IJwtTokenService.
-/// Decouples the token service from ApplicationUser (an Infrastructure type).
-/// </summary>
 public sealed record UserTokenInfo(
     Guid UserId,
     string Email,
+    bool EmailVerified,
     string FirstName,
     string LastName,
-    string? Role,
-    Guid? TenantId,
-    Guid? MarinaId,
-    Guid? CustomerAccountId = null,
-    IReadOnlyList<Guid>? CustomerAccountIds = null,
-    bool HasMultipleContexts = false,
-    MyMarina.Domain.Enums.SubscriptionTier SubscriptionTier = MyMarina.Domain.Enums.SubscriptionTier.Free,
-    bool IsDemo = false);
+    bool IsPlatformOperator,
+    bool IsDemo,
+    IReadOnlyList<MembershipClaim> Memberships,
+    IReadOnlyList<BillingAccountMemberClaim> BillingAccounts
+);

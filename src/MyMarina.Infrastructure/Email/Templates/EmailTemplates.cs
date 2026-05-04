@@ -2,62 +2,191 @@ namespace MyMarina.Infrastructure.Email.Templates;
 
 internal static class EmailTemplates
 {
-    public static string CustomerInvite(string customerName, string marinaName, string temporaryPassword, string confirmationLink) => $"""
-        <!DOCTYPE html>
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <h2 style="color: #1a56db;">Welcome to {HtmlEncode(marinaName)}!</h2>
-          <p>Hi {HtmlEncode(customerName)},</p>
-          <p>Your marina portal account has been created. Use the details below to log in for the first time.</p>
-          <table style="background: #f3f4f6; border-radius: 6px; padding: 16px; margin: 16px 0; width: 100%; border-collapse: collapse;">
-            <tr><td style="padding: 4px 8px; font-weight: bold;">Email</td><td style="padding: 4px 8px; font-family: monospace;">{HtmlEncode(customerName)}</td></tr>
-            <tr><td style="padding: 4px 8px; font-weight: bold;">Temporary&nbsp;Password</td><td style="padding: 4px 8px; font-family: monospace;">{HtmlEncode(temporaryPassword)}</td></tr>
-          </table>
-          <p>You must confirm your email address before logging in. Click the button below:</p>
-          <p style="text-align: center; margin: 24px 0;">
-            <a href="{confirmationLink}" style="background: #1a56db; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Confirm Email &amp; Activate Account</a>
-          </p>
-          <p style="color: #666; font-size: 13px;">This link expires in 24 hours. If you did not expect this email, please ignore it.</p>
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Management Platform</p>
-        </body>
-        </html>
-        """;
-
-    public static string StaffInvite(string staffName, string marinaName, string role, string temporaryPassword, string confirmationLink) => $"""
-        <!DOCTYPE html>
-        <html>
-        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <h2 style="color: #1a56db;">You've been invited to {HtmlEncode(marinaName)}</h2>
-          <p>Hi {HtmlEncode(staffName)},</p>
-          <p>You have been added to <strong>{HtmlEncode(marinaName)}</strong> as <strong>{HtmlEncode(role)}</strong>. Use the details below to log in for the first time.</p>
-          <table style="background: #f3f4f6; border-radius: 6px; padding: 16px; margin: 16px 0; width: 100%; border-collapse: collapse;">
-            <tr><td style="padding: 4px 8px; font-weight: bold;">Temporary&nbsp;Password</td><td style="padding: 4px 8px; font-family: monospace;">{HtmlEncode(temporaryPassword)}</td></tr>
-          </table>
-          <p>Confirm your email address to activate your account:</p>
-          <p style="text-align: center; margin: 24px 0;">
-            <a href="{confirmationLink}" style="background: #1a56db; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Confirm Email &amp; Activate Account</a>
-          </p>
-          <p style="color: #666; font-size: 13px;">This link expires in 7 days. If you did not expect this email, please ignore it.</p>
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Management Platform</p>
-        </body>
-        </html>
-        """;
-
-    public static string EmailConfirmation(string recipientName, string confirmationLink) => $"""
+    public static string EmailConfirmation(string toEmail, string userId, string token) => $"""
         <!DOCTYPE html>
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
           <h2 style="color: #1a56db;">Confirm your email address</h2>
-          <p>Hi {HtmlEncode(recipientName)},</p>
-          <p>Please confirm your email address by clicking the button below:</p>
-          <p style="text-align: center; margin: 24px 0;">
-            <a href="{confirmationLink}" style="background: #1a56db; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Confirm Email Address</a>
-          </p>
-          <p style="color: #666; font-size: 13px;">If you did not request this, please ignore it.</p>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>Please confirm your email address. Your confirmation code is:</p>
+          <p style="font-family: monospace; font-size: 16px; background: #f3f4f6; padding: 12px; border-radius: 6px;">{HtmlEncode(token)}</p>
+          <p style="color: #666; font-size: 13px;">User ID: {HtmlEncode(userId)}</p>
+          <p style="color: #666; font-size: 13px;">If you did not create a MyMarina account, you can ignore this email.</p>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Management Platform</p>
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string PasswordReset(string toEmail, string userId, string token) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Reset your password</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>We received a request to reset your password. Your reset token is:</p>
+          <p style="font-family: monospace; font-size: 16px; background: #f3f4f6; padding: 12px; border-radius: 6px;">{HtmlEncode(token)}</p>
+          <p style="color: #666; font-size: 13px;">User ID: {HtmlEncode(userId)}</p>
+          <p style="color: #666; font-size: 13px;">This token expires in 1 hour. If you did not request a password reset, you can ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string MembershipInvite(string toEmail, string marinaName, string invitedByName, Guid membershipId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">You've been invited to {HtmlEncode(marinaName)}</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>{HtmlEncode(invitedByName)} has invited you to join <strong>{HtmlEncode(marinaName)}</strong> on MyMarina as a staff member.</p>
+          <p>Your invitation ID: <code>{membershipId}</code></p>
+          <p>Sign in to MyMarina and accept the invitation from your profile to get started.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string GhostVesselClaim(string toEmail, string marinaName, string vesselName, Guid vesselId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Your boat has been added to MyMarina</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p><strong>{HtmlEncode(marinaName)}</strong> has added your boat <strong>{HtmlEncode(vesselName)}</strong> to their records on MyMarina.</p>
+          <p>Sign in (or create an account) at MyMarina to confirm the boat details and take ownership of your record. Once you accept, you'll be able to manage your boat, view marina communications, and use it for future bookings.</p>
+          <p style="color: #666; font-size: 13px;">Boat ID: {vesselId}</p>
+          <p style="color: #666; font-size: 13px;">If you don't recognize this marina or didn't expect this email, you can safely ignore it.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string BillingAccountInvite(string toEmail, string marinaName, string invitedByName, Guid memberId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">You've been added to a billing account at {HtmlEncode(marinaName)}</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>{HtmlEncode(invitedByName)} at <strong>{HtmlEncode(marinaName)}</strong> has added you to a billing account on MyMarina.</p>
+          <p>Sign in to MyMarina to view your account, invoices, and billing history.</p>
+          <p style="color: #666; font-size: 13px;">Member ID: {memberId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationRequest(
+        string toHostEmail, string marinaName, string boaterName,
+        string slipName, DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">New booking request for {HtmlEncode(slipName)}</h2>
+          <p>Hi {HtmlEncode(marinaName)} team,</p>
+          <p><strong>{HtmlEncode(boaterName)}</strong> has requested to book <strong>{HtmlEncode(slipName)}</strong>.</p>
+          <p>Arrival: <strong>{arrivesAt:MMMM d, yyyy}</strong> &mdash; Departure: <strong>{departsAt:MMMM d, yyyy}</strong></p>
+          <p>Log in to your marina dashboard to approve or decline this request.</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationConfirmed(
+        string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt, decimal total,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #059669;">Your booking is confirmed!</h2>
+          <p>Hi {HtmlEncode(toBoaterEmail)},</p>
+          <p>Your booking at <strong>{HtmlEncode(marinaName)}</strong> for slip <strong>{HtmlEncode(slipName)}</strong> is confirmed.</p>
+          <p>Arrival: <strong>{arrivesAt:MMMM d, yyyy}</strong> &mdash; Departure: <strong>{departsAt:MMMM d, yyyy}</strong></p>
+          <p>Estimated total: <strong>${total:N2}</strong> (payable directly to the marina — off-platform)</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationDeclined(
+        string toBoaterEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #dc2626;">Booking request declined</h2>
+          <p>Hi {HtmlEncode(toBoaterEmail)},</p>
+          <p>Unfortunately your booking request for <strong>{HtmlEncode(slipName)}</strong> at <strong>{HtmlEncode(marinaName)}</strong> has been declined.</p>
+          <p>Dates: {arrivesAt:MMMM d} &mdash; {departsAt:MMMM d, yyyy}</p>
+          <p>Please search for other available slips on MyMarina.</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string ReservationCancelled(
+        string toEmail, string slipName, string marinaName,
+        DateTimeOffset arrivesAt, DateTimeOffset departsAt,
+        Guid reservationId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #f59e0b;">Booking cancelled</h2>
+          <p>Hi {HtmlEncode(toEmail)},</p>
+          <p>The booking for <strong>{HtmlEncode(slipName)}</strong> at <strong>{HtmlEncode(marinaName)}</strong> has been cancelled.</p>
+          <p>Dates: {arrivesAt:MMMM d} &mdash; {departsAt:MMMM d, yyyy}</p>
+          <p style="color: #666; font-size: 13px;">Reservation ID: {reservationId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string InvoiceSent(
+        string toEmail, string marinaName, string billingAccountName,
+        string invoiceNumber, decimal totalAmount, DateOnly dueDate,
+        Guid invoiceId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Invoice {HtmlEncode(invoiceNumber)} from {HtmlEncode(marinaName)}</h2>
+          <p>Hi {HtmlEncode(billingAccountName)},</p>
+          <p><strong>{HtmlEncode(marinaName)}</strong> has sent you invoice <strong>{HtmlEncode(invoiceNumber)}</strong>.</p>
+          <p>Amount due: <strong>${totalAmount:N2}</strong></p>
+          <p>Due date: <strong>{dueDate:MMMM d, yyyy}</strong></p>
+          <p>Please contact your marina to arrange payment.</p>
+          <p style="color: #666; font-size: 13px;">Invoice ID: {invoiceId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
+    public static string LeaseApproved(
+        string toEmail, string marinaName, string slipName,
+        string leaseTerm, Guid inquiryId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Your slip lease has been approved!</h2>
+          <p>Great news! <strong>{HtmlEncode(marinaName)}</strong> has approved your {HtmlEncode(leaseTerm.ToLower())} lease for <strong>{HtmlEncode(slipName)}</strong>.</p>
+          <p>Your billing account has been set up and you'll receive invoices according to your lease schedule.</p>
+          <p style="color: #666; font-size: 13px;">Inquiry ID: {inquiryId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
         </body>
         </html>
         """;
