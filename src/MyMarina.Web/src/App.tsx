@@ -11,10 +11,11 @@ import { SlipDetailPage } from '@/pages/SlipDetailPage';
 import { MyTripsPage } from '@/pages/MyTripsPage';
 import { MySlipsPage } from '@/pages/MySlipsPage';
 import { MaintenancePage } from '@/pages/MaintenancePage';
-import { NavBar } from '@/components/NavBar';
+import { PlatformOperatorPage } from '@/pages/PlatformOperatorPage';
+import { HomePage } from '@/pages/HomePage';
 
 export function App() {
-  const { isAuthenticated, marinaMemberships } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const path = window.location.pathname;
 
   // Public routes — no authentication required
@@ -28,30 +29,11 @@ export function App() {
   if (path === '/my-slips') return <MySlipsPage />;
   if (path === '/invoices') return <MyInvoicesPage />;
   if (path === '/maintenance') return <MaintenancePage />;
+  if (path === '/admin') return <PlatformOperatorPage />;
   if (path === '/boats') return <MyBoatsPage />;
   if (path === '/profile') return <ProfilePage />;
   if (path === '/marina/new') return <MarinaOnboardingPage />;
   if (path.startsWith('/marina/')) return <MarinaDashboardPage />;
 
-  const hasMarina = marinaMemberships().length > 0;
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <NavBar />
-      <div className="max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-2xl font-semibold text-slate-800">Welcome to MyMarina</h1>
-        <p className="text-slate-500 mt-2">
-          <a href="/boats" className="underline text-slate-600">Manage your boats</a>
-          {' · '}
-          <a href="/profile" className="underline text-slate-600">Edit your profile</a>
-          {!hasMarina && (
-            <>
-              {' · '}
-              <a href="/marina/new" className="underline text-slate-600">Set up a marina</a>
-            </>
-          )}
-        </p>
-      </div>
-    </div>
-  );
+  return <HomePage />;
 }

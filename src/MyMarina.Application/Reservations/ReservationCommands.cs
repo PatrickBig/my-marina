@@ -3,7 +3,8 @@ namespace MyMarina.Application.Reservations;
 public sealed record CreateReservationCommand(
     Guid RequestingUserId,
     Guid VesselId,
-    Guid AvailabilityWindowId,
+    Guid? AvailabilityWindowId,   // null = book via slip's DefaultNightlyRate
+    Guid? SlipId,                  // required when AvailabilityWindowId is null
     DateTimeOffset ArrivesAt,
     DateTimeOffset DepartsAt,
     string? Notes

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Marinas;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Marinas;
@@ -25,6 +26,35 @@ public class UpdateSlipCommandHandler(AppDbContext db)
         if (command.HasWater.HasValue) slip.HasWater = command.HasWater.Value;
         if (command.Status.HasValue) slip.Status = command.Status.Value;
         if (command.Notes is not null) slip.Notes = command.Notes;
+
+        if (command.ClearTransientRate)
+        {
+            slip.DefaultTransientRateKind = null;
+            slip.DefaultTransientBaseRate = null;
+            slip.DefaultTransientMinCharge = null;
+        }
+        else if (command.DefaultTransientBaseRate.HasValue
+              && Enum.TryParse<RateKind>(command.DefaultTransientRateKind, ignoreCase: true, out var transientKind))
+        {
+            slip.DefaultTransientRateKind = transientKind;
+            slip.DefaultTransientBaseRate = command.DefaultTransientBaseRate.Value;
+            slip.DefaultTransientMinCharge = command.DefaultTransientMinCharge;
+        }
+
+        if (command.ClearLeaseRate)
+        {
+            slip.DefaultLeaseRateKind = null;
+            slip.DefaultLeaseBaseRate = null;
+            slip.DefaultLeaseTerm = null;
+        }
+        else if (command.DefaultLeaseBaseRate.HasValue
+              && Enum.TryParse<RateKind>(command.DefaultLeaseRateKind, ignoreCase: true, out var leaseKind)
+              && Enum.TryParse<LeaseTerm>(command.DefaultLeaseTerm, ignoreCase: true, out var leaseTerm))
+        {
+            slip.DefaultLeaseRateKind = leaseKind;
+            slip.DefaultLeaseBaseRate = command.DefaultLeaseBaseRate.Value;
+            slip.DefaultLeaseTerm = leaseTerm;
+        }
 
         await db.SaveChangesAsync(ct);
         return MarinaMappers.ToSlipDto(slip);

@@ -221,7 +221,23 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 13 — Private Slip Owners
+### Phase 13 — Platform Operator Tools ✅
+
+*MyMarina staff manage the platform.*
+
+- [x] `PlatformOperator` Identity role
+- [x] Tenant list + create/suspend/reactivate
+- [x] User search across tenants
+- [x] Force sign-out (revoke all refresh tokens)
+- [x] Cross-tenant audit log viewer
+- [x] Listing moderation queue
+- [x] User moderation actions
+
+**Deliverable:** MyMarina staff can manage tenants, users, and listings without touching the database.
+
+---
+
+### Phase 14 — Private Slip Owners
 
 *Dockominium and private dock onboarding.*
 
@@ -234,22 +250,6 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 - [ ] UX: brand the experience as "your dock" / "your slip," never "your marina"
 
 **Deliverable:** Individuals can list a private dock or a dockominium slip on the marketplace. Host marina policies are enforced.
-
----
-
-### Phase 14 — Platform Operator Tools
-
-*MyMarina staff manage the platform.*
-
-- [ ] `PlatformOperator` Identity role
-- [ ] Tenant list + create/suspend/reactivate
-- [ ] User search across tenants
-- [ ] Force sign-out (revoke all refresh tokens)
-- [ ] Cross-tenant audit log viewer
-- [ ] Listing moderation queue
-- [ ] User moderation actions
-
-**Deliverable:** MyMarina staff can manage tenants, users, and listings without touching the database.
 
 ---
 
@@ -314,7 +314,7 @@ Sequenced by user feedback after launch.
 | Announcement targeting (by dock, slip, customer segment) | Announcements |
 | Granular staff permissions (billing-only, maintenance-only) | Access Control |
 | Slip map / visual occupancy view | Slips |
-| Waitlist management | Slips |
+| Wait list — boater joins slip or marina wait list; marina manages queue and sends offers when a slip opens; priority ordering, seasonal rollover | Slips / Marketplace |
 | Subdomain-per-tenant routing (white-label) | Infrastructure |
 | Supplies & inventory tracking | Operations |
 | Marina-owned charter fleet (FleetVessel + VesselRental) | Operations |

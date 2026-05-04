@@ -55,6 +55,14 @@ public sealed record SlipDto(
     int? Electric,
     bool HasWater,
     string Status,
+    // Transient default rate
+    string? DefaultTransientRateKind,
+    decimal? DefaultTransientBaseRate,
+    decimal? DefaultTransientMinCharge,
+    // Lease default rate
+    string? DefaultLeaseRateKind,
+    decimal? DefaultLeaseBaseRate,
+    string? DefaultLeaseTerm,
     string? Notes,
     DateTimeOffset CreatedAt
 );
@@ -67,4 +75,19 @@ public sealed record MarinaSignupResponse(
     string AccessToken,
     string RefreshToken,
     DateTimeOffset ExpiresAt
+);
+
+// Returned from GetMyMarinasQuery — marina summary with the caller's relationship context.
+public sealed record MyMarinaDto(
+    Guid Id,
+    Guid TenantId,
+    string Name,
+    string? AddressCity,
+    string? AddressState,
+    string MarinaType,
+    bool IsListed,
+    decimal? Latitude,
+    decimal? Longitude,
+    string? UserRole,           // membership role ("Owner"/"Manager"/"Staff") or billing account role
+    string RelationshipKind     // "Staff" | "BillingAccount"
 );

@@ -175,6 +175,22 @@ internal static class EmailTemplates
         </html>
         """;
 
+    public static string LeaseApproved(
+        string toEmail, string marinaName, string slipName,
+        string leaseTerm, Guid inquiryId) => $"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #1a56db;">Your slip lease has been approved!</h2>
+          <p>Great news! <strong>{HtmlEncode(marinaName)}</strong> has approved your {HtmlEncode(leaseTerm.ToLower())} lease for <strong>{HtmlEncode(slipName)}</strong>.</p>
+          <p>Your billing account has been set up and you'll receive invoices according to your lease schedule.</p>
+          <p style="color: #666; font-size: 13px;">Inquiry ID: {inquiryId}</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">MyMarina &mdash; Marina Marketplace</p>
+        </body>
+        </html>
+        """;
+
     private static string HtmlEncode(string value) =>
         System.Net.WebUtility.HtmlEncode(value);
 }

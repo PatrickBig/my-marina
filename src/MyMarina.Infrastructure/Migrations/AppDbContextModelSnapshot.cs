@@ -173,6 +173,49 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("announcements", "mymarina");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TargetId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("TargetType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("AuditLogs", "mymarina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.AvailabilityWindow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -196,6 +239,9 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<bool>("InstantBook")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("LeaseTerm")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("ListedByBillingAccountId")
                         .HasColumnType("uuid");
 
@@ -206,8 +252,16 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<Guid?>("ListedByMarinaId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ListingKind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int?>("MaxNights")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("MinCharge")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int?>("MinNights")
                         .HasColumnType("integer");
@@ -215,6 +269,10 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<decimal?>("MonthlyDiscount")
                         .HasPrecision(5, 4)
                         .HasColumnType("numeric(5,4)");
+
+                    b.Property<string>("RateKind")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("RelatedAssignmentId")
                         .HasColumnType("uuid");
@@ -598,6 +656,9 @@ namespace MyMarina.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("OnboardingConfig")
+                        .HasColumnType("text");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -970,6 +1031,27 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("DefaultLeaseBaseRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("DefaultLeaseRateKind")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DefaultLeaseTerm")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("DefaultTransientBaseRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal?>("DefaultTransientMinCharge")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("DefaultTransientRateKind")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("DockId")
                         .HasColumnType("uuid");
 
@@ -1099,6 +1181,94 @@ namespace MyMarina.Infrastructure.Migrations
                     b.HasIndex("SlipId", "StartDate");
 
                     b.ToTable("slip_assignments", "mymarina");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.SlipLeaseInquiry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AgreedBaseRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("AgreedRateKind")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("AssignmentEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("AssignmentStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("BillingAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeclinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeclinedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("DesiredStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DesiredTerm")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MarinaNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("RequestingUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SlipAssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SlipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("VesselId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarinaId");
+
+                    b.HasIndex("RequestingUserId");
+
+                    b.HasIndex("SlipId", "Status");
+
+                    b.ToTable("slip_lease_inquiries", "mymarina");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.Tenant", b =>
@@ -1715,6 +1885,17 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Slip");
 
                     b.Navigation("Vessel");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.SlipLeaseInquiry", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Slip", "Slip")
+                        .WithMany()
+                        .HasForeignKey("SlipId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Slip");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.WorkOrder", b =>

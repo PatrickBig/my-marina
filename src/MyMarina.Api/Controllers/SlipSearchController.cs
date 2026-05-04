@@ -21,8 +21,10 @@ public class SlipSearchController(
         [FromQuery] decimal lat,
         [FromQuery] decimal lon,
         [FromQuery] decimal radiusMiles = 25,
+        [FromQuery] string listingKind = "Transient",  // "Transient" | "Lease"
         [FromQuery] DateOnly? arrivesAt = null,
         [FromQuery] DateOnly? departsAt = null,
+        [FromQuery] string? leaseTerm = null,           // "Monthly" | "Seasonal" | "Annual"
         [FromQuery] decimal? vesselLength = null,
         [FromQuery] decimal? vesselBeam = null,
         [FromQuery] decimal? vesselDraft = null,
@@ -33,12 +35,19 @@ public class SlipSearchController(
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var arrives = arrivesAt ?? DateOnly.FromDateTime(DateTime.Today);
-        var departs = departsAt ?? arrives.AddDays(1);
+        bool isLease = string.Equals(listingKind, "Lease", StringComparison.OrdinalIgnoreCase);
 
-        if (departs <= arrives)
-            return ValidationProblem(new ValidationProblemDetails(
-                new Dictionary<string, string[]> { ["departsAt"] = ["Departure must be after arrival."] }));
+        // For transient: require valid date range (default to today + 1 night)
+        DateOnly? arrives = arrivesAt;
+        DateOnly? departs = departsAt;
+        if (!isLease)
+        {
+            arrives ??= DateOnly.FromDateTime(DateTime.Today);
+            departs ??= arrives.Value.AddDays(1);
+            if (departs <= arrives)
+                return ValidationProblem(new ValidationProblemDetails(
+                    new Dictionary<string, string[]> { ["departsAt"] = ["Departure must be after arrival."] }));
+        }
 
         var clampedPageSize = Math.Clamp(pageSize, 1, 50);
         var clampedRadius   = Math.Clamp(radiusMiles, 1, 100);
@@ -55,6 +64,8 @@ public class SlipSearchController(
             SlipType:      slipType,
             HasElectric:   hasElectric,
             HasWater:      hasWater,
+            ListingKind:   listingKind,
+            LeaseTerm:     leaseTerm,
             Page:          page,
             PageSize:      clampedPageSize,
             IncludeDemo:   userContext.IsDemo), ct);

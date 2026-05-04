@@ -63,6 +63,8 @@ public class InviteBillingAccountMemberCommandHandler(
             Id:               member.Id,
             BillingAccountId: member.BillingAccountId,
             UserId:           member.UserId,
+            UserEmail:        command.Email,
+            UserName:         null,
             Role:             member.Role.ToString(),
             InvitedAt:        member.InvitedAt,
             AcceptedAt:       member.AcceptedAt

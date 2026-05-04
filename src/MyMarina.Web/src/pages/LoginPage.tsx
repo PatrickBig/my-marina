@@ -44,7 +44,7 @@ export function LoginPage() {
       // Temporarily set token so getMe() can attach it
       useAuthStore.setState({ accessToken: response.accessToken });
       const meData = await getMe();
-      setAuth(response.accessToken, response.refreshToken, response.expiresAt, response.user, meData.memberships);
+      setAuth(response.accessToken, response.refreshToken, response.expiresAt, response.user, meData.memberships, meData.isPlatformOperator);
       window.location.href = '/';
     } catch (err: any) {
       const status = err?.response?.status;

@@ -1,8 +1,18 @@
 using MyMarina.Application.Abstractions;
+using MyMarina.Domain.Enums;
 
 namespace MyMarina.Application.Identity;
 
 public sealed record MeQuery;
+
+public sealed record MeMembershipDto(
+    MembershipScope Scope,
+    Guid TenantId,
+    Guid? MarinaId,
+    string? MarinaName,
+    MembershipRole Role,
+    string? Tier
+);
 
 public sealed record MeResponse(
     Guid Id,
@@ -15,6 +25,7 @@ public sealed record MeResponse(
     bool MarketingOptIn,
     DateTimeOffset CreatedAt,
     DateTimeOffset? LastLoginAt,
-    IReadOnlyList<MembershipClaim> Memberships,
-    IReadOnlyList<BillingAccountMemberClaim> BillingAccounts
+    IReadOnlyList<MeMembershipDto> Memberships,
+    IReadOnlyList<BillingAccountMemberClaim> BillingAccounts,
+    bool IsPlatformOperator
 );

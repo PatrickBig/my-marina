@@ -21,6 +21,8 @@ public sealed record BillingAccountMemberDto(
     Guid Id,
     Guid BillingAccountId,
     Guid UserId,
+    string UserEmail,
+    string? UserName,
     string Role,
     DateTimeOffset InvitedAt,
     DateTimeOffset? AcceptedAt

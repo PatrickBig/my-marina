@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Abstractions;
+using MyMarina.Application.Leases;
 using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
@@ -115,6 +116,12 @@ public static class InfrastructureServiceExtensions
                 .AsImplementedInterfaces()
                 .WithScopedLifetime()
             .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo(typeof(IMessageHandler<>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo<ILeaseOnboardingStep>(), publicOnly: false)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 

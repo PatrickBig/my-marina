@@ -30,6 +30,13 @@ public class SlipConfiguration : IEntityTypeConfiguration<Slip>
         builder.Property(s => s.AddressCountry).HasMaxLength(100);
         builder.Property(s => s.Notes).HasMaxLength(2000);
 
+        builder.Property(s => s.DefaultTransientRateKind).HasConversion<string?>();
+        builder.Property(s => s.DefaultTransientBaseRate).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultTransientMinCharge).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultLeaseRateKind).HasConversion<string?>();
+        builder.Property(s => s.DefaultLeaseBaseRate).HasPrecision(10, 2);
+        builder.Property(s => s.DefaultLeaseTerm).HasConversion<string?>();
+
         builder.HasIndex(s => s.MarinaId);
         builder.HasIndex(s => s.DockId).HasFilter("\"DockId\" IS NOT NULL");
     }

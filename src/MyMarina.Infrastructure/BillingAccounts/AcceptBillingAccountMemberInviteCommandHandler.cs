@@ -22,10 +22,13 @@ public class AcceptBillingAccountMemberInviteCommandHandler(AppDbContext db)
 
         await db.SaveChangesAsync(ct);
 
+        var user = await db.Users.FindAsync([member.UserId], ct);
         return new BillingAccountMemberDto(
             Id:               member.Id,
             BillingAccountId: member.BillingAccountId,
             UserId:           member.UserId,
+            UserEmail:        user?.Email ?? string.Empty,
+            UserName:         user != null ? $"{user.FirstName} {user.LastName}".Trim() : null,
             Role:             member.Role.ToString(),
             InvitedAt:        member.InvitedAt,
             AcceptedAt:       member.AcceptedAt

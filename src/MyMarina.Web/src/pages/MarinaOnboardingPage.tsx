@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signupMarina, type MarinaType } from '@/api/api';
+import { signupMarina, getMe, type MarinaType } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 
 const schema = z.object({
@@ -42,11 +42,13 @@ export function MarinaOnboardingPage() {
         marinaName: data.marinaName,
         marinaType: data.marinaType,
       });
-      // Store the fresh JWT (includes new owner membership)
-      // We need the current user profile — keep existing user data
+      // Swap to the fresh JWT first so /me returns the new membership
       if (user) {
         setAuth(res.accessToken, res.refreshToken, res.expiresAt, user);
       }
+      // Re-fetch /me with the new token to get enriched memberships (including marina name)
+      const me = await getMe();
+      setAuth(res.accessToken, res.refreshToken, res.expiresAt, me, me.memberships, me.isPlatformOperator);
       window.location.href = `/marina/${res.marina.id}`;
     } catch (err: unknown) {
       setServerError('Failed to create marina. Please try again.');

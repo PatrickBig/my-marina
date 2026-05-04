@@ -18,10 +18,12 @@ public class GetBillingAccountMembersQueryHandler(AppDbContext db)
         return await db.BillingAccountMembers
             .Where(m => m.BillingAccountId == query.BillingAccountId)
             .OrderBy(m => m.InvitedAt)
-            .Select(m => new BillingAccountMemberDto(
+            .Join(db.Users, m => m.UserId, u => u.Id, (m, u) => new BillingAccountMemberDto(
                 m.Id,
                 m.BillingAccountId,
                 m.UserId,
+                u.Email ?? string.Empty,
+                (u.FirstName + " " + u.LastName).Trim(),
                 m.Role.ToString(),
                 m.InvitedAt,
                 m.AcceptedAt))

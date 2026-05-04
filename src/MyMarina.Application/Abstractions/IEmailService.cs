@@ -82,4 +82,18 @@ public interface IEmailService
         DateOnly dueDate,
         Guid invoiceId,
         CancellationToken ct = default);
+
+    Task SendLeaseApprovedAsync(
+        string toEmail,
+        string marinaName,
+        string slipName,
+        string leaseTerm,
+        Guid inquiryId,
+        CancellationToken ct = default);
+
+    Task SendGenericAsync(
+        string toEmail,
+        string subject,
+        string body,
+        CancellationToken ct = default);
 }

@@ -89,4 +89,15 @@ public sealed class QueuedEmailService(IMessageBus messageBus) : IEmailService
         var body = EmailTemplates.InvoiceSent(toEmail, marinaName, billingAccountName, invoiceNumber, totalAmount, dueDate, invoiceId);
         return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
     }
+
+    public Task SendLeaseApprovedAsync(string toEmail, string marinaName, string slipName,
+        string leaseTerm, Guid inquiryId, CancellationToken ct = default)
+    {
+        var subject = $"Your {leaseTerm} lease at {marinaName} has been approved!";
+        var body = EmailTemplates.LeaseApproved(toEmail, marinaName, slipName, leaseTerm, inquiryId);
+        return messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
+    }
+
+    public Task SendGenericAsync(string toEmail, string subject, string body, CancellationToken ct = default)
+        => messageBus.PublishAsync(new SendEmailMessage(toEmail, toEmail, subject, body), ct);
 }

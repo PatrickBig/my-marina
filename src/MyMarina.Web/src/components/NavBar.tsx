@@ -2,7 +2,7 @@ import { logout } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 
 export function NavBar() {
-  const { user, refreshToken, clearAuth, marinaMemberships } = useAuthStore();
+  const { user, refreshToken, clearAuth, marinaMemberships, isPlatformOperator } = useAuthStore();
   const marinaMems = marinaMemberships();
 
   async function handleLogout() {
@@ -27,10 +27,11 @@ export function NavBar() {
 
   const marinaLinks = marinaMems.map((m) => ({
     href: `/marina/${m.marinaId}`,
-    label: 'My Marina',
+    label: m.marinaName ?? 'My Marina',
   }));
 
-  const links = [...staticLinks, ...marinaLinks];
+  const operatorLinks = isPlatformOperator ? [{ href: '/admin', label: 'Admin' }] : [];
+  const links = [...staticLinks, ...marinaLinks, ...operatorLinks];
 
   return (
     <nav className="border-b border-slate-200 bg-white">

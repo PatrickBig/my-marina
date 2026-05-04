@@ -32,6 +32,7 @@ public class ReservationsController(
                 RequestingUserId:      userContext.UserId!.Value,
                 VesselId:              request.VesselId,
                 AvailabilityWindowId:  request.AvailabilityWindowId,
+                SlipId:                request.SlipId,
                 ArrivesAt:             request.ArrivesAt,
                 DepartsAt:             request.DepartsAt,
                 Notes:                 request.Notes), ct);
@@ -164,7 +165,8 @@ public class ReservationsController(
 
 public sealed record CreateReservationRequest(
     Guid VesselId,
-    Guid AvailabilityWindowId,
+    Guid? AvailabilityWindowId,
+    Guid? SlipId,
     DateTimeOffset ArrivesAt,
     DateTimeOffset DepartsAt,
     string? Notes

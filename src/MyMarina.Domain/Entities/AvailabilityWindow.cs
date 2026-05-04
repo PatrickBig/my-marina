@@ -20,6 +20,9 @@ public class AvailabilityWindow
     // Non-null for Holder and OwnerForHolder kinds
     public Guid? RelatedAssignmentId { get; set; }
 
+    public ListingKind ListingKind { get; set; } = ListingKind.Transient;
+    public LeaseTerm? LeaseTerm { get; set; }       // required when ListingKind = Lease
+
     public DateTimeOffset StartsAt { get; set; }
     public DateTimeOffset EndsAt { get; set; }
 
@@ -28,9 +31,16 @@ public class AvailabilityWindow
     public int? MinNights { get; set; }
     public int? MaxNights { get; set; }
 
-    public decimal BasePricePerNight { get; set; }
-    public decimal? WeeklyDiscount { get; set; }    // fraction 0–1; applied for stays ≥ 7 nights
-    public decimal? MonthlyDiscount { get; set; }   // fraction 0–1; applied for stays ≥ 28 nights
+    // Rate: how BasePricePerNight is interpreted depends on RateKind + ListingKind:
+    //   Transient + Flat    = $/night
+    //   Transient + PerFoot = $/ft/night
+    //   Lease     + Flat    = $/period (period defined by LeaseTerm)
+    //   Lease     + PerFoot = $/ft/period
+    public RateKind RateKind { get; set; } = RateKind.Flat;
+    public decimal BasePricePerNight { get; set; }  // holds the rate regardless of kind/period
+    public decimal? MinCharge { get; set; }         // floor applied after per-foot calculation
+    public decimal? WeeklyDiscount { get; set; }    // fraction 0–1; applied for stays ≥ 7 nights (Transient only)
+    public decimal? MonthlyDiscount { get; set; }   // fraction 0–1; applied for stays ≥ 28 nights (Transient only)
     public decimal? CleaningFee { get; set; }
 
     // Stored as JSON array in the database

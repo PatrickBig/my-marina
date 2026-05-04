@@ -58,6 +58,12 @@ internal static class MarinaMappers
         Electric: s.Electric.HasValue ? (int)s.Electric.Value : null,
         HasWater: s.HasWater,
         Status: s.Status.ToString(),
+        DefaultTransientRateKind: s.DefaultTransientRateKind?.ToString(),
+        DefaultTransientBaseRate: s.DefaultTransientBaseRate,
+        DefaultTransientMinCharge: s.DefaultTransientMinCharge,
+        DefaultLeaseRateKind: s.DefaultLeaseRateKind?.ToString(),
+        DefaultLeaseBaseRate: s.DefaultLeaseBaseRate,
+        DefaultLeaseTerm: s.DefaultLeaseTerm?.ToString(),
         Notes: s.Notes,
         CreatedAt: s.CreatedAt
     );

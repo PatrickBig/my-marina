@@ -64,6 +64,16 @@ public sealed record UpdateSlipCommand(
     ElectricAmperage? Electric,
     bool? HasWater,
     SlipStatus? Status,
+    // Transient default rate (send null to clear)
+    string? DefaultTransientRateKind,
+    decimal? DefaultTransientBaseRate,
+    decimal? DefaultTransientMinCharge,
+    bool ClearTransientRate,
+    // Lease default rate (send null to clear)
+    string? DefaultLeaseRateKind,
+    decimal? DefaultLeaseBaseRate,
+    string? DefaultLeaseTerm,
+    bool ClearLeaseRate,
     string? Notes
 );
 
@@ -71,6 +81,7 @@ public sealed record DeleteSlipCommand(Guid SlipId, Guid MarinaId, Guid Requesti
 
 // Queries
 public sealed record GetMarinaQuery(Guid MarinaId, Guid RequestingUserId);
+public sealed record GetMyMarinasQuery;
 public sealed record GetDocksQuery(Guid MarinaId, Guid RequestingUserId);
 public sealed record GetSlipsQuery(Guid MarinaId, Guid RequestingUserId, Guid? DockId = null);
 public sealed record GetSlipQuery(Guid SlipId, Guid MarinaId, Guid RequestingUserId);

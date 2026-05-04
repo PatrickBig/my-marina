@@ -25,9 +25,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<SlipLeaseInquiry> SlipLeaseInquiries => Set<SlipLeaseInquiry>();
     public DbSet<MaintenanceRequest> MaintenanceRequests => Set<MaintenanceRequest>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -19,8 +19,9 @@ interface AuthState {
   expiresAt: string | null;
   user: UserProfile | null;
   memberships: MembershipClaim[];
+  isPlatformOperator: boolean;
 
-  setAuth: (accessToken: string, refreshToken: string, expiresAt: string, user: UserProfile, memberships?: MembershipClaim[]) => void;
+  setAuth: (accessToken: string, refreshToken: string, expiresAt: string, user: UserProfile, memberships?: MembershipClaim[], isPlatformOperator?: boolean) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
   hasMarinaAccess: () => boolean;
@@ -35,12 +36,13 @@ export const useAuthStore = create<AuthState>()(
       expiresAt: null,
       user: null,
       memberships: [],
+      isPlatformOperator: false,
 
-      setAuth: (accessToken, refreshToken, expiresAt, user, memberships = []) =>
-        set({ accessToken, refreshToken, expiresAt, user, memberships }),
+      setAuth: (accessToken, refreshToken, expiresAt, user, memberships = [], isPlatformOperator = false) =>
+        set({ accessToken, refreshToken, expiresAt, user, memberships, isPlatformOperator }),
 
       clearAuth: () =>
-        set({ accessToken: null, refreshToken: null, expiresAt: null, user: null, memberships: [] }),
+        set({ accessToken: null, refreshToken: null, expiresAt: null, user: null, memberships: [], isPlatformOperator: false }),
 
       isAuthenticated: () => {
         const { accessToken, expiresAt } = get();
@@ -62,6 +64,7 @@ export const useAuthStore = create<AuthState>()(
         expiresAt: state.expiresAt,
         user: state.user,
         memberships: state.memberships,
+        isPlatformOperator: state.isPlatformOperator,
       }),
     }
   )

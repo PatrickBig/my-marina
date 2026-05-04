@@ -79,4 +79,17 @@ public sealed class NullEmailService(ILogger<NullEmailService> logger) : IEmailS
         logger.LogDebug("NullEmailService: invoice {InvoiceNumber} sent to {Email} suppressed", invoiceNumber, toEmail);
         return Task.CompletedTask;
     }
+
+    public Task SendLeaseApprovedAsync(string toEmail, string marinaName, string slipName,
+        string leaseTerm, Guid inquiryId, CancellationToken ct = default)
+    {
+        logger.LogDebug("NullEmailService: lease approved to {Email} for slip {Slip} suppressed", toEmail, slipName);
+        return Task.CompletedTask;
+    }
+
+    public Task SendGenericAsync(string toEmail, string subject, string body, CancellationToken ct = default)
+    {
+        logger.LogDebug("NullEmailService: generic email to {Email} (subject: {Subject}) suppressed", toEmail, subject);
+        return Task.CompletedTask;
+    }
 }

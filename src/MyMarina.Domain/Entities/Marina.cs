@@ -25,6 +25,10 @@ public class Marina
     public string TimeZoneId { get; set; } = "UTC";
     public MarinaType MarinaType { get; set; } = MarinaType.Commercial;
     public bool IsListed { get; set; }
+
+    // JSON blob: MarinaOnboardingConfig — configures which post-approval steps run automatically
+    public string? OnboardingConfig { get; set; }
+
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 
     // Navigation

@@ -14,8 +14,12 @@ public class AvailabilityWindowConfiguration : IEntityTypeConfiguration<Availabi
 
         builder.Property(w => w.ListedByKind).HasConversion<string>();
         builder.Property(w => w.Status).HasConversion<string>();
+        builder.Property(w => w.ListingKind).HasConversion<string>();
+        builder.Property(w => w.LeaseTerm).HasConversion<string?>();
+        builder.Property(w => w.RateKind).HasConversion<string>();
 
         builder.Property(w => w.BasePricePerNight).HasPrecision(10, 2);
+        builder.Property(w => w.MinCharge).HasPrecision(10, 2);
         builder.Property(w => w.WeeklyDiscount).HasPrecision(5, 4);
         builder.Property(w => w.MonthlyDiscount).HasPrecision(5, 4);
         builder.Property(w => w.CleaningFee).HasPrecision(10, 2);

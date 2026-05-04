@@ -30,6 +30,17 @@ public class Slip
     public string? AddressZip { get; set; }
     public string? AddressCountry { get; set; }
 
+    // Transient default rate — when set, slip is implicitly available for transient booking
+    // any time it has no active SlipAssignment or confirmed Reservation.
+    public RateKind? DefaultTransientRateKind { get; set; }   // null = not listed for transient
+    public decimal? DefaultTransientBaseRate { get; set; }
+    public decimal? DefaultTransientMinCharge { get; set; }
+
+    // Lease default rate — when set, slip appears in lease searches.
+    public RateKind? DefaultLeaseRateKind { get; set; }       // null = not listed for lease
+    public decimal? DefaultLeaseBaseRate { get; set; }
+    public LeaseTerm? DefaultLeaseTerm { get; set; }
+
     public string? Notes { get; set; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
 }

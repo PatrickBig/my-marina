@@ -18,12 +18,22 @@ public class MarinasController(
     ICommandHandler<UpdateSlipCommand, SlipDto> updateSlip,
     ICommandHandler<DeleteSlipCommand> deleteSlip,
     IQueryHandler<GetMarinaQuery, MarinaDto> getMarina,
+    IQueryHandler<GetMyMarinasQuery, IReadOnlyList<MyMarinaDto>> getMyMarinas,
     IQueryHandler<GetDocksQuery, IReadOnlyList<DockDto>> getDocks,
     IQueryHandler<GetSlipsQuery, IReadOnlyList<SlipDto>> getSlips,
     IQueryHandler<GetSlipQuery, SlipDto> getSlip,
     IUserContext userContext)
     : ControllerBase
 {
+    // GET /marinas — list all marinas the current user has a relationship with
+    [HttpGet("marinas")]
+    [ProducesResponseType(typeof(IReadOnlyList<MyMarinaDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyMarinas(CancellationToken ct)
+    {
+        var marinas = await getMyMarinas.HandleAsync(new GetMyMarinasQuery(), ct);
+        return Ok(marinas);
+    }
+
     // POST /marinas/signup — creates Tenant + Marina + Owner Membership, returns fresh JWT
     [HttpPost("marinas/signup")]
     [ProducesResponseType(typeof(MarinaSignupResponse), StatusCodes.Status201Created)]
@@ -263,6 +273,14 @@ public class MarinasController(
                 Electric: electric,
                 HasWater: request.HasWater,
                 Status: status,
+                DefaultTransientRateKind:  request.DefaultTransientRateKind,
+                DefaultTransientBaseRate:  request.DefaultTransientBaseRate,
+                DefaultTransientMinCharge: request.DefaultTransientMinCharge,
+                ClearTransientRate:        request.ClearTransientRate,
+                DefaultLeaseRateKind:      request.DefaultLeaseRateKind,
+                DefaultLeaseBaseRate:      request.DefaultLeaseBaseRate,
+                DefaultLeaseTerm:          request.DefaultLeaseTerm,
+                ClearLeaseRate:            request.ClearLeaseRate,
                 Notes: request.Notes), ct);
             return Ok(slip);
         }
@@ -328,5 +346,15 @@ public sealed record UpdateSlipRequest(
     int? Electric,
     bool? HasWater,
     string? Status,
+    // Transient default rate (set ClearTransientRate=true to remove)
+    string? DefaultTransientRateKind,
+    decimal? DefaultTransientBaseRate,
+    decimal? DefaultTransientMinCharge,
+    bool ClearTransientRate,
+    // Lease default rate (set ClearLeaseRate=true to remove)
+    string? DefaultLeaseRateKind,
+    decimal? DefaultLeaseBaseRate,
+    string? DefaultLeaseTerm,
+    bool ClearLeaseRate,
     string? Notes
 );

@@ -25,12 +25,14 @@ export interface UserProfileDto {
 export interface MeResponse extends UserProfileDto {
   memberships: MembershipClaim[];
   billingAccounts: BillingAccountMemberClaim[];
+  isPlatformOperator: boolean;
 }
 
 export interface MembershipClaim {
   scope: 'Marina' | 'Tenant';
   tenantId: string;
   marinaId?: string | null;
+  marinaName?: string | null;
   role: 'Owner' | 'Manager' | 'Staff';
   tier?: string | null;
 }
@@ -136,6 +138,10 @@ export type MarinaType = 'Commercial' | 'YachtClub' | 'PrivateCommunity' | 'Dock
 export type SlipType = 'Floating' | 'Fixed' | 'Mooring' | 'DryStorage' | 'Anchorage';
 export type SlipStatus = 'Active' | 'UnderMaintenance' | 'Inactive';
 export type MembershipRole = 'Staff' | 'Manager' | 'Owner';
+export type RateKind = 'Flat' | 'PerFoot';
+export type LeaseTerm = 'Monthly' | 'Seasonal' | 'Annual';
+export type ListingKind = 'Transient' | 'Lease';
+export type LeaseInquiryStatus = 'Pending' | 'UnderReview' | 'Approved' | 'Declined' | 'Withdrawn';
 
 export interface TenantDto {
   id: string;
@@ -190,6 +196,12 @@ export interface SlipDto {
   electric?: number | null;
   hasWater: boolean;
   status: SlipStatus;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
   notes?: string | null;
   createdAt: string;
 }
@@ -216,6 +228,23 @@ export interface MembershipDto {
   acceptedAt?: string | null;
   isPending: boolean;
 }
+
+export interface MyMarinaDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  addressCity?: string | null;
+  addressState?: string | null;
+  marinaType: MarinaType;
+  isListed: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  userRole?: string | null;
+  relationshipKind: 'Staff' | 'BillingAccount';
+}
+
+export const getMyMarinas = () =>
+  apiClient.get<MyMarinaDto[]>('/marinas').then((r) => r.data);
 
 export const signupMarina = (data: { tenantName: string; marinaName: string; marinaType: MarinaType }) =>
   apiClient.post<MarinaSignupResponse>('/marinas/signup', data).then((r) => r.data);
@@ -246,6 +275,22 @@ export const createSlip = (marinaId: string, data: {
   maxLength: number; maxBeam: number; maxDraft: number;
   hasElectric: boolean; electric?: number | null; hasWater: boolean; notes?: string | null;
 }) => apiClient.post<SlipDto>(`/marinas/${marinaId}/slips`, data).then((r) => r.data);
+
+export const updateSlip = (marinaId: string, slipId: string, data: {
+  dockId?: string | null; name?: string; slipType?: SlipType;
+  maxLength?: number; maxBeam?: number; maxDraft?: number;
+  hasElectric?: boolean; electric?: number | null; hasWater?: boolean;
+  status?: SlipStatus;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  clearTransientRate?: boolean;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
+  clearLeaseRate?: boolean;
+  notes?: string | null;
+}) => apiClient.patch<SlipDto>(`/marinas/${marinaId}/slips/${slipId}`, data).then((r) => r.data);
 
 export const deleteSlip = (marinaId: string, slipId: string) =>
   apiClient.delete(`/marinas/${marinaId}/slips/${slipId}`);
@@ -288,6 +333,8 @@ export interface BillingAccountMemberDto {
   id: string;
   billingAccountId: string;
   userId: string;
+  userEmail: string;
+  userName?: string | null;
   role: string;
   invitedAt: string;
   acceptedAt?: string | null;
@@ -303,6 +350,23 @@ export const createBillingAccount = (marinaId: string, data: {
   emergencyContactName?: string | null; emergencyContactPhone?: string | null;
   notes?: string | null;
 }) => apiClient.post<BillingAccountDto>(`/marinas/${marinaId}/billing-accounts`, data).then((r) => r.data);
+
+export const updateBillingAccount = (marinaId: string, accountId: string, data: Partial<{
+  displayName: string; billingEmail: string; billingPhone: string | null;
+  billingAddressStreet: string | null; billingAddressCity: string | null;
+  billingAddressState: string | null; billingAddressZip: string | null;
+  emergencyContactName: string | null; emergencyContactPhone: string | null;
+  notes: string | null; isActive: boolean;
+}>) => apiClient.patch<BillingAccountDto>(`/marinas/${marinaId}/billing-accounts/${accountId}`, data).then((r) => r.data);
+
+export const getBillingAccountMembers = (marinaId: string, accountId: string) =>
+  apiClient.get<BillingAccountMemberDto[]>(`/marinas/${marinaId}/billing-accounts/${accountId}/members`).then((r) => r.data);
+
+export const inviteAccountMember = (marinaId: string, accountId: string, email: string, role = 'Member') =>
+  apiClient.post<BillingAccountMemberDto>(`/marinas/${marinaId}/billing-accounts/${accountId}/members/invite`, { email, role }).then((r) => r.data);
+
+export const removeAccountMember = (marinaId: string, accountId: string, memberId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/billing-accounts/${accountId}/members/${memberId}`);
 
 // ─── Vessel Records ───────────────────────────────────────────────────────────
 
@@ -330,6 +394,24 @@ export const getVesselRecords = (marinaId: string, billingAccountId?: string) =>
   apiClient.get<VesselRecordDto[]>(`/marinas/${marinaId}/vessel-records`, {
     params: billingAccountId ? { billingAccountId } : undefined,
   }).then((r) => r.data);
+
+export const createVesselRecord = (marinaId: string, data: {
+  billingAccountId?: string | null;
+  vesselId?: string | null;
+  claimEmail?: string | null;
+  vesselName?: string | null;
+  vesselMake?: string | null;
+  vesselModel?: string | null;
+  vesselYear?: number | null;
+  vesselLength?: number | null;
+  vesselBeam?: number | null;
+  vesselDraft?: number | null;
+  vesselBoatType?: string | null;
+  insuranceProvider?: string | null;
+  insurancePolicyNumber?: string | null;
+  insuranceExpiresOn?: string | null;
+  notes?: string | null;
+}) => apiClient.post<VesselRecordDto>(`/marinas/${marinaId}/vessel-records`, data).then((r) => r.data);
 
 // ─── Slip Assignments ─────────────────────────────────────────────────────────
 
@@ -402,12 +484,16 @@ export interface AvailabilityWindowDto {
   listedByMarinaId?: string | null;
   listedByBillingAccountId?: string | null;
   relatedAssignmentId?: string | null;
+  listingKind: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind: RateKind;
   startsAt: string;
   endsAt: string;
   instantBook: boolean;
   minNights?: number | null;
   maxNights?: number | null;
   basePricePerNight: number;
+  minCharge?: number | null;
   weeklyDiscount?: number | null;
   monthlyDiscount?: number | null;
   cleaningFee?: number | null;
@@ -422,12 +508,16 @@ export interface CreateAvailabilityWindowData {
   listedByMarinaId?: string | null;
   listedByBillingAccountId?: string | null;
   relatedAssignmentId?: string | null;
+  listingKind?: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind?: RateKind;
   startsAt: string;
   endsAt: string;
   instantBook: boolean;
   minNights?: number | null;
   maxNights?: number | null;
   basePricePerNight: number;
+  minCharge?: number | null;
   weeklyDiscount?: number | null;
   monthlyDiscount?: number | null;
   cleaningFee?: number | null;
@@ -465,8 +555,12 @@ export interface SlipSearchResultDto {
   marinaName: string;
   marinaCity?: string | null;
   marinaState?: string | null;
-  bestWindowId: string;
+  bestWindowId?: string | null;
+  listingKind: ListingKind;
+  rateKind: RateKind;
   basePricePerNight: number;
+  minCharge?: number | null;
+  leaseTerm?: LeaseTerm | null;
   instantBook: boolean;
   cleaningFee?: number | null;
   minNights?: number | null;
@@ -476,12 +570,16 @@ export interface SlipSearchResultDto {
 
 export interface PublicWindowSummaryDto {
   id: string;
+  listingKind: ListingKind;
+  leaseTerm?: LeaseTerm | null;
+  rateKind: RateKind;
   startsAt: string;
   endsAt: string;
   instantBook: boolean;
   minNights?: number | null;
   maxNights?: number | null;
   basePricePerNight: number;
+  minCharge?: number | null;
   weeklyDiscount?: number | null;
   monthlyDiscount?: number | null;
   cleaningFee?: number | null;
@@ -505,6 +603,14 @@ export interface SlipDetailDto {
   marinaName: string;
   marinaDescription?: string | null;
   marinaPhoneNumber?: string | null;
+  defaultTransientRateKind?: RateKind | null;
+  defaultTransientBaseRate?: number | null;
+  defaultTransientMinCharge?: number | null;
+  transientBookingAvailable: boolean;
+  defaultLeaseRateKind?: RateKind | null;
+  defaultLeaseBaseRate?: number | null;
+  defaultLeaseTerm?: LeaseTerm | null;
+  leaseInquiryAvailable: boolean;
   openWindows: PublicWindowSummaryDto[];
 }
 
@@ -512,8 +618,10 @@ export interface SlipSearchParams {
   lat: number;
   lon: number;
   radiusMiles?: number;
+  listingKind?: ListingKind;
   arrivesAt?: string;
   departsAt?: string;
+  leaseTerm?: LeaseTerm;
   vesselLength?: number;
   vesselBeam?: number;
   vesselDraft?: number;
@@ -562,7 +670,8 @@ export interface ReservationDto {
 
 export interface CreateReservationData {
   vesselId: string;
-  availabilityWindowId: string;
+  availabilityWindowId?: string | null;  // null when using direct slip rate
+  slipId?: string | null;                // set when booking via direct default rate
   arrivesAt: string;
   departsAt: string;
   notes?: string | null;
@@ -869,3 +978,165 @@ export const deleteAnnouncement = (marinaId: string, announcementId: string) =>
 
 export const getMyAnnouncements = () =>
   apiClient.get<AnnouncementDto[]>('/me/announcements').then((r) => r.data);
+
+// ─── Lease Inquiries ──────────────────────────────────────────────────────────
+
+export interface LeaseInquiryDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  requestingUserId: string;
+  requestingUserName: string;
+  requestingUserEmail: string;
+  vesselId?: string | null;
+  vesselName?: string | null;
+  desiredTerm: LeaseTerm;
+  desiredStartDate?: string | null;
+  message?: string | null;
+  agreedRateKind?: RateKind | null;
+  agreedBaseRate?: number | null;
+  assignmentStartDate?: string | null;
+  assignmentEndDate?: string | null;
+  marinaNote?: string | null;
+  status: LeaseInquiryStatus;
+  reviewedByUserName?: string | null;
+  reviewedAt?: string | null;
+  approvedByUserName?: string | null;
+  approvedAt?: string | null;
+  declinedByUserName?: string | null;
+  declinedAt?: string | null;
+  slipAssignmentId?: string | null;
+  billingAccountId?: string | null;
+  createdAt: string;
+}
+
+export const createLeaseInquiry = (slipId: string, data: {
+  vesselId?: string | null;
+  desiredTerm: LeaseTerm;
+  desiredStartDate?: string | null;
+  message?: string | null;
+}) => apiClient.post<LeaseInquiryDto>(`/slips/${slipId}/lease-inquiries`, data).then((r) => r.data);
+
+export const getMyLeaseInquiries = () =>
+  apiClient.get<LeaseInquiryDto[]>('/me/lease-inquiries').then((r) => r.data);
+
+export const getMarinaLeaseInquiries = (marinaId: string, params?: { slipId?: string; status?: string }) =>
+  apiClient.get<LeaseInquiryDto[]>(`/marinas/${marinaId}/lease-inquiries`, { params }).then((r) => r.data);
+
+export const updateLeaseInquiry = (marinaId: string, id: string, data: {
+  agreedRateKind?: string | null;
+  agreedBaseRate?: number | null;
+  assignmentStartDate?: string | null;
+  assignmentEndDate?: string | null;
+  marinaNote?: string | null;
+  markUnderReview?: boolean;
+}) => apiClient.patch<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}`, data).then((r) => r.data);
+
+export const approveLeaseInquiry = (marinaId: string, id: string) =>
+  apiClient.post<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}/approve`).then((r) => r.data);
+
+export const declineLeaseInquiry = (marinaId: string, id: string, reason?: string) =>
+  apiClient.post<LeaseInquiryDto>(`/marinas/${marinaId}/lease-inquiries/${id}/decline`, { reason }).then((r) => r.data);
+
+export const withdrawLeaseInquiry = (id: string) =>
+  apiClient.post<LeaseInquiryDto>(`/lease-inquiries/${id}/withdraw`).then((r) => r.data);
+
+// ─── Platform Operator ────────────────────────────────────────────────────────
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface TenantSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  subscriptionTier: string;
+  isActive: boolean;
+  isDemo: boolean;
+  suspendedAt: string | null;
+  createdAt: string;
+  marinaCount: number;
+}
+
+export interface UserSummaryDto {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  emailConfirmed: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+  isPlatformOperator: boolean;
+}
+
+export interface AuditLogEntryDto {
+  id: string;
+  tenantId: string | null;
+  actorUserId: string | null;
+  actorName: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  details: string | null;
+  occurredAt: string;
+}
+
+export interface ListingModerationDto {
+  id: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  tenantId: string;
+  tenantName: string;
+  status: string;
+  startsAt: string;
+  endsAt: string;
+  basePricePerNight: number;
+  listedByKind: string;
+  createdAt: string;
+}
+
+// Tenants
+export const getPlatformTenants = (search?: string, page = 1, pageSize = 25) =>
+  apiClient.get<PagedResult<TenantSummaryDto>>('/platform/tenants', { params: { search, page, pageSize } }).then((r) => r.data);
+
+export const createPlatformTenant = (data: { name: string; slug: string; billingEmail?: string; subscriptionTier?: string }) =>
+  apiClient.post<{ id: string; name: string; slug: string }>('/platform/tenants', data).then((r) => r.data);
+
+export const suspendTenant = (tenantId: string, reason?: string) =>
+  apiClient.patch(`/platform/tenants/${tenantId}/suspend`, { reason });
+
+export const reactivateTenant = (tenantId: string) =>
+  apiClient.patch(`/platform/tenants/${tenantId}/reactivate`, {});
+
+// Users
+export const searchPlatformUsers = (q?: string, page = 1, pageSize = 25) =>
+  apiClient.get<PagedResult<UserSummaryDto>>('/platform/users', { params: { q, page, pageSize } }).then((r) => r.data);
+
+export const forceSignOut = (userId: string) =>
+  apiClient.post(`/platform/users/${userId}/force-signout`);
+
+export const deactivatePlatformUser = (userId: string, reason?: string) =>
+  apiClient.patch(`/platform/users/${userId}/deactivate`, { reason });
+
+export const activatePlatformUser = (userId: string) =>
+  apiClient.patch(`/platform/users/${userId}/activate`, {});
+
+// Audit log
+export const getPlatformAuditLog = (tenantId?: string, page = 1, pageSize = 50) =>
+  apiClient.get<PagedResult<AuditLogEntryDto>>('/platform/audit-log', { params: { tenantId, page, pageSize } }).then((r) => r.data);
+
+// Listings
+export const getPlatformListings = (page = 1, pageSize = 50) =>
+  apiClient.get<PagedResult<ListingModerationDto>>('/platform/listings', { params: { page, pageSize } }).then((r) => r.data);
+
+export const removePlatformListing = (listingId: string, reason?: string) =>
+  apiClient.delete(`/platform/listings/${listingId}`, { data: { reason } });
