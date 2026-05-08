@@ -237,34 +237,34 @@ The MVP is built in layers. Each phase ends with a shippable state — a real us
 
 ---
 
-### Phase 14 — Private Slip Owners
+### Phase 14 — Private Slip Owners ✅
 
 *Dockominium and private dock onboarding.*
 
-- [ ] "Add my dock" wizard (`MarinaType = PrivateDock`)
-- [ ] "Add a slip I own at a marina" wizard (`MarinaType = Dockominium`, requires `Slip.HostMarinaId`)
-- [ ] Auto-creates Tenant + Marina + Slip + Owner Membership
-- [ ] `HostMarinaPolicy` (None / NotifyOnly / RequiresApproval)
-- [ ] Host marina notification flow when a dockominium slip is added
-- [ ] Host marina approval flow in reservation lifecycle (when policy = `RequiresApproval`)
-- [ ] UX: brand the experience as "your dock" / "your slip," never "your marina"
+- [x] "Add my dock" wizard (`MarinaType = PrivateDock`)
+- [x] "Add a slip I own at a marina" wizard (`MarinaType = Dockominium`, requires `Slip.HostMarinaId`)
+- [x] Auto-creates Tenant + Marina + Slip + Owner Membership
+- [x] `HostMarinaPolicy` (None / NotifyOnly / RequiresApproval)
+- [x] Host marina notification flow when a dockominium slip is added
+- [x] Host marina approval flow in reservation lifecycle (when policy = `RequiresApproval`)
+- [x] UX: brand the experience as "your dock" / "your slip," never "your marina"
 
 **Deliverable:** Individuals can list a private dock or a dockominium slip on the marketplace. Host marina policies are enforced.
 
 ---
 
-### Phase 15 — Demo Experience
+### Phase 15 — Demo Experience ✅
 
 *Replace ephemeral demo tenants with a curated read-only demo.*
 
-- [ ] `Tenant.IsDemo` flag (single demo tenant, multiple demo marinas)
-- [ ] `WriteAccess` policy decorator on every non-GET endpoint — returns 403 with a "this is a demo" body when the caller's context is demo
-- [ ] Demo seed script (idempotent, runs on each deploy)
-- [ ] Demo seed includes: 1 commercial marina, 1 yacht club, 1 dockominium, 1 private dock; full inventory (docks, slips, customers, vessels, reservations, invoices, maintenance, announcements, work orders)
-- [ ] "Try the host dashboard" auto-signin button on marketing site (creates a short-lived demo session token tied to a read-only `Membership` at a demo marina)
-- [ ] Demo listings are excluded from real-user search results (filtered via `Tenant.IsDemo` in the search query unless the caller is in a demo session)
-- [ ] CI integration test asserts at least one record per known entity type lives in the demo tenant
-- [ ] Marketing site's screenshots are captured against the demo via the Playwright skill
+- [x] `Tenant.IsDemo` flag (single demo tenant, multiple demo marinas)
+- [x] `WriteAccess` policy decorator on every non-GET endpoint — returns 403 with a "this is a demo" body when the caller's context is demo
+- [x] Demo seed script (idempotent, runs on each deploy)
+- [x] Demo seed includes: 1 commercial marina, 1 yacht club, 1 dockominium, 1 private dock; full inventory (docks, slips, customers, vessels, reservations, invoices, maintenance, announcements, work orders)
+- [x] "Try the host dashboard" auto-signin button on marketing site (creates a short-lived demo session token tied to a read-only `Membership` at a demo marina)
+- [x] Demo listings are excluded from real-user search results (filtered via `Tenant.IsDemo` in the search query unless the caller is in a demo session)
+- [x] CI integration test asserts at least one record per known entity type lives in the demo tenant
+- [ ] Marketing site's screenshots are captured against the demo via the Playwright skill — *deferred to Phase 16 (already listed there)*
 
 **Deliverable:** A visitor on the marketing site can click into a working host dashboard backed by a curated demo, with no risk of polluting data or being abused. Real users never see demo listings in search.
 

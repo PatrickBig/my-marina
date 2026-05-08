@@ -34,6 +34,7 @@ internal static class ReservationHelper
         SlipName:            r.Slip?.Name ?? string.Empty,
         MarinaId:            r.Slip?.MarinaId ?? Guid.Empty,
         MarinaName:          string.Empty, // populated by queries that join Marina
+        HostMarinaId:        r.Slip?.HostMarinaId,
         AvailabilityWindowId: r.AvailabilityWindowId,
         ArrivesAt:           r.ArrivesAt,
         DepartsAt:           r.DepartsAt,

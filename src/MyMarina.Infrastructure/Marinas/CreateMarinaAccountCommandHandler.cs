@@ -16,8 +16,16 @@ public class CreateMarinaAccountCommandHandler(
     IConfiguration configuration)
     : ICommandHandler<CreateMarinaAccountCommand, MarinaSignupResponse>
 {
+    private static readonly HashSet<MarinaType> PrivateHostTypes =
+        [MarinaType.PrivateDock, MarinaType.Dockominium];
+
     public async Task<MarinaSignupResponse> HandleAsync(CreateMarinaAccountCommand command, CancellationToken ct = default)
     {
+        var isPrivateHost = PrivateHostTypes.Contains(command.MarinaType);
+
+        if (isPrivateHost && (command.SlipName is null || command.MaxLength is null || command.MaxBeam is null || command.MaxDraft is null))
+            throw new InvalidOperationException("SlipName, MaxLength, MaxBeam, and MaxDraft are required for PrivateDock and Dockominium accounts.");
+
         var user = await userManager.FindByIdAsync(command.UserId.ToString())
             ?? throw new InvalidOperationException("User not found.");
 
@@ -55,6 +63,24 @@ public class CreateMarinaAccountCommandHandler(
         db.Tenants.Add(tenant);
         db.Marinas.Add(marina);
         db.Memberships.Add(membership);
+
+        if (isPrivateHost)
+        {
+            var slip = new Slip
+            {
+                MarinaId         = marina.Id,
+                Name             = command.SlipName!,
+                SlipType         = command.SlipType,
+                MaxLength        = command.MaxLength!.Value,
+                MaxBeam          = command.MaxBeam!.Value,
+                MaxDraft         = command.MaxDraft!.Value,
+                Notes            = command.SlipNotes,
+                HostMarinaId     = command.HostMarinaId,
+                HostMarinaPolicy = command.HostMarinaPolicy,
+            };
+            db.Slips.Add(slip);
+        }
+
         await db.SaveChangesAsync(ct);
 
         // Issue a fresh JWT that includes the new owner membership

@@ -10,7 +10,7 @@ namespace MyMarina.Infrastructure.Services;
 
 public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 {
-    public string GenerateAccessToken(UserTokenInfo user)
+    public string GenerateAccessToken(UserTokenInfo user, int? expiryMinutesOverride = null)
     {
         var key = configuration["Jwt:Key"]
             ?? throw new InvalidOperationException("Jwt:Key is required.");
@@ -18,7 +18,8 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             ?? throw new InvalidOperationException("Jwt:Issuer is required.");
         var audience = configuration["Jwt:Audience"]
             ?? throw new InvalidOperationException("Jwt:Audience is required.");
-        var expiryMinutes = int.TryParse(configuration["Jwt:ExpiryMinutes"], out var m) ? m : 60;
+        var expiryMinutes = expiryMinutesOverride
+            ?? (int.TryParse(configuration["Jwt:ExpiryMinutes"], out var m) ? m : 60);
 
         var claims = new List<Claim>
         {

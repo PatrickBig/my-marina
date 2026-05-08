@@ -9,8 +9,9 @@ export function AuthCallbackPage() {
     async function handleCallback() {
       const params = new URLSearchParams(window.location.search);
       const accessToken  = params.get('accessToken');
-      const refreshToken = params.get('refreshToken');
+      const refreshToken = params.get('refreshToken');   // null for demo sessions
       const expiresAt    = params.get('expiresAt');
+      const isDemo       = params.get('isDemo') === 'true';
       const error        = params.get('error');
 
       if (error) {
@@ -18,16 +19,25 @@ export function AuthCallbackPage() {
         return;
       }
 
-      if (!accessToken || !refreshToken || !expiresAt) {
+      if (!accessToken || !expiresAt) {
         window.location.replace('/login?error=invalid_callback');
         return;
       }
 
       try {
-        // Temporarily set the access token so the API client can attach it to the /me request.
         useAuthStore.setState({ accessToken, refreshToken, expiresAt });
         const meData = await getMe();
-        setAuth(accessToken, refreshToken, expiresAt, meData, meData.memberships, meData.isPlatformOperator);
+        setAuth(accessToken, refreshToken, expiresAt, meData, meData.memberships, meData.isPlatformOperator, isDemo);
+
+        if (isDemo) {
+          // Send demo users straight to their first marina dashboard.
+          const marinaMembership = meData.memberships?.find((m: { scope: string }) => m.scope === 'Marina');
+          if (marinaMembership?.marinaId) {
+            window.location.replace(`/marina/${marinaMembership.marinaId}`);
+            return;
+          }
+        }
+
         window.location.replace('/');
       } catch {
         useAuthStore.getState().clearAuth();

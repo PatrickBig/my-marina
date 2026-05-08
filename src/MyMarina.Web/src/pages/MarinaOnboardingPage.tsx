@@ -2,23 +2,23 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signupMarina, getMe, type MarinaType } from '@/api/api';
+import { signupMarina, getMe } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
+
+type OrgMarinaType = 'Commercial' | 'YachtClub' | 'PrivateCommunity';
 
 const schema = z.object({
   tenantName: z.string().min(2, 'Organization name must be at least 2 characters'),
   marinaName: z.string().min(2, 'Marina name must be at least 2 characters'),
-  marinaType: z.enum(['Commercial', 'YachtClub', 'PrivateCommunity', 'Dockominium', 'PrivateDock'] as const),
+  marinaType: z.enum(['Commercial', 'YachtClub', 'PrivateCommunity'] as const),
 });
 
 type FormData = z.infer<typeof schema>;
 
-const MARINA_TYPE_LABELS: Record<MarinaType, string> = {
-  Commercial: 'Commercial Marina',
-  YachtClub: 'Yacht Club',
+const MARINA_TYPE_LABELS: Record<OrgMarinaType, string> = {
+  Commercial:       'Commercial Marina',
+  YachtClub:        'Yacht Club',
   PrivateCommunity: 'Private Community',
-  Dockominium: 'Dockominium',
-  PrivateDock: 'Private Dock',
 };
 
 export function MarinaOnboardingPage() {
@@ -42,15 +42,11 @@ export function MarinaOnboardingPage() {
         marinaName: data.marinaName,
         marinaType: data.marinaType,
       });
-      // Swap to the fresh JWT first so /me returns the new membership
-      if (user) {
-        setAuth(res.accessToken, res.refreshToken, res.expiresAt, user);
-      }
-      // Re-fetch /me with the new token to get enriched memberships (including marina name)
+      if (user) setAuth(res.accessToken, res.refreshToken, res.expiresAt, user);
       const me = await getMe();
       setAuth(res.accessToken, res.refreshToken, res.expiresAt, me, me.memberships, me.isPlatformOperator);
       window.location.href = `/marina/${res.marina.id}`;
-    } catch (err: unknown) {
+    } catch {
       setServerError('Failed to create marina. Please try again.');
     }
   }
@@ -62,6 +58,23 @@ export function MarinaOnboardingPage() {
         <p className="text-slate-500 text-sm mb-6">
           Create your marina account to start managing slips and staff.
         </p>
+
+        {/* Private host shortcuts */}
+        <div className="mb-6 rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-2">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            Not a commercial marina?
+          </p>
+          <div className="flex gap-2">
+            <a href="/dock/new"
+              className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 transition-colors text-center">
+              Add my private dock
+            </a>
+            <a href="/slip/new"
+              className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 transition-colors text-center">
+              Add my slip at a marina
+            </a>
+          </div>
+        </div>
 
         {serverError && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
@@ -108,7 +121,7 @@ export function MarinaOnboardingPage() {
               {...register('marinaType')}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"
             >
-              {(Object.keys(MARINA_TYPE_LABELS) as MarinaType[]).map((t) => (
+              {(Object.keys(MARINA_TYPE_LABELS) as OrgMarinaType[]).map((t) => (
                 <option key={t} value={t}>{MARINA_TYPE_LABELS[t]}</option>
               ))}
             </select>

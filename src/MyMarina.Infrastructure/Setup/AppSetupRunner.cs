@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyMarina.Infrastructure.Demo;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
@@ -12,6 +13,7 @@ public class AppSetupRunner(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
     IOptions<SetupOptions> options,
+    DemoSeedScript demoSeed,
     ILogger<AppSetupRunner> logger)
 {
     public async Task RunAsync(CancellationToken ct = default)
@@ -22,6 +24,7 @@ public class AppSetupRunner(
 
         await EnsurePlatformOperatorAsync(ct);
         await EnsureInitialMarinaOwnerAsync(ct);
+        await demoSeed.SeedAsync(ct);
 
         logger.LogInformation("Setup complete");
     }

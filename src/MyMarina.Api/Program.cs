@@ -37,7 +37,9 @@ if (args.Contains("--setup"))
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Controllers + OpenAPI ---
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+    options.Filters.AddService<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>());
+builder.Services.AddScoped<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>();
 builder.Services.AddOpenApi();
 
 // --- Infrastructure (EF Core, Identity, Redis, Hangfire, user context) ---
