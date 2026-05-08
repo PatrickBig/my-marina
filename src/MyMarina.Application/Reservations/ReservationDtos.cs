@@ -9,6 +9,7 @@ public sealed record ReservationDto(
     string SlipName,
     Guid MarinaId,
     string MarinaName,
+    Guid? HostMarinaId,       // set when the slip has a host marina (dockominium)
     Guid AvailabilityWindowId,
     DateTimeOffset ArrivesAt,
     DateTimeOffset DepartsAt,

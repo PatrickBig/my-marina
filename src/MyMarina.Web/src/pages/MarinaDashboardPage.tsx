@@ -1729,18 +1729,26 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
                 </span>
               </div>
               <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => handleApprove(r.id)}
-                  className="text-xs rounded-md bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleDecline(r.id)}
-                  className="text-xs rounded-md border border-red-300 text-red-600 px-3 py-1.5 hover:bg-red-50"
-                >
-                  Decline
-                </button>
+                {r.status === 'PendingHostMarinaApproval' && r.hostMarinaId !== marinaId ? (
+                  <p className="text-xs text-slate-500 italic">
+                    Awaiting approval from the host marina before you can act.
+                  </p>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleApprove(r.id)}
+                      className="text-xs rounded-md bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleDecline(r.id)}
+                      className="text-xs rounded-md border border-red-300 text-red-600 px-3 py-1.5 hover:bg-red-50"
+                    >
+                      Decline
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

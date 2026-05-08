@@ -243,10 +243,37 @@ export interface MyMarinaDto {
   relationshipKind: 'Staff' | 'BillingAccount';
 }
 
+export interface MarinaSummaryDto {
+  id: string;
+  name: string;
+  addressCity?: string | null;
+  addressState?: string | null;
+  marinaType: string;
+}
+
 export const getMyMarinas = () =>
   apiClient.get<MyMarinaDto[]>('/marinas').then((r) => r.data);
 
-export const signupMarina = (data: { tenantName: string; marinaName: string; marinaType: MarinaType }) =>
+export const searchMarinas = (q: string, limit = 10) =>
+  apiClient.get<MarinaSummaryDto[]>('/marinas/search', { params: { q, limit } }).then((r) => r.data);
+
+export interface MarinaSignupData {
+  tenantName: string;
+  marinaName: string;
+  marinaType: MarinaType;
+  // Required for PrivateDock / Dockominium
+  slipName?: string;
+  maxLength?: number;
+  maxBeam?: number;
+  maxDraft?: number;
+  slipType?: string;
+  slipNotes?: string;
+  // Dockominium-only
+  hostMarinaId?: string;
+  hostMarinaPolicy?: 'None' | 'NotifyOnly' | 'RequiresApproval';
+}
+
+export const signupMarina = (data: MarinaSignupData) =>
   apiClient.post<MarinaSignupResponse>('/marinas/signup', data).then((r) => r.data);
 
 export const getMarina = (marinaId: string) =>
@@ -649,6 +676,7 @@ export interface ReservationDto {
   slipName: string;
   marinaId: string;
   marinaName: string;
+  hostMarinaId?: string | null;
   availabilityWindowId: string;
   arrivesAt: string;
   departsAt: string;
