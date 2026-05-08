@@ -2,7 +2,7 @@ namespace MyMarina.Application.Abstractions;
 
 public interface IJwtTokenService
 {
-    string GenerateAccessToken(UserTokenInfo user);
+    string GenerateAccessToken(UserTokenInfo user, int? expiryMinutesOverride = null);
 }
 
 public sealed record UserTokenInfo(
