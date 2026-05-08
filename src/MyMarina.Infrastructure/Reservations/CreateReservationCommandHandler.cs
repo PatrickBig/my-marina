@@ -166,6 +166,24 @@ public class CreateReservationCommandHandler(
                 command.ArrivesAt, command.DepartsAt, reservation.Id, ct);
         }
 
+        // Notify the host marina when they need to approve or are being kept informed
+        if (slip.HostMarinaId.HasValue && slip.HostMarinaPolicy != HostMarinaPolicy.None)
+        {
+            var hostMarina = await db.Marinas.FindAsync([slip.HostMarinaId.Value], ct);
+            if (!string.IsNullOrEmpty(hostMarina?.Email))
+            {
+                var subject = status == ReservationStatus.PendingHostMarinaApproval
+                    ? $"[Action Required] Reservation approval needed — {slip.Name}"
+                    : $"[FYI] New reservation at {slip.Name}";
+
+                var body = status == ReservationStatus.PendingHostMarinaApproval
+                    ? $"A reservation at slip \"{slip.Name}\" (a dockominium slip at your marina) requires your approval.\n\nBoater: {boaterName}\nArrival: {command.ArrivesAt:d}\nDeparture: {command.DepartsAt:d}\n\nReservation ID: {reservation.Id}"
+                    : $"A reservation has been confirmed at slip \"{slip.Name}\" (a dockominium slip at your marina).\n\nBoater: {boaterName}\nArrival: {command.ArrivesAt:d}\nDeparture: {command.DepartsAt:d}";
+
+                await email.SendGenericAsync(hostMarina.Email, subject, body, ct);
+            }
+        }
+
         return ReservationHelper.ToDtoWithMarina(reservation, marina?.Name ?? string.Empty);
     }
 }

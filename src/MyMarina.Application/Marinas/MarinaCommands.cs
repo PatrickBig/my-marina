@@ -2,14 +2,28 @@ using MyMarina.Domain.Enums;
 
 namespace MyMarina.Application.Marinas;
 
-// Signup — creates Tenant + Marina + Owner Membership, returns a fresh JWT
+// Signup — creates Tenant + Marina + Owner Membership, returns a fresh JWT.
+// For PrivateDock/Dockominium types, also auto-creates the first Slip.
 public sealed record CreateMarinaAccountCommand(
     Guid UserId,
     string TenantName,
     string MarinaName,
     MarinaType MarinaType,
-    string? IpAddress
+    string? IpAddress,
+    // Slip fields — required when MarinaType is PrivateDock or Dockominium
+    string? SlipName        = null,
+    decimal? MaxLength      = null,
+    decimal? MaxBeam        = null,
+    decimal? MaxDraft       = null,
+    SlipType SlipType       = SlipType.Floating,
+    string? SlipNotes       = null,
+    // Dockominium-only
+    Guid? HostMarinaId           = null,
+    HostMarinaPolicy HostMarinaPolicy = HostMarinaPolicy.NotifyOnly
 );
+
+// Lightweight marina search for the dockominium onboarding wizard (host marina lookup)
+public sealed record SearchMarinasQuery(string? Q, int Limit = 10);
 
 public sealed record UpdateMarinaCommand(
     Guid MarinaId,

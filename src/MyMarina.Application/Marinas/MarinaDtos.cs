@@ -77,6 +77,15 @@ public sealed record MarinaSignupResponse(
     DateTimeOffset ExpiresAt
 );
 
+// Returned from SearchMarinasQuery — minimal projection for host marina lookup.
+public sealed record MarinaSummaryDto(
+    Guid Id,
+    string Name,
+    string? AddressCity,
+    string? AddressState,
+    string MarinaType
+);
+
 // Returned from GetMyMarinasQuery — marina summary with the caller's relationship context.
 public sealed record MyMarinaDto(
     Guid Id,

@@ -6,6 +6,8 @@ import { MyBoatsPage } from '@/pages/MyBoatsPage';
 import { MyInvoicesPage } from '@/pages/MyInvoicesPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
+import { PrivateDockOnboardingPage } from '@/pages/PrivateDockOnboardingPage';
+import { DockominionOnboardingPage } from '@/pages/DockominionOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SlipDetailPage } from '@/pages/SlipDetailPage';
@@ -34,6 +36,8 @@ export function App() {
     if (path === '/boats') return <MyBoatsPage />;
     if (path === '/profile') return <ProfilePage />;
     if (path === '/marina/new') return <MarinaOnboardingPage />;
+    if (path === '/dock/new')   return <PrivateDockOnboardingPage />;
+    if (path === '/slip/new')   return <DockominionOnboardingPage />;
     if (path.startsWith('/marina/')) return <MarinaDashboardPage />;
 
     return <HomePage />;

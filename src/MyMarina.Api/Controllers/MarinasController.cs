@@ -22,9 +22,19 @@ public class MarinasController(
     IQueryHandler<GetDocksQuery, IReadOnlyList<DockDto>> getDocks,
     IQueryHandler<GetSlipsQuery, IReadOnlyList<SlipDto>> getSlips,
     IQueryHandler<GetSlipQuery, SlipDto> getSlip,
+    IQueryHandler<SearchMarinasQuery, IReadOnlyList<MarinaSummaryDto>> searchMarinas,
     IUserContext userContext)
     : ControllerBase
 {
+    // GET /marinas/search?q=sunset&limit=10 — public, unauthenticated; used by the dockominium wizard
+    [HttpGet("marinas/search")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<MarinaSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int limit = 10, CancellationToken ct = default)
+    {
+        var results = await searchMarinas.HandleAsync(new SearchMarinasQuery(q, limit), ct);
+        return Ok(results);
+    }
     // GET /marinas — list all marinas the current user has a relationship with
     [HttpGet("marinas")]
     [ProducesResponseType(typeof(IReadOnlyList<MyMarinaDto>), StatusCodes.Status200OK)]
@@ -34,7 +44,7 @@ public class MarinasController(
         return Ok(marinas);
     }
 
-    // POST /marinas/signup — creates Tenant + Marina + Owner Membership, returns fresh JWT
+    // POST /marinas/signup — creates Tenant + Marina (+ initial Slip for PrivateDock/Dockominium) + Owner Membership
     [HttpPost("marinas/signup")]
     [ProducesResponseType(typeof(MarinaSignupResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -44,14 +54,40 @@ public class MarinasController(
             return ValidationProblem(new ValidationProblemDetails(
                 new Dictionary<string, string[]> { ["marinaType"] = [$"Unknown marina type: {request.MarinaType}"] }));
 
-        var response = await createAccount.HandleAsync(new CreateMarinaAccountCommand(
-            UserId: userContext.UserId!.Value,
-            TenantName: request.TenantName,
-            MarinaName: request.MarinaName,
-            MarinaType: marinaType,
-            IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+        SlipType slipType = SlipType.Floating;
+        if (request.SlipType is not null && !Enum.TryParse<SlipType>(request.SlipType, ignoreCase: true, out slipType))
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]> { ["slipType"] = [$"Unknown slip type: {request.SlipType}"] }));
 
-        return CreatedAtAction(nameof(GetMarina), new { marinaId = response.Marina.Id }, response);
+        HostMarinaPolicy hostMarinaPolicy = HostMarinaPolicy.NotifyOnly;
+        if (request.HostMarinaPolicy is not null && !Enum.TryParse<HostMarinaPolicy>(request.HostMarinaPolicy, ignoreCase: true, out hostMarinaPolicy))
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]> { ["hostMarinaPolicy"] = [$"Unknown policy: {request.HostMarinaPolicy}"] }));
+
+        try
+        {
+            var response = await createAccount.HandleAsync(new CreateMarinaAccountCommand(
+                UserId: userContext.UserId!.Value,
+                TenantName: request.TenantName,
+                MarinaName: request.MarinaName,
+                MarinaType: marinaType,
+                IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                SlipName: request.SlipName,
+                MaxLength: request.MaxLength,
+                MaxBeam: request.MaxBeam,
+                MaxDraft: request.MaxDraft,
+                SlipType: slipType,
+                SlipNotes: request.SlipNotes,
+                HostMarinaId: request.HostMarinaId,
+                HostMarinaPolicy: hostMarinaPolicy), ct);
+
+            return CreatedAtAction(nameof(GetMarina), new { marinaId = response.Marina.Id }, response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]> { [""] = [ex.Message] }));
+        }
     }
 
     // GET /marinas/{marinaId}
@@ -305,7 +341,21 @@ public class MarinasController(
 
 // ---------- request records ----------
 
-public sealed record MarinaSignupRequest(string TenantName, string MarinaName, string MarinaType);
+public sealed record MarinaSignupRequest(
+    string TenantName,
+    string MarinaName,
+    string MarinaType,
+    // Required for PrivateDock / Dockominium
+    string? SlipName       = null,
+    decimal? MaxLength     = null,
+    decimal? MaxBeam       = null,
+    decimal? MaxDraft      = null,
+    string? SlipType       = null,
+    string? SlipNotes      = null,
+    // Dockominium-only
+    Guid? HostMarinaId          = null,
+    string? HostMarinaPolicy    = null
+);
 public sealed record UpdateMarinaRequest(
     string? Name,
     string? AddressStreet,
