@@ -55,6 +55,18 @@ export interface ClientConfigDto {
 export const getClientConfig = () =>
   apiClient.get<ClientConfigDto>('/client-config').then((r) => r.data);
 
+// ─── Linked Social Providers ──────────────────────────────────────────────────
+
+export interface LinkedProviderDto {
+  provider: string;
+}
+
+export const getLinkedProviders = () =>
+  apiClient.get<LinkedProviderDto[]>('/auth/external/providers').then((r) => r.data);
+
+export const unlinkProvider = (provider: string) =>
+  apiClient.post(`/auth/external/${provider}/unlink`);
+
 export const register = (data: {
   email: string; password: string;
   firstName: string; lastName: string;

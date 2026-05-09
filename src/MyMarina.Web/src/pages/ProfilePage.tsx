@@ -1,14 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { updateProfile, changePassword } from '@/api/api';
+import { updateProfile, changePassword, getClientConfig, getLinkedProviders, unlinkProvider } from '@/api/api';
+import { apiBaseUrl } from '@/api/client';
 import { useAuthStore } from '@/store/authStore';
 import { NavBar } from '@/components/NavBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const PROVIDER_LABELS: Record<string, string> = {
+  google:   'Google',
+  apple:    'Apple',
+  facebook: 'Facebook',
+};
+
+function linkProviderUrl(provider: string) {
+  const returnUrl = encodeURIComponent('/profile');
+  return `${apiBaseUrl}/auth/external/${provider}/link?returnUrl=${returnUrl}`;
+}
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'Required'),
@@ -34,6 +46,34 @@ export function ProfilePage() {
   const [profileSaved, setProfileSaved] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSaved, setPasswordSaved] = useState(false);
+
+  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
+  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(true);
+  const [unlinkingProvider, setUnlinkingProvider] = useState<string | null>(null);
+  const [providerMessage, setProviderMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const linked = params.get('linked');
+    const error  = params.get('error');
+    if (linked) {
+      const label = PROVIDER_LABELS[linked.toLowerCase()] ?? linked;
+      setProviderMessage({ type: 'success', text: `${label} connected successfully.` });
+      window.history.replaceState({}, '', '/profile');
+    } else if (error) {
+      setProviderMessage({ type: 'error', text: error });
+      window.history.replaceState({}, '', '/profile');
+    }
+
+    Promise.all([getClientConfig(), getLinkedProviders()])
+      .then(([config, linked]) => {
+        setAvailableProviders(config.socialProviders);
+        setLinkedProviders(linked.map((p) => p.provider.toLowerCase()));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingProviders(false));
+  }, []);
 
   const { register: regProfile, handleSubmit: handleProfile, formState: { errors: profileErrors, isSubmitting: profileSubmitting } } =
     useForm<ProfileValues>({
@@ -86,6 +126,25 @@ export function ProfilePage() {
       } else {
         setPasswordError('Current password is incorrect or the new password does not meet requirements.');
       }
+    }
+  };
+
+  const handleUnlink = async (provider: string) => {
+    setUnlinkingProvider(provider);
+    setProviderMessage(null);
+    try {
+      await unlinkProvider(provider);
+      setLinkedProviders((prev) => prev.filter((p) => p !== provider));
+      const label = PROVIDER_LABELS[provider] ?? provider;
+      setProviderMessage({ type: 'success', text: `${label} disconnected.` });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setProviderMessage({
+        type: 'error',
+        text: detail ?? 'Could not disconnect. This may be your only sign-in method.',
+      });
+    } finally {
+      setUnlinkingProvider(null);
     }
   };
 
@@ -178,6 +237,52 @@ export function ProfilePage() {
               </form>
             </CardContent>
           </Card>
+
+          {!loadingProviders && availableProviders.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Linked accounts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {providerMessage && (
+                  <p className={`text-sm mb-4 ${providerMessage.type === 'error' ? 'text-red-600' : 'text-green-600'}`}>
+                    {providerMessage.text}
+                  </p>
+                )}
+                <div className="space-y-3">
+                  {availableProviders.map((provider) => {
+                    const isLinked    = linkedProviders.includes(provider);
+                    const isUnlinking = unlinkingProvider === provider;
+                    return (
+                      <div key={provider} className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          {PROVIDER_LABELS[provider] ?? provider}
+                        </span>
+                        {isLinked ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isUnlinking}
+                            onClick={() => handleUnlink(provider)}
+                          >
+                            {isUnlinking ? 'Disconnecting…' : 'Disconnect'}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => { window.location.href = linkProviderUrl(provider); }}
+                          >
+                            Connect
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

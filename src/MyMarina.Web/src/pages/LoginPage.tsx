@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { login, getMe, getClientConfig } from '@/api/api';
+import { apiBaseUrl } from '@/api/client';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,7 @@ const ALL_SOCIAL_PROVIDERS = [
 
 function socialLoginUrl(provider: string) {
   const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
-  return `/api/auth/external/${provider}?returnUrl=${returnUrl}`;
+  return `${apiBaseUrl}/auth/external/${provider}?returnUrl=${returnUrl}`;
 }
 
 const schema = z.object({
