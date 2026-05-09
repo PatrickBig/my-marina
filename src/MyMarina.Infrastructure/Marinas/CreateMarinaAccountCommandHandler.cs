@@ -48,6 +48,7 @@ public class CreateMarinaAccountCommandHandler(
             Name = command.MarinaName,
             Slug = marinaSlug,
             MarinaType = command.MarinaType,
+            IsSetupComplete = isPrivateHost,
         };
 
         var membership = new Membership

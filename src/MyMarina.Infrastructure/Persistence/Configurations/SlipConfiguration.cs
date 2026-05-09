@@ -37,6 +37,11 @@ public class SlipConfiguration : IEntityTypeConfiguration<Slip>
         builder.Property(s => s.DefaultLeaseBaseRate).HasPrecision(10, 2);
         builder.Property(s => s.DefaultLeaseTerm).HasConversion<string?>();
 
+        builder.Property(s => s.Amenities)
+               .HasColumnType("jsonb")
+               .HasDefaultValueSql("'[]'::jsonb")
+               .IsRequired();
+
         builder.HasIndex(s => s.MarinaId);
         builder.HasIndex(s => s.DockId).HasFilter("\"DockId\" IS NOT NULL");
     }

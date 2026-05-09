@@ -30,6 +30,8 @@ public sealed record MarinaDto(
     string TimeZoneId,
     string MarinaType,
     bool IsListed,
+    bool IsSetupComplete,
+    int SetupStep,
     DateTimeOffset CreatedAt
 );
 
@@ -54,6 +56,10 @@ public sealed record SlipDto(
     bool HasElectric,
     int? Electric,
     bool HasWater,
+    bool HasPumpOut,
+    bool IsCovered,
+    bool IsIndoor,
+    IReadOnlyList<string> Amenities,
     string Status,
     // Transient default rate
     string? DefaultTransientRateKind,
@@ -95,6 +101,8 @@ public sealed record MyMarinaDto(
     string? AddressState,
     string MarinaType,
     bool IsListed,
+    bool IsSetupComplete,
+    int SetupStep,
     decimal? Latitude,
     decimal? Longitude,
     string? UserRole,           // membership role ("Owner"/"Manager"/"Staff") or billing account role

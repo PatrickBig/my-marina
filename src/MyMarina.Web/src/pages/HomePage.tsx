@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMyMarinas, type MyMarinaDto } from '@/api/api';
+import { getMyMarinas, deleteDraftMarina, updateMarina, type MyMarinaDto } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 import { NavBar } from '@/components/NavBar';
 
@@ -16,9 +16,116 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
   BillingAccount: 'Customer',
 };
 
-function MarinaCard({ m }: { m: MyMarinaDto }) {
+const SETUP_BANNER_KEY = 'marina-setup-banner-dismissed';
+
+function MarinaCard({ m, onDeleted, onUpdated }: { m: MyMarinaDto; onDeleted?: (id: string) => void; onUpdated?: (updated: MyMarinaDto) => void }) {
   const location = [m.addressCity, m.addressState].filter(Boolean).join(', ');
   const isStaff = m.relationshipKind === 'Staff';
+  const isDraft = isStaff && !m.isSetupComplete;
+  const isNotListed = isStaff && m.isSetupComplete && !m.isListed;
+  const [deleting, setDeleting] = useState(false);
+  const [goingLive, setGoingLive] = useState(false);
+
+  if (isDraft) {
+    return (
+      <div className="rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                {MARINA_TYPE_LABELS[m.marinaType] ?? m.marinaType}
+              </p>
+              <span className="text-xs bg-amber-200 text-amber-800 rounded px-1.5 py-0.5 font-medium">
+                Draft
+              </span>
+            </div>
+            <h2 className="mt-1 text-base font-semibold text-slate-800 truncate">{m.name}</h2>
+            {location && <p className="mt-0.5 text-sm text-slate-500">{location}</p>}
+          </div>
+          <span className="text-xl shrink-0">🚧</span>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <a
+            href={`/marina/${m.id}/setup`}
+            className="flex-1 text-center rounded-lg bg-slate-800 text-white text-sm font-medium px-3 py-2 hover:bg-slate-700 transition-colors"
+          >
+            Continue setup →
+          </a>
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={async () => {
+              if (!confirm('Delete this draft marina? This cannot be undone.')) return;
+              setDeleting(true);
+              try {
+                await deleteDraftMarina(m.id);
+                onDeleted?.(m.id);
+              } catch {
+                alert('Failed to delete. Please try again.');
+                setDeleting(false);
+              }
+            }}
+            className="rounded-lg border border-red-200 text-red-600 text-sm px-3 py-2 hover:bg-red-50 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? 'Deleting…' : 'Delete draft'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isNotListed) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <a href={`/marina/${m.id}`} className="block p-5 hover:bg-slate-50 transition-colors">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  {MARINA_TYPE_LABELS[m.marinaType] ?? m.marinaType}
+                </p>
+                {m.userRole && (
+                  <span className="text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">
+                    {m.userRole}
+                  </span>
+                )}
+                <span className="text-xs bg-slate-100 text-slate-500 rounded px-1.5 py-0.5 font-medium">
+                  Not Listed
+                </span>
+              </div>
+              <h2 className="mt-1 text-base font-semibold text-slate-800 truncate">{m.name}</h2>
+              {location && <p className="mt-0.5 text-sm text-slate-500">{location}</p>}
+            </div>
+            <span className="text-xl shrink-0">⚓</span>
+          </div>
+          <p className="mt-3 text-xs text-slate-400">Open dashboard →</p>
+        </a>
+        <div className="border-t border-slate-100 px-5 py-3 bg-slate-50 flex items-center justify-between gap-3">
+          <p className="text-xs text-slate-500">
+            Your marina is set up but not visible to boaters yet.
+          </p>
+          <button
+            type="button"
+            disabled={goingLive}
+            onClick={async () => {
+              setGoingLive(true);
+              try {
+                const updated = await updateMarina(m.id, { isListed: true });
+                onUpdated?.({ ...m, isListed: updated.isListed });
+              } catch {
+                alert('Failed to go live. Please try again.');
+              } finally {
+                setGoingLive(false);
+              }
+            }}
+            className="shrink-0 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {goingLive ? 'Publishing…' : 'Go live →'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <a
@@ -36,6 +143,11 @@ function MarinaCard({ m }: { m: MyMarinaDto }) {
             {m.userRole && (
               <span className="text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">
                 {m.userRole}
+              </span>
+            )}
+            {isStaff && (
+              <span className="text-xs bg-emerald-50 text-emerald-700 rounded px-1.5 py-0.5 font-medium">
+                Listed
               </span>
             )}
             {!isStaff && (
@@ -60,6 +172,9 @@ export function HomePage() {
   const { user, isPlatformOperator } = useAuthStore();
   const [marinas, setMarinas] = useState<MyMarinaDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => localStorage.getItem(SETUP_BANNER_KEY) === '1'
+  );
 
   useEffect(() => {
     getMyMarinas()
@@ -67,12 +182,61 @@ export function HomePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  function handleDismissBanner() {
+    localStorage.setItem(SETUP_BANNER_KEY, '1');
+    setBannerDismissed(true);
+  }
+
+  function handleMarinaDeleted(id: string) {
+    setMarinas((prev) => prev.filter((m) => m.id !== id));
+  }
+
+  function handleMarinaUpdated(updated: MyMarinaDto) {
+    setMarinas((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+  }
+
   const staffMarinas = marinas.filter((m) => m.relationshipKind === 'Staff');
+  const activeStaffMarinas = staffMarinas.filter((m) => m.isSetupComplete);
   const customerMarinas = marinas.filter((m) => m.relationshipKind === 'BillingAccount');
+  const showSetupBanner = !bannerDismissed && !loading && activeStaffMarinas.length === 0;
 
   return (
     <div className="min-h-screen bg-slate-50">
       <NavBar />
+
+      {/* Setup banner — shown when user has no active marinas */}
+      {showSetupBanner && (
+        <div className="bg-blue-600 text-white px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⚓</span>
+              <div>
+                <p className="text-sm font-medium">Ready to list your marina?</p>
+                <p className="text-xs text-blue-200 mt-0.5">
+                  Set up your docks and slips to start accepting bookings.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="/marina/new"
+                className="rounded-lg bg-white text-blue-700 text-sm font-medium px-3 py-1.5 hover:bg-blue-50 transition-colors"
+              >
+                Get started
+              </a>
+              <button
+                type="button"
+                onClick={handleDismissBanner}
+                className="text-blue-200 hover:text-white text-lg leading-none px-1"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto py-10 px-4">
         <h1 className="text-2xl font-semibold text-slate-800">
           Welcome back{user ? `, ${user.firstName}` : ''}
@@ -90,7 +254,9 @@ export function HomePage() {
             <p className="text-sm text-slate-400">Loading…</p>
           ) : staffMarinas.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {staffMarinas.map((m) => <MarinaCard key={m.id} m={m} />)}
+              {staffMarinas.map((m) => (
+                <MarinaCard key={m.id} m={m} onDeleted={handleMarinaDeleted} onUpdated={handleMarinaUpdated} />
+              ))}
             </div>
           ) : (
             <a

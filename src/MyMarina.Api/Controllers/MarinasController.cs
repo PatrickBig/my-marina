@@ -11,6 +11,8 @@ namespace MyMarina.Api.Controllers;
 public class MarinasController(
     ICommandHandler<CreateMarinaAccountCommand, MarinaSignupResponse> createAccount,
     ICommandHandler<UpdateMarinaCommand, MarinaDto> updateMarina,
+    ICommandHandler<DeleteDraftMarinaCommand> deleteDraftMarina,
+    ICommandHandler<SetupDocksCommand> setupDocks,
     ICommandHandler<CreateDockCommand, DockDto> createDock,
     ICommandHandler<UpdateDockCommand, DockDto> updateDock,
     ICommandHandler<DeleteDockCommand> deleteDock,
@@ -131,10 +133,55 @@ public class MarinasController(
                 Email: request.Email,
                 Website: request.Website,
                 Description: request.Description,
-                TimeZoneId: request.TimeZoneId), ct);
+                TimeZoneId: request.TimeZoneId,
+                SetupStep: request.SetupStep,
+                IsSetupComplete: request.IsSetupComplete,
+                IsListed: request.IsListed), ct);
             return Ok(marina);
         }
         catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    // DELETE /marinas/{marinaId} — draft marinas only; cascade-deletes docks, slips, memberships
+    [HttpDelete("marinas/{marinaId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteDraftMarina(Guid marinaId, CancellationToken ct)
+    {
+        if (!userContext.HasMarinaAccess(marinaId, MembershipRole.Owner)) return Forbid();
+        try
+        {
+            await deleteDraftMarina.HandleAsync(new DeleteDraftMarinaCommand(marinaId, userContext.UserId!.Value), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+    }
+
+    // PUT /marinas/{marinaId}/setup/docks — bulk replace draft dock+slip tree (wizard step 3)
+    [HttpPut("marinas/{marinaId:guid}/setup/docks")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SetupDocks(Guid marinaId, [FromBody] SetupDocksRequest request, CancellationToken ct)
+    {
+        if (!userContext.HasMarinaAccess(marinaId, MembershipRole.Manager)) return Forbid();
+        try
+        {
+            await setupDocks.HandleAsync(new SetupDocksCommand(
+                MarinaId: marinaId,
+                RequestingUserId: userContext.UserId!.Value,
+                Docks: request.Docks), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return ValidationProblem(new ValidationProblemDetails(
+            new Dictionary<string, string[]> { [""] = [ex.Message] })); }
     }
 
     // ---------- Docks ----------
@@ -258,6 +305,10 @@ public class MarinasController(
             HasElectric: request.HasElectric,
             Electric: electric,
             HasWater: request.HasWater,
+            HasPumpOut: request.HasPumpOut,
+            IsCovered: request.IsCovered,
+            IsIndoor: request.IsIndoor,
+            Amenities: request.Amenities,
             Notes: request.Notes), ct);
 
         return CreatedAtAction(nameof(GetSlip), new { marinaId, slipId = slip.Id }, slip);
@@ -308,6 +359,10 @@ public class MarinasController(
                 HasElectric: request.HasElectric,
                 Electric: electric,
                 HasWater: request.HasWater,
+                HasPumpOut: request.HasPumpOut,
+                IsCovered: request.IsCovered,
+                IsIndoor: request.IsIndoor,
+                Amenities: request.Amenities,
                 Status: status,
                 DefaultTransientRateKind:  request.DefaultTransientRateKind,
                 DefaultTransientBaseRate:  request.DefaultTransientBaseRate,
@@ -369,10 +424,14 @@ public sealed record UpdateMarinaRequest(
     string? Email,
     string? Website,
     string? Description,
-    string? TimeZoneId
+    string? TimeZoneId,
+    int? SetupStep = null,
+    bool? IsSetupComplete = null,
+    bool? IsListed = null
 );
 public sealed record CreateDockRequest(string Name, string? Description, int SortOrder);
 public sealed record UpdateDockRequest(string? Name, string? Description, int? SortOrder);
+public sealed record SetupDocksRequest(IReadOnlyList<SetupDockItem> Docks);
 public sealed record CreateSlipRequest(
     Guid? DockId,
     string Name,
@@ -383,7 +442,11 @@ public sealed record CreateSlipRequest(
     bool HasElectric,
     int? Electric,
     bool HasWater,
-    string? Notes
+    bool HasPumpOut = false,
+    bool IsCovered = false,
+    bool IsIndoor = false,
+    IReadOnlyList<string>? Amenities = null,
+    string? Notes = null
 );
 public sealed record UpdateSlipRequest(
     Guid? DockId,
@@ -395,6 +458,10 @@ public sealed record UpdateSlipRequest(
     bool? HasElectric,
     int? Electric,
     bool? HasWater,
+    bool? HasPumpOut,
+    bool? IsCovered,
+    bool? IsIndoor,
+    IReadOnlyList<string>? Amenities,
     string? Status,
     // Transient default rate (set ClearTransientRate=true to remove)
     string? DefaultTransientRateKind,

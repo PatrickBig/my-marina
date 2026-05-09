@@ -45,7 +45,7 @@ export function MarinaOnboardingPage() {
       if (user) setAuth(res.accessToken, res.refreshToken, res.expiresAt, user);
       const me = await getMe();
       setAuth(res.accessToken, res.refreshToken, res.expiresAt, me, me.memberships, me.isPlatformOperator);
-      window.location.href = `/marina/${res.marina.id}`;
+      window.location.href = `/marina/${res.marina.id}/setup`;
     } catch {
       setServerError('Failed to create marina. Please try again.');
     }

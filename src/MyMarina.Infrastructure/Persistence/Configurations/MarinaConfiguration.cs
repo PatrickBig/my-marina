@@ -33,7 +33,12 @@ public class MarinaConfiguration : IEntityTypeConfiguration<Marina>
                .HasForeignKey(m => m.TenantId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(m => m.IsSetupComplete).HasDefaultValue(false).IsRequired();
+        builder.Property(m => m.SetupStep).HasDefaultValue(0).IsRequired();
+        builder.Property(m => m.UpdatedAt).IsRequired();
+
         builder.HasIndex(m => m.Slug).IsUnique();
         builder.HasIndex(m => m.TenantId);
+        builder.HasIndex(m => m.IsSetupComplete);
     }
 }

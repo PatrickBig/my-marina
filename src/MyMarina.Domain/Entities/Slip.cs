@@ -17,6 +17,10 @@ public class Slip
     public bool HasElectric { get; set; }
     public ElectricAmperage? Electric { get; set; }
     public bool HasWater { get; set; }
+    public bool HasPumpOut { get; set; }
+    public bool IsCovered { get; set; }
+    public bool IsIndoor { get; set; }
+    public List<string> Amenities { get; set; } = [];
     public SlipStatus Status { get; set; } = SlipStatus.Active;
 
     // Location — required for marketplace, optional during initial setup
