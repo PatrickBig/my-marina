@@ -46,6 +46,15 @@ export interface BillingAccountMemberClaim {
 export const login = (email: string, password: string) =>
   apiClient.post<AuthResponse>('/auth/login', { email, password }).then((r) => r.data);
 
+// ─── Client Config ────────────────────────────────────────────────────────────
+
+export interface ClientConfigDto {
+  socialProviders: string[];
+}
+
+export const getClientConfig = () =>
+  apiClient.get<ClientConfigDto>('/client-config').then((r) => r.data);
+
 export const register = (data: {
   email: string; password: string;
   firstName: string; lastName: string;

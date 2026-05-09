@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { login, getMe } from '@/api/api';
+import { login, getMe, getClientConfig } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const SOCIAL_PROVIDERS = [
+const ALL_SOCIAL_PROVIDERS = [
   { id: 'google',   label: 'Continue with Google' },
   { id: 'apple',    label: 'Continue with Apple' },
   { id: 'facebook', label: 'Continue with Facebook' },
@@ -30,6 +30,13 @@ type FormValues = z.infer<typeof schema>;
 export function LoginPage() {
   const { setAuth } = useAuthStore();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [socialProviders, setSocialProviders] = useState<string[]>([]);
+
+  useEffect(() => {
+    getClientConfig()
+      .then((cfg) => setSocialProviders(cfg.socialProviders))
+      .catch(() => setSocialProviders([]));
+  }, []);
 
   const {
     register,
@@ -64,28 +71,32 @@ export function LoginPage() {
           <CardDescription>Enter your email and password</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 mb-4">
-            {SOCIAL_PROVIDERS.map((p) => (
-              <Button
-                key={p.id}
-                variant="outline"
-                type="button"
-                className="w-full"
-                onClick={() => { window.location.href = socialLoginUrl(p.id); }}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
+          {socialProviders.length > 0 && (
+            <>
+              <div className="space-y-2 mb-4">
+                {ALL_SOCIAL_PROVIDERS.filter((p) => socialProviders.includes(p.id)).map((p) => (
+                  <Button
+                    key={p.id}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                    onClick={() => { window.location.href = socialLoginUrl(p.id); }}
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
 
-          <div className="relative mb-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or continue with email</span>
-            </div>
-          </div>
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-slate-500">Or continue with email</span>
+                </div>
+              </div>
+            </>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
