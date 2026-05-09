@@ -6,3 +6,8 @@ public sealed record UpdateProfileCommand(
     string? PhoneNumber,
     bool? MarketingOptIn
 );
+
+public sealed record ChangePasswordCommand(
+    string CurrentPassword,
+    string NewPassword
+);

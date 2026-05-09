@@ -11,7 +11,8 @@ namespace MyMarina.Api.Controllers;
 [Authorize]
 public class MeController(
     IQueryHandler<MeQuery, MeResponse> me,
-    ICommandHandler<UpdateProfileCommand> updateProfile)
+    ICommandHandler<UpdateProfileCommand> updateProfile,
+    ICommandHandler<ChangePasswordCommand> changePassword)
     : ControllerBase
 {
     [HttpGet]
@@ -41,7 +42,30 @@ public class MeController(
                     g => g.Select(e => e.Description).ToArray())));
         }
     }
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
+    {
+        try
+        {
+            await changePassword.HandleAsync(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword), ct);
+            return NoContent();
+        }
+        catch (IdentityException ex)
+        {
+            return ValidationProblem(new ValidationProblemDetails(
+                ex.Errors.GroupBy(e => e.Code).ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.Description).ToArray())));
+        }
+    }
 }
+
+public sealed record ChangePasswordRequest(
+    string CurrentPassword,
+    string NewPassword
+);
 
 public sealed record UpdateProfileRequest(
     string? FirstName,

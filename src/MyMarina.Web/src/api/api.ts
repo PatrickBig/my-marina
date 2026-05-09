@@ -82,6 +82,9 @@ export const updateProfile = (data: {
   marketingOptIn?: boolean | null;
 }) => apiClient.patch('/me', data);
 
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  apiClient.post('/me/change-password', { currentPassword, newPassword });
+
 // ─── Vessels ──────────────────────────────────────────────────────────────────
 
 export type BoatType = 'Sailboat' | 'Powerboat' | 'Catamaran' | 'Dinghy' | 'Pwc' | 'Other';
