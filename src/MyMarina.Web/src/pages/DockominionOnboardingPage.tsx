@@ -9,9 +9,9 @@ type Step = 'slip' | 'marina' | 'policy';
 
 const schema = z.object({
   slipLabel:  z.string().min(1, 'A name for your slip is required'),
-  maxLength:  z.coerce.number().positive('Max length must be positive'),
-  maxBeam:    z.coerce.number().positive('Max beam must be positive'),
-  maxDraft:   z.coerce.number().positive('Max draft must be positive'),
+  maxLength:  z.number().positive('Max length must be positive'),
+  maxBeam:    z.number().positive('Max beam must be positive'),
+  maxDraft:   z.number().positive('Max draft must be positive'),
   slipType:   z.enum(['Floating', 'Fixed', 'Mooring', 'Anchorage']),
   slipNotes:  z.string().optional(),
 });
@@ -46,7 +46,6 @@ export function DockominionOnboardingPage() {
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -144,19 +143,19 @@ export function DockominionOnboardingPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Max length (ft)</label>
-                  <input {...register('maxLength')} type="number" step="0.5" min="1"
+                  <input {...register('maxLength', { valueAsNumber: true })} type="number" step="0.5" min="1"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
                   {errors.maxLength && <p className="mt-1 text-xs text-red-600">{errors.maxLength.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Max beam (ft)</label>
-                  <input {...register('maxBeam')} type="number" step="0.5" min="1"
+                  <input {...register('maxBeam', { valueAsNumber: true })} type="number" step="0.5" min="1"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
                   {errors.maxBeam && <p className="mt-1 text-xs text-red-600">{errors.maxBeam.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Max draft (ft)</label>
-                  <input {...register('maxDraft')} type="number" step="0.25" min="0.5"
+                  <input {...register('maxDraft', { valueAsNumber: true })} type="number" step="0.25" min="0.5"
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
                   {errors.maxDraft && <p className="mt-1 text-xs text-red-600">{errors.maxDraft.message}</p>}
                 </div>
@@ -187,7 +186,6 @@ export function DockominionOnboardingPage() {
 
           {step === 'marina' && (
             <MarinaSearchStep
-              selected={hostMarina}
               onSelect={(m) => { setHostMarina(m); setStep('policy'); }}
               onSkip={() => handleSubmit(onSubmit)()}
               onBack={() => setStep('slip')}
@@ -233,12 +231,10 @@ export function DockominionOnboardingPage() {
 }
 
 function MarinaSearchStep({
-  selected,
   onSelect,
   onSkip,
   onBack,
 }: {
-  selected: MarinaSummaryDto | null;
   onSelect: (m: MarinaSummaryDto) => void;
   onSkip: () => void;
   onBack: () => void;

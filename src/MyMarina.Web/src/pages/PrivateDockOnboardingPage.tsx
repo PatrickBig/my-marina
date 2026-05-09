@@ -8,9 +8,9 @@ import { useAuthStore } from '@/store/authStore';
 const schema = z.object({
   dockName:  z.string().min(2, 'A name for your dock is required'),
   slipName:  z.string().min(1, 'Slip name / identifier is required'),
-  maxLength: z.coerce.number().positive('Max length must be positive'),
-  maxBeam:   z.coerce.number().positive('Max beam must be positive'),
-  maxDraft:  z.coerce.number().positive('Max draft must be positive'),
+  maxLength: z.number().positive('Max length must be positive'),
+  maxBeam:   z.number().positive('Max beam must be positive'),
+  maxDraft:  z.number().positive('Max draft must be positive'),
   slipType:  z.enum(['Floating', 'Fixed', 'Mooring', 'Anchorage']),
   slipNotes: z.string().optional(),
 });
@@ -103,7 +103,7 @@ export function PrivateDockOnboardingPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Max length (ft)</label>
                 <input
-                  {...register('maxLength')}
+                  {...register('maxLength', { valueAsNumber: true })}
                   type="number" step="0.5" min="1"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
@@ -113,7 +113,7 @@ export function PrivateDockOnboardingPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Max beam (ft)</label>
                 <input
-                  {...register('maxBeam')}
+                  {...register('maxBeam', { valueAsNumber: true })}
                   type="number" step="0.5" min="1"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
@@ -123,7 +123,7 @@ export function PrivateDockOnboardingPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Max draft (ft)</label>
                 <input
-                  {...register('maxDraft')}
+                  {...register('maxDraft', { valueAsNumber: true })}
                   type="number" step="0.25" min="0.5"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
