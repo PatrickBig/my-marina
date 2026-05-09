@@ -1,9 +1,10 @@
 import { useAuthStore } from "@/store/authStore";
 
 export function DemoBanner() {
-  const isDemo = useAuthStore((s) => s.isDemo);
+  const isDemo          = useAuthStore((s) => s.isDemo);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  if (!isDemo) return null;
+  if (!isDemo || !isAuthenticated()) return null;
 
   const marketingSiteUrl =
     (window as any).__CONFIG__?.marketingSiteUrl ?? "https://mymarina.org";
