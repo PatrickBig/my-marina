@@ -2470,6 +2470,7 @@ export function MarinaDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <NavBar />
+      <MarinaStatusBanner marina={marina} onUpdated={setMarina} />
       <div className="max-w-4xl mx-auto py-10 px-4 space-y-6">
         <MarinaInfoPanel marina={marina} onSaved={setMarina} />
         <DocksPanel marinaId={marinaId} />
@@ -2484,6 +2485,102 @@ export function MarinaDashboardPage() {
         <MaintenancePanel marinaId={marinaId} />
         <AnnouncementsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Marina status banner ────────────────────────────────────────────────────
+
+function MarinaStatusBanner({ marina, onUpdated }: { marina: MarinaDto; onUpdated: (m: MarinaDto) => void }) {
+  const [saving, setSaving] = useState(false);
+
+  if (!marina.isSetupComplete) {
+    return (
+      <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-amber-500 text-lg">🚧</span>
+            <div>
+              <p className="text-sm font-medium text-amber-800">Setup not complete</p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                Your marina is in draft mode and not visible to boaters.
+              </p>
+            </div>
+          </div>
+          <a
+            href={`/marina/${marina.id}/setup`}
+            className="shrink-0 rounded-lg bg-amber-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-amber-700 transition-colors"
+          >
+            Continue setup →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!marina.isListed) {
+    return (
+      <div className="bg-slate-100 border-b border-slate-200 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-slate-400 text-lg">⚪</span>
+            <div>
+              <p className="text-sm font-medium text-slate-700">Not listed on marketplace</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Boaters cannot find or book your slips yet. Go live when you're ready.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={async () => {
+              setSaving(true);
+              try {
+                const updated = await updateMarina(marina.id, { isListed: true });
+                onUpdated({ ...marina, isListed: updated.isListed });
+              } catch {
+                alert('Failed to go live. Please try again.');
+              } finally {
+                setSaving(false);
+              }
+            }}
+            className="shrink-0 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Publishing…' : 'Go live →'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2.5">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-emerald-500 text-sm">●</span>
+          <p className="text-sm text-emerald-800 font-medium">Listed — visible to boaters on the marketplace</p>
+        </div>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={async () => {
+            if (!confirm('Remove your marina from the marketplace? Boaters will no longer be able to find or book your slips.')) return;
+            setSaving(true);
+            try {
+              const updated = await updateMarina(marina.id, { isListed: false });
+              onUpdated({ ...marina, isListed: updated.isListed });
+            } catch {
+              alert('Failed to update. Please try again.');
+            } finally {
+              setSaving(false);
+            }
+          }}
+          className="text-xs text-emerald-600 hover:text-emerald-800 underline disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Pause listing'}
+        </button>
       </div>
     </div>
   );

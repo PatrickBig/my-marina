@@ -10,7 +10,10 @@ public class GetMarinaQueryHandler(AppDbContext db)
 {
     public async Task<MarinaDto> HandleAsync(GetMarinaQuery query, CancellationToken ct = default)
     {
+        // IgnoreQueryFilters: owners must be able to fetch their draft marina during onboarding.
+        // The controller already enforces HasMarinaAccess() before calling this handler.
         var marina = await db.Marinas
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(m => m.Id == query.MarinaId, ct)
             ?? throw new KeyNotFoundException("Marina not found.");
         return MarinaMappers.ToMarinaDto(marina);

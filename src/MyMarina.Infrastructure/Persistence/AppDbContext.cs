@@ -36,5 +36,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         base.OnModelCreating(builder);
         builder.HasDefaultSchema("mymarina");
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Draft marinas are invisible to all queries by default.
+        // Handlers that need draft access (owner wizard, GetMyMarinas) use IgnoreQueryFilters().
+        builder.Entity<Domain.Entities.Marina>()
+               .HasQueryFilter(m => m.IsSetupComplete);
     }
 }

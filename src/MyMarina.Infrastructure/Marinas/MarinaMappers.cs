@@ -33,6 +33,8 @@ internal static class MarinaMappers
         TimeZoneId: m.TimeZoneId,
         MarinaType: m.MarinaType.ToString(),
         IsListed: m.IsListed,
+        IsSetupComplete: m.IsSetupComplete,
+        SetupStep: m.SetupStep,
         CreatedAt: m.CreatedAt
     );
 
@@ -57,6 +59,10 @@ internal static class MarinaMappers
         HasElectric: s.HasElectric,
         Electric: s.Electric.HasValue ? (int)s.Electric.Value : null,
         HasWater: s.HasWater,
+        HasPumpOut: s.HasPumpOut,
+        IsCovered: s.IsCovered,
+        IsIndoor: s.IsIndoor,
+        Amenities: s.Amenities.AsReadOnly(),
         Status: s.Status.ToString(),
         DefaultTransientRateKind: s.DefaultTransientRateKind?.ToString(),
         DefaultTransientBaseRate: s.DefaultTransientBaseRate,

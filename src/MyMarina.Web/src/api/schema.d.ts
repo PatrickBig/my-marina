@@ -4,6 +4,39 @@
  */
 
 export interface paths {
+    "/me/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/marinas/{marinaId}/announcements": {
         parameters: {
             query?: never;
@@ -13,10 +46,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    includeDrafts?: boolean;
-                    includeExpired?: boolean;
-                };
+                query?: never;
                 header?: never;
                 path: {
                     marinaId: string;
@@ -30,11 +60,7 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["AnnouncementDto"][];
-                        "application/json": components["schemas"]["AnnouncementDto"][];
-                        "text/json": components["schemas"]["AnnouncementDto"][];
-                    };
+                    content?: never;
                 };
             };
         };
@@ -50,33 +76,18 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateAnnouncementRequest"];
-                    "text/json": components["schemas"]["CreateAnnouncementRequest"];
-                    "application/*+json": components["schemas"]["CreateAnnouncementRequest"];
+                    "application/json": components["schemas"]["AnnouncementBody"];
+                    "text/json": components["schemas"]["AnnouncementBody"];
+                    "application/*+json": components["schemas"]["AnnouncementBody"];
                 };
             };
             responses: {
-                /** @description Created */
-                201: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
+                    content?: never;
                 };
             };
         };
@@ -86,84 +97,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marinas/{marinaId}/announcements/{id}": {
+    "/marinas/{marinaId}/announcements/{announcementId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    marinaId: string;
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AnnouncementDto"];
-                        "application/json": components["schemas"]["AnnouncementDto"];
-                        "text/json": components["schemas"]["AnnouncementDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
+        get?: never;
         put: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
                     marinaId: string;
-                    id: string;
+                    announcementId: string;
                 };
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UpdateAnnouncementRequest"];
-                    "text/json": components["schemas"]["UpdateAnnouncementRequest"];
-                    "application/*+json": components["schemas"]["UpdateAnnouncementRequest"];
+                    "application/json": components["schemas"]["AnnouncementBody"];
+                    "text/json": components["schemas"]["AnnouncementBody"];
+                    "application/*+json": components["schemas"]["AnnouncementBody"];
                 };
             };
             responses: {
-                /** @description No Content */
-                204: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
                 };
             };
         };
@@ -174,29 +139,18 @@ export interface paths {
                 header?: never;
                 path: {
                     marinaId: string;
-                    id: string;
+                    announcementId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description No Content */
-                204: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
                 };
             };
         };
@@ -205,7 +159,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marinas/{marinaId}/announcements/{id}/publish": {
+    "/marinas/{marinaId}/announcements/{announcementId}/publish": {
         parameters: {
             query?: never;
             header?: never;
@@ -220,40 +174,18 @@ export interface paths {
                 header?: never;
                 path: {
                     marinaId: string;
-                    id: string;
+                    announcementId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description No Content */
-                204: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
                 };
             };
         };
@@ -263,7 +195,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marinas/{marinaId}/announcements/{id}/unpublish": {
+    "/auth/register": {
         parameters: {
             query?: never;
             header?: never;
@@ -276,13 +208,16 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path: {
-                    marinaId: string;
-                    id: string;
-                };
+                path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RegisterRequest"];
+                    "text/json": components["schemas"]["RegisterRequest"];
+                    "application/*+json": components["schemas"]["RegisterRequest"];
+                };
+            };
             responses: {
                 /** @description No Content */
                 204: {
@@ -291,8 +226,8 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Not Found */
-                404: {
+                /** @description Bad Request */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -328,9 +263,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["LoginCommand"];
-                    "text/json": components["schemas"]["LoginCommand"];
-                    "application/*+json": components["schemas"]["LoginCommand"];
+                    "application/json": components["schemas"]["LoginRequest"];
+                    "text/json": components["schemas"]["LoginRequest"];
+                    "application/*+json": components["schemas"]["LoginRequest"];
                 };
             };
             responses: {
@@ -340,13 +275,195 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["LoginResult"];
-                        "application/json": components["schemas"]["LoginResult"];
-                        "text/json": components["schemas"]["LoginResult"];
+                        "text/plain": components["schemas"]["AuthResponse"];
+                        "application/json": components["schemas"]["AuthResponse"];
+                        "text/json": components["schemas"]["AuthResponse"];
                     };
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshRequest"];
+                    "text/json": components["schemas"]["RefreshRequest"];
+                    "application/*+json": components["schemas"]["RefreshRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AuthResponse"];
+                        "application/json": components["schemas"]["AuthResponse"];
+                        "text/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogoutRequest"];
+                    "text/json": components["schemas"]["LogoutRequest"];
+                    "application/*+json": components["schemas"]["LogoutRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ForgotPasswordRequest"];
+                    "text/json": components["schemas"]["ForgotPasswordRequest"];
+                    "application/*+json": components["schemas"]["ForgotPasswordRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordRequest"];
+                    "text/json": components["schemas"]["ResetPasswordRequest"];
+                    "application/*+json": components["schemas"]["ResetPasswordRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -371,20 +488,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: {
+        get?: never;
+        put?: never;
+        post: {
             parameters: {
-                query?: {
-                    userId?: string;
-                    token?: string;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConfirmEmailRequest"];
+                    "text/json": components["schemas"]["ConfirmEmailRequest"];
+                    "application/*+json": components["schemas"]["ConfirmEmailRequest"];
+                };
+            };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -403,8 +525,6 @@ export interface paths {
                 };
             };
         };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -427,6 +547,48 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ResendConfirmationRequest"];
+                    "text/json": components["schemas"]["ResendConfirmationRequest"];
+                    "application/*+json": components["schemas"]["ResendConfirmationRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/availability-windows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    slipId?: string;
+                    status?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
             requestBody?: never;
             responses: {
                 /** @description OK */
@@ -434,7 +596,53 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"][];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"][];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateAvailabilityWindowRequest"];
+                    "text/json": components["schemas"]["CreateAvailabilityWindowRequest"];
+                    "application/*+json": components["schemas"]["CreateAvailabilityWindowRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"];
+                    };
                 };
                 /** @description Bad Request */
                 400: {
@@ -442,452 +650,13 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/choose-context": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChooseContextCommand"];
-                    "text/json": components["schemas"]["ChooseContextCommand"];
-                    "application/*+json": components["schemas"]["ChooseContextCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ContextToken"];
-                        "application/json": components["schemas"]["ContextToken"];
-                        "text/json": components["schemas"]["ContextToken"];
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/customers/{customerAccountId}/boats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    customerAccountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BoatDto"][];
-                        "application/json": components["schemas"]["BoatDto"][];
-                        "text/json": components["schemas"]["BoatDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    customerAccountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateBoatRequest"];
-                    "text/json": components["schemas"]["CreateBoatRequest"];
-                    "application/*+json": components["schemas"]["CreateBoatRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/boats/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateBoatRequest"];
-                    "text/json": components["schemas"]["UpdateBoatRequest"];
-                    "application/*+json": components["schemas"]["UpdateBoatRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/customers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CustomerAccountDto"][];
-                        "application/json": components["schemas"]["CustomerAccountDto"][];
-                        "text/json": components["schemas"]["CustomerAccountDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateCustomerAccountCommand"];
-                    "text/json": components["schemas"]["CreateCustomerAccountCommand"];
-                    "application/*+json": components["schemas"]["CreateCustomerAccountCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/customers/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CustomerAccountDto"];
-                        "application/json": components["schemas"]["CustomerAccountDto"];
-                        "text/json": components["schemas"]["CustomerAccountDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateCustomerRequest"];
-                    "text/json": components["schemas"]["UpdateCustomerRequest"];
-                    "application/*+json": components["schemas"]["UpdateCustomerRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/customers/{id}/deactivate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/customers/{id}/invite": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["InviteCustomerResult"];
-                        "application/json": components["schemas"]["InviteCustomerResult"];
-                        "text/json": components["schemas"]["InviteCustomerResult"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
+                /** @description Forbidden */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -916,7 +685,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/demo/capabilities": {
+    "/marinas/{marinaId}/availability-windows/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -925,11 +694,12 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    tier?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -940,13 +710,432 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CapabilitiesResponse"];
-                        "application/json": components["schemas"]["CapabilitiesResponse"];
-                        "text/json": components["schemas"]["CapabilitiesResponse"];
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"];
                     };
                 };
                 /** @description Forbidden */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAvailabilityWindowRequest"];
+                    "text/json": components["schemas"]["UpdateAvailabilityWindowRequest"];
+                    "application/*+json": components["schemas"]["UpdateAvailabilityWindowRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/availability-windows/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetAvailabilityWindowStatusRequest"];
+                    "text/json": components["schemas"]["SetAvailabilityWindowStatusRequest"];
+                    "application/*+json": components["schemas"]["SetAvailabilityWindowStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/billing-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountDto"][];
+                        "application/json": components["schemas"]["BillingAccountDto"][];
+                        "text/json": components["schemas"]["BillingAccountDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBillingAccountRequest"];
+                    "text/json": components["schemas"]["CreateBillingAccountRequest"];
+                    "application/*+json": components["schemas"]["CreateBillingAccountRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountDto"];
+                        "application/json": components["schemas"]["BillingAccountDto"];
+                        "text/json": components["schemas"]["BillingAccountDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/billing-accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountDto"];
+                        "application/json": components["schemas"]["BillingAccountDto"];
+                        "text/json": components["schemas"]["BillingAccountDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateBillingAccountRequest"];
+                    "text/json": components["schemas"]["UpdateBillingAccountRequest"];
+                    "application/*+json": components["schemas"]["UpdateBillingAccountRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountDto"];
+                        "application/json": components["schemas"]["BillingAccountDto"];
+                        "text/json": components["schemas"]["BillingAccountDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/billing-accounts/{accountId}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountMemberDto"][];
+                        "application/json": components["schemas"]["BillingAccountMemberDto"][];
+                        "text/json": components["schemas"]["BillingAccountMemberDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -966,7 +1155,414 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/demo/capabilities/public": {
+    "/marinas/{marinaId}/billing-accounts/{accountId}/members/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["InviteMemberRequest"];
+                    "text/json": components["schemas"]["InviteMemberRequest"];
+                    "application/*+json": components["schemas"]["InviteMemberRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountMemberDto"];
+                        "application/json": components["schemas"]["BillingAccountMemberDto"];
+                        "text/json": components["schemas"]["BillingAccountMemberDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/billing-accounts/{accountId}/members/{memberId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                    memberId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BillingAccountMemberDto"];
+                        "application/json": components["schemas"]["BillingAccountMemberDto"];
+                        "text/json": components["schemas"]["BillingAccountMemberDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/billing-accounts/{accountId}/members/{memberId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    accountId: string;
+                    memberId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/vessel-records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    billingAccountId?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselRecordDto"][];
+                        "application/json": components["schemas"]["VesselRecordDto"][];
+                        "text/json": components["schemas"]["VesselRecordDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateVesselRecordRequest"];
+                    "text/json": components["schemas"]["CreateVesselRecordRequest"];
+                    "application/*+json": components["schemas"]["CreateVesselRecordRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselRecordDto"];
+                        "application/json": components["schemas"]["VesselRecordDto"];
+                        "text/json": components["schemas"]["VesselRecordDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/vessel-records/{recordId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    recordId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselRecordDto"];
+                        "application/json": components["schemas"]["VesselRecordDto"];
+                        "text/json": components["schemas"]["VesselRecordDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    recordId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateVesselRecordRequest"];
+                    "text/json": components["schemas"]["UpdateVesselRecordRequest"];
+                    "application/*+json": components["schemas"]["UpdateVesselRecordRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselRecordDto"];
+                        "application/json": components["schemas"]["VesselRecordDto"];
+                        "text/json": components["schemas"]["VesselRecordDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/client-config": {
         parameters: {
             query?: never;
             header?: never;
@@ -988,9 +1584,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AllTiersCapabilitiesResponse"];
-                        "application/json": components["schemas"]["AllTiersCapabilitiesResponse"];
-                        "text/json": components["schemas"]["AllTiersCapabilitiesResponse"];
+                        "text/plain": components["schemas"]["ClientConfigDto"];
+                        "application/json": components["schemas"]["ClientConfigDto"];
+                        "text/json": components["schemas"]["ClientConfigDto"];
                     };
                 };
             };
@@ -1014,10 +1610,7 @@ export interface paths {
         put?: never;
         post: {
             parameters: {
-                query?: {
-                    role?: string;
-                    tier?: string;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1030,9 +1623,740 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["DemoSessionResult"];
-                        "application/json": components["schemas"]["DemoSessionResult"];
-                        "text/json": components["schemas"]["DemoSessionResult"];
+                        "text/plain": components["schemas"]["DemoSessionDto"];
+                        "application/json": components["schemas"]["DemoSessionDto"];
+                        "text/json": components["schemas"]["DemoSessionDto"];
+                    };
+                };
+                /** @description Service Unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    returnUrl?: string;
+                };
+                header?: never;
+                path: {
+                    provider: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/{provider}/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    provider: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/{provider}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    returnUrl?: string;
+                };
+                header?: never;
+                path: {
+                    provider: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/{provider}/link-callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    provider: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/{provider}/unlink": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    provider: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/external/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LinkedProviderDto"][];
+                        "application/json": components["schemas"]["LinkedProviderDto"][];
+                        "text/json": components["schemas"]["LinkedProviderDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    billingAccountId?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InvoiceSummaryDto"][];
+                        "application/json": components["schemas"]["InvoiceSummaryDto"][];
+                        "text/json": components["schemas"]["InvoiceSummaryDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateInvoiceRequest"];
+                    "text/json": components["schemas"]["CreateInvoiceRequest"];
+                    "application/*+json": components["schemas"]["CreateInvoiceRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InvoiceDto"];
+                        "application/json": components["schemas"]["InvoiceDto"];
+                        "text/json": components["schemas"]["InvoiceDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InvoiceDto"];
+                        "application/json": components["schemas"]["InvoiceDto"];
+                        "text/json": components["schemas"]["InvoiceDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}/line-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AddLineItemRequest"];
+                    "text/json": components["schemas"]["AddLineItemRequest"];
+                    "application/*+json": components["schemas"]["AddLineItemRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InvoiceLineItemDto"];
+                        "application/json": components["schemas"]["InvoiceLineItemDto"];
+                        "text/json": components["schemas"]["InvoiceLineItemDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}/line-items/{lineItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                    lineItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/invoices/{invoiceId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    invoiceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RecordPaymentRequest"];
+                    "text/json": components["schemas"]["RecordPaymentRequest"];
+                    "application/*+json": components["schemas"]["RecordPaymentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PaymentDto"];
+                        "application/json": components["schemas"]["PaymentDto"];
+                        "text/json": components["schemas"]["PaymentDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["InvoiceSummaryDto"][];
+                        "application/json": components["schemas"]["InvoiceSummaryDto"][];
+                        "text/json": components["schemas"]["InvoiceSummaryDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slips/{slipId}/lease-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateLeaseInquiryRequest"];
+                    "text/json": components["schemas"]["CreateLeaseInquiryRequest"];
+                    "application/*+json": components["schemas"]["CreateLeaseInquiryRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"];
+                        "application/json": components["schemas"]["LeaseInquiryDto"];
+                        "text/json": components["schemas"]["LeaseInquiryDto"];
                     };
                 };
                 /** @description Bad Request */
@@ -1046,8 +2370,8 @@ export interface paths {
                         "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
-                /** @description Too Many Requests */
-                429: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1059,6 +2383,1005 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/lease-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"][];
+                        "application/json": components["schemas"]["LeaseInquiryDto"][];
+                        "text/json": components["schemas"]["LeaseInquiryDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/lease-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    slipId?: string;
+                    status?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"][];
+                        "application/json": components["schemas"]["LeaseInquiryDto"][];
+                        "text/json": components["schemas"]["LeaseInquiryDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/lease-inquiries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateLeaseInquiryRequest"];
+                    "text/json": components["schemas"]["UpdateLeaseInquiryRequest"];
+                    "application/*+json": components["schemas"]["UpdateLeaseInquiryRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"];
+                        "application/json": components["schemas"]["LeaseInquiryDto"];
+                        "text/json": components["schemas"]["LeaseInquiryDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/lease-inquiries/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"];
+                        "application/json": components["schemas"]["LeaseInquiryDto"];
+                        "text/json": components["schemas"]["LeaseInquiryDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/lease-inquiries/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DeclineLeaseInquiryRequest"];
+                    "text/json": components["schemas"]["DeclineLeaseInquiryRequest"];
+                    "application/*+json": components["schemas"]["DeclineLeaseInquiryRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"];
+                        "application/json": components["schemas"]["LeaseInquiryDto"];
+                        "text/json": components["schemas"]["LeaseInquiryDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lease-inquiries/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LeaseInquiryDto"];
+                        "application/json": components["schemas"]["LeaseInquiryDto"];
+                        "text/json": components["schemas"]["LeaseInquiryDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/maintenance-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/maintenance-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SubmitRequestBody"];
+                    "text/json": components["schemas"]["SubmitRequestBody"];
+                    "application/*+json": components["schemas"]["SubmitRequestBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/maintenance-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateRequestBody"];
+                    "text/json": components["schemas"]["UpdateRequestBody"];
+                    "application/*+json": components["schemas"]["UpdateRequestBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/work-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateWorkOrderBody"];
+                    "text/json": components["schemas"]["CreateWorkOrderBody"];
+                    "application/*+json": components["schemas"]["CreateWorkOrderBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/work-orders/{workOrderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    workOrderId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    workOrderId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateWorkOrderBody"];
+                    "text/json": components["schemas"]["UpdateWorkOrderBody"];
+                    "application/*+json": components["schemas"]["UpdateWorkOrderBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    limit?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaSummaryDto"][];
+                        "application/json": components["schemas"]["MarinaSummaryDto"][];
+                        "text/json": components["schemas"]["MarinaSummaryDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MyMarinaDto"][];
+                        "application/json": components["schemas"]["MyMarinaDto"][];
+                        "text/json": components["schemas"]["MyMarinaDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MarinaSignupRequest"];
+                    "text/json": components["schemas"]["MarinaSignupRequest"];
+                    "application/*+json": components["schemas"]["MarinaSignupRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaSignupResponse"];
+                        "application/json": components["schemas"]["MarinaSignupResponse"];
+                        "text/json": components["schemas"]["MarinaSignupResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaDto"];
+                        "application/json": components["schemas"]["MarinaDto"];
+                        "text/json": components["schemas"]["MarinaDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateMarinaRequest"];
+                    "text/json": components["schemas"]["UpdateMarinaRequest"];
+                    "application/*+json": components["schemas"]["UpdateMarinaRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaDto"];
+                        "application/json": components["schemas"]["MarinaDto"];
+                        "text/json": components["schemas"]["MarinaDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/setup/docks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetupDocksRequest"];
+                    "text/json": components["schemas"]["SetupDocksRequest"];
+                    "application/*+json": components["schemas"]["SetupDocksRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1094,6 +3417,17 @@ export interface paths {
                         "text/json": components["schemas"]["DockDto"][];
                     };
                 };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1120,9 +3454,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
+                        "text/plain": components["schemas"]["DockDto"];
+                        "application/json": components["schemas"]["DockDto"];
+                        "text/json": components["schemas"]["DockDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -1133,7 +3478,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/docks/{id}": {
+    "/marinas/{marinaId}/docks/{dockId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1141,12 +3486,60 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: {
+        put?: never;
+        post?: never;
+        delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    id: string;
+                    marinaId: string;
+                    dockId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    dockId: string;
                 };
                 cookie?: never;
             };
@@ -1158,1162 +3551,19 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    customerAccountId?: string;
-                    status?: components["schemas"]["InvoiceStatus"];
-                    issuedFrom?: string;
-                    issuedTo?: string;
-                    marinaId?: string;
-                    sortBy?: string;
-                    sortDescending?: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
                 /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["InvoiceDto"][];
-                        "application/json": components["schemas"]["InvoiceDto"][];
-                        "text/json": components["schemas"]["InvoiceDto"][];
+                        "text/plain": components["schemas"]["DockDto"];
+                        "application/json": components["schemas"]["DockDto"];
+                        "text/json": components["schemas"]["DockDto"];
                     };
                 };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateInvoiceCommand"];
-                    "text/json": components["schemas"]["CreateInvoiceCommand"];
-                    "application/*+json": components["schemas"]["CreateInvoiceCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["InvoiceDetailDto"];
-                        "application/json": components["schemas"]["InvoiceDetailDto"];
-                        "text/json": components["schemas"]["InvoiceDetailDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateInvoiceDraftRequest"];
-                    "text/json": components["schemas"]["UpdateInvoiceDraftRequest"];
-                    "application/*+json": components["schemas"]["UpdateInvoiceDraftRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}/send": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}/void": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}/line-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["AddLineItemRequest"];
-                    "text/json": components["schemas"]["AddLineItemRequest"];
-                    "application/*+json": components["schemas"]["AddLineItemRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}/line-items/{lineItemId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    lineItemId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateLineItemRequest"];
-                    "text/json": components["schemas"]["UpdateLineItemRequest"];
-                    "application/*+json": components["schemas"]["UpdateLineItemRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                    lineItemId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/invoices/{id}/payments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["RecordPaymentRequest"];
-                    "text/json": components["schemas"]["RecordPaymentRequest"];
-                    "application/*+json": components["schemas"]["RecordPaymentRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/maintenance-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    status?: components["schemas"]["MaintenanceStatus"];
-                    priority?: components["schemas"]["Priority"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["MaintenanceRequestDto"][];
-                        "application/json": components["schemas"]["MaintenanceRequestDto"][];
-                        "text/json": components["schemas"]["MaintenanceRequestDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/maintenance-requests/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["MaintenanceRequestDto"];
-                        "application/json": components["schemas"]["MaintenanceRequestDto"];
-                        "text/json": components["schemas"]["MaintenanceRequestDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/maintenance-requests/{id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateMaintenanceStatusRequest"];
-                    "text/json": components["schemas"]["UpdateMaintenanceStatusRequest"];
-                    "application/*+json": components["schemas"]["UpdateMaintenanceStatusRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/marinas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["MarinaDto"][];
-                        "application/json": components["schemas"]["MarinaDto"][];
-                        "text/json": components["schemas"]["MarinaDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateMarinaCommand"];
-                    "text/json": components["schemas"]["CreateMarinaCommand"];
-                    "application/*+json": components["schemas"]["CreateMarinaCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/marinas/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["MarinaDto"];
-                        "application/json": components["schemas"]["MarinaDto"];
-                        "text/json": components["schemas"]["MarinaDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateMarinaRequest"];
-                    "text/json": components["schemas"]["UpdateMarinaRequest"];
-                    "application/*+json": components["schemas"]["UpdateMarinaRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/marinas/{id}/health-targets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["HealthTargetsDto"];
-                        "application/json": components["schemas"]["HealthTargetsDto"];
-                        "text/json": components["schemas"]["HealthTargetsDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["HealthTargetsDto"];
-                    "text/json": components["schemas"]["HealthTargetsDto"];
-                    "application/*+json": components["schemas"]["HealthTargetsDto"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/marinas/{id}/metrics": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["MarinaMetricsDto"];
-                        "application/json": components["schemas"]["MarinaMetricsDto"];
-                        "text/json": components["schemas"]["MarinaMetricsDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    search?: string;
-                    tenantId?: string;
-                    role?: components["schemas"]["UserRole"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PlatformUserDto"][];
-                        "application/json": components["schemas"]["PlatformUserDto"][];
-                        "text/json": components["schemas"]["PlatformUserDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/users/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PlatformUserDto"];
-                        "application/json": components["schemas"]["PlatformUserDto"];
-                        "text/json": components["schemas"]["PlatformUserDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/users/{id}/reset-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ResetPasswordRequest"];
-                    "text/json": components["schemas"]["ResetPasswordRequest"];
-                    "application/*+json": components["schemas"]["ResetPasswordRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
+                /** @description Forbidden */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2336,805 +3586,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/users/{id}/deactivate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/users/{id}/reactivate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/platform/audit-logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    tenantId?: string;
-                    userId?: string;
-                    action?: string;
-                    entityType?: string;
-                    from?: string;
-                    to?: string;
-                    page?: number | string;
-                    pageSize?: number | string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PagedResultOfAuditLogDto"];
-                        "application/json": components["schemas"]["PagedResultOfAuditLogDto"];
-                        "text/json": components["schemas"]["PagedResultOfAuditLogDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalMeDto"];
-                        "application/json": components["schemas"]["PortalMeDto"];
-                        "text/json": components["schemas"]["PortalMeDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/slip": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalSlipAssignmentDto"];
-                        "application/json": components["schemas"]["PortalSlipAssignmentDto"];
-                        "text/json": components["schemas"]["PortalSlipAssignmentDto"];
-                    };
-                };
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/boats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalBoatDto"][];
-                        "application/json": components["schemas"]["PortalBoatDto"][];
-                        "text/json": components["schemas"]["PortalBoatDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/invoices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalInvoiceDto"][];
-                        "application/json": components["schemas"]["PortalInvoiceDto"][];
-                        "text/json": components["schemas"]["PortalInvoiceDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/invoices/{invoiceId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    invoiceId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalInvoiceDetailDto"];
-                        "application/json": components["schemas"]["PortalInvoiceDetailDto"];
-                        "text/json": components["schemas"]["PortalInvoiceDetailDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/maintenance-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalMaintenanceRequestDto"][];
-                        "application/json": components["schemas"]["PortalMaintenanceRequestDto"][];
-                        "text/json": components["schemas"]["PortalMaintenanceRequestDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SubmitMaintenanceRequestCommand"];
-                    "text/json": components["schemas"]["SubmitMaintenanceRequestCommand"];
-                    "application/*+json": components["schemas"]["SubmitMaintenanceRequestCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/portal/announcements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PortalAnnouncementDto"][];
-                        "application/json": components["schemas"]["PortalAnnouncementDto"][];
-                        "text/json": components["schemas"]["PortalAnnouncementDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["GetProfileResult"];
-                        "application/json": components["schemas"]["GetProfileResult"];
-                        "text/json": components["schemas"]["GetProfileResult"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateProfileCommand"];
-                    "text/json": components["schemas"]["UpdateProfileCommand"];
-                    "application/*+json": components["schemas"]["UpdateProfileCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["GetProfileResult"];
-                        "application/json": components["schemas"]["GetProfileResult"];
-                        "text/json": components["schemas"]["GetProfileResult"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/profile/change-email": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChangeEmailCommand"];
-                    "text/json": components["schemas"]["ChangeEmailCommand"];
-                    "application/*+json": components["schemas"]["ChangeEmailCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/profile/change-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChangePasswordCommand"];
-                    "text/json": components["schemas"]["ChangePasswordCommand"];
-                    "application/*+json": components["schemas"]["ChangePasswordCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/slip-assignments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    slipId?: string;
-                    customerAccountId?: string;
-                    marinaId?: string;
-                    activeOnly?: boolean;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SlipAssignmentDto"][];
-                        "application/json": components["schemas"]["SlipAssignmentDto"][];
-                        "text/json": components["schemas"]["SlipAssignmentDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateSlipAssignmentCommand"];
-                    "text/json": components["schemas"]["CreateSlipAssignmentCommand"];
-                    "application/*+json": components["schemas"]["CreateSlipAssignmentCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/slip-assignments/{id}/end": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["EndAssignmentRequest"];
-                    "text/json": components["schemas"]["EndAssignmentRequest"];
-                    "application/*+json": components["schemas"]["EndAssignmentRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/marinas/{marinaId}/slips": {
@@ -3146,7 +3597,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    dockId?: string;
+                };
                 header?: never;
                 path: {
                     marinaId: string;
@@ -3164,6 +3617,17 @@ export interface paths {
                         "text/plain": components["schemas"]["SlipDto"][];
                         "application/json": components["schemas"]["SlipDto"][];
                         "text/json": components["schemas"]["SlipDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3192,9 +3656,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
+                        "text/plain": components["schemas"]["SlipDto"];
+                        "application/json": components["schemas"]["SlipDto"];
+                        "text/json": components["schemas"]["SlipDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3205,7 +3680,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marinas/{marinaId}/slips/available": {
+    "/marinas/{marinaId}/slips/{slipId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3214,13 +3689,321 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    boatLength?: number | string;
-                    boatBeam?: number | string;
-                    boatDraft?: number | string;
-                    startDate?: string;
-                    endDate?: string;
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    slipId: string;
                 };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipDto"];
+                        "application/json": components["schemas"]["SlipDto"];
+                        "text/json": components["schemas"]["SlipDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    slipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    slipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSlipRequest"];
+                    "text/json": components["schemas"]["UpdateSlipRequest"];
+                    "application/*+json": components["schemas"]["UpdateSlipRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipDto"];
+                        "application/json": components["schemas"]["SlipDto"];
+                        "text/json": components["schemas"]["SlipDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MeResponse"];
+                        "application/json": components["schemas"]["MeResponse"];
+                        "text/json": components["schemas"]["MeResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProfileRequest"];
+                    "text/json": components["schemas"]["UpdateProfileRequest"];
+                    "application/*+json": components["schemas"]["UpdateProfileRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/me/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangePasswordRequest"];
+                    "text/json": components["schemas"]["ChangePasswordRequest"];
+                    "application/*+json": components["schemas"]["ChangePasswordRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MembershipDto"][];
+                        "application/json": components["schemas"]["MembershipDto"][];
+                        "text/json": components["schemas"]["MembershipDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
                 header?: never;
                 path: {
                     marinaId: string;
@@ -3235,9 +4018,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["SlipDto"][];
-                        "application/json": components["schemas"]["SlipDto"][];
-                        "text/json": components["schemas"]["SlipDto"][];
+                        "text/plain": components["schemas"]["MembershipDto"][];
+                        "application/json": components["schemas"]["MembershipDto"][];
+                        "text/json": components["schemas"]["MembershipDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3250,7 +4044,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/slips/{id}": {
+    "/marinas/{marinaId}/staff/invite": {
         parameters: {
             query?: never;
             header?: never;
@@ -3258,22 +4052,73 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: {
+        put?: never;
+        post: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    id: string;
+                    marinaId: string;
                 };
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UpdateSlipRequest"];
-                    "text/json": components["schemas"]["UpdateSlipRequest"];
-                    "application/*+json": components["schemas"]["UpdateSlipRequest"];
+                    "application/json": components["schemas"]["InviteStaffRequest"];
+                    "text/json": components["schemas"]["InviteStaffRequest"];
+                    "application/*+json": components["schemas"]["InviteStaffRequest"];
                 };
             };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MembershipDto"];
+                        "application/json": components["schemas"]["MembershipDto"];
+                        "text/json": components["schemas"]["MembershipDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/memberships/{membershipId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    membershipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
             responses: {
                 /** @description No Content */
                 204: {
@@ -3295,6 +4140,2005 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/staff/{membershipId}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    membershipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateRoleRequest"];
+                    "text/json": components["schemas"]["UpdateRoleRequest"];
+                    "application/*+json": components["schemas"]["UpdateRoleRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MembershipDto"];
+                        "application/json": components["schemas"]["MembershipDto"];
+                        "text/json": components["schemas"]["MembershipDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/staff/{membershipId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    membershipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    search?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PagedResultOfTenantSummaryDto"];
+                        "application/json": components["schemas"]["PagedResultOfTenantSummaryDto"];
+                        "text/json": components["schemas"]["PagedResultOfTenantSummaryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTenantBody"];
+                    "text/json": components["schemas"]["CreateTenantBody"];
+                    "application/*+json": components["schemas"]["CreateTenantBody"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CreateTenantResponse"];
+                        "application/json": components["schemas"]["CreateTenantResponse"];
+                        "text/json": components["schemas"]["CreateTenantResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    tenantId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                    "text/json": components["schemas"]["ReasonBody"];
+                    "application/*+json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/tenants/{tenantId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    tenantId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PagedResultOfUserSummaryDto"];
+                        "application/json": components["schemas"]["PagedResultOfUserSummaryDto"];
+                        "text/json": components["schemas"]["PagedResultOfUserSummaryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/users/{userId}/force-signout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/users/{userId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                    "text/json": components["schemas"]["ReasonBody"];
+                    "application/*+json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/users/{userId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    tenantId?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PagedResultOfAuditLogEntryDto"];
+                        "application/json": components["schemas"]["PagedResultOfAuditLogEntryDto"];
+                        "text/json": components["schemas"]["PagedResultOfAuditLogEntryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/listings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PagedResultOfListingModerationDto"];
+                        "application/json": components["schemas"]["PagedResultOfListingModerationDto"];
+                        "text/json": components["schemas"]["PagedResultOfListingModerationDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/listings/{listingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    listingId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReasonBody"];
+                    "text/json": components["schemas"]["ReasonBody"];
+                    "application/*+json": components["schemas"]["ReasonBody"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateReservationRequest"];
+                    "text/json": components["schemas"]["CreateReservationRequest"];
+                    "application/*+json": components["schemas"]["CreateReservationRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reservations/my-trips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"][];
+                        "application/json": components["schemas"]["ReservationDto"][];
+                        "text/json": components["schemas"]["ReservationDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reservations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"][];
+                        "application/json": components["schemas"]["ReservationDto"][];
+                        "text/json": components["schemas"]["ReservationDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/reservations/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/reservations/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reservations/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/reservations/{id}/no-show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ReservationDto"];
+                        "application/json": components["schemas"]["ReservationDto"];
+                        "text/json": components["schemas"]["ReservationDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/slip-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    slipId?: string;
+                    billingAccountId?: string;
+                    activeOnly?: boolean;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"][];
+                        "application/json": components["schemas"]["SlipAssignmentDto"][];
+                        "text/json": components["schemas"]["SlipAssignmentDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSlipAssignmentRequest"];
+                    "text/json": components["schemas"]["CreateSlipAssignmentRequest"];
+                    "application/*+json": components["schemas"]["CreateSlipAssignmentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"];
+                        "application/json": components["schemas"]["SlipAssignmentDto"];
+                        "text/json": components["schemas"]["SlipAssignmentDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/slip-assignments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"];
+                        "application/json": components["schemas"]["SlipAssignmentDto"];
+                        "text/json": components["schemas"]["SlipAssignmentDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSlipAssignmentRequest"];
+                    "text/json": components["schemas"]["UpdateSlipAssignmentRequest"];
+                    "application/*+json": components["schemas"]["UpdateSlipAssignmentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"];
+                        "application/json": components["schemas"]["SlipAssignmentDto"];
+                        "text/json": components["schemas"]["SlipAssignmentDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/slip-assignments/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EndSlipAssignmentRequest"];
+                    "text/json": components["schemas"]["EndSlipAssignmentRequest"];
+                    "application/*+json": components["schemas"]["EndSlipAssignmentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"];
+                        "application/json": components["schemas"]["SlipAssignmentDto"];
+                        "text/json": components["schemas"]["SlipAssignmentDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/slips/{slipId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    startDate?: string;
+                    endDate?: string;
+                    vesselLength?: number | string;
+                    vesselBeam?: number | string;
+                    vesselDraft?: number | string;
+                    excludeAssignmentId?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                    slipId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAvailabilityResult"];
+                        "application/json": components["schemas"]["SlipAvailabilityResult"];
+                        "text/json": components["schemas"]["SlipAvailabilityResult"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slips/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    lat?: number | string;
+                    lon?: number | string;
+                    radiusMiles?: number | string;
+                    listingKind?: string;
+                    arrivesAt?: string;
+                    departsAt?: string;
+                    leaseTerm?: string;
+                    vesselLength?: number | string;
+                    vesselBeam?: number | string;
+                    vesselDraft?: number | string;
+                    slipType?: string;
+                    hasElectric?: boolean;
+                    hasWater?: boolean;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipSearchResultDto"][];
+                        "application/json": components["schemas"]["SlipSearchResultDto"][];
+                        "text/json": components["schemas"]["SlipSearchResultDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slips/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipDetailDto"];
+                        "application/json": components["schemas"]["SlipDetailDto"];
+                        "text/json": components["schemas"]["SlipDetailDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/slip-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MySlipAssignmentDto"][];
+                        "application/json": components["schemas"]["MySlipAssignmentDto"][];
+                        "text/json": components["schemas"]["MySlipAssignmentDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slip-assignments/{id}/away": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MarkAwayRequest"];
+                    "text/json": components["schemas"]["MarkAwayRequest"];
+                    "application/*+json": components["schemas"]["MarkAwayRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OwnerAbsenceDto"];
+                        "application/json": components["schemas"]["OwnerAbsenceDto"];
+                        "text/json": components["schemas"]["OwnerAbsenceDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slip-assignments/{id}/absences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OwnerAbsenceDto"][];
+                        "application/json": components["schemas"]["OwnerAbsenceDto"][];
+                        "text/json": components["schemas"]["OwnerAbsenceDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slip-assignments/{id}/absences/{absenceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    absenceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/slip-assignments/{id}/sublet-window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSubletWindowRequest"];
+                    "text/json": components["schemas"]["CreateSubletWindowRequest"];
+                    "application/*+json": components["schemas"]["CreateSubletWindowRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AvailabilityWindowDto"];
+                        "application/json": components["schemas"]["AvailabilityWindowDto"];
+                        "text/json": components["schemas"]["AvailabilityWindowDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/absences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    slipId?: string;
+                };
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OwnerAbsenceDto"][];
+                        "application/json": components["schemas"]["OwnerAbsenceDto"][];
+                        "text/json": components["schemas"]["OwnerAbsenceDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vessels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselDto"][];
+                        "application/json": components["schemas"]["VesselDto"][];
+                        "text/json": components["schemas"]["VesselDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateVesselRequest"];
+                    "text/json": components["schemas"]["CreateVesselRequest"];
+                    "application/*+json": components["schemas"]["CreateVesselRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselDto"];
+                        "application/json": components["schemas"]["VesselDto"];
+                        "text/json": components["schemas"]["VesselDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vessels/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VesselDto"];
+                        "application/json": components["schemas"]["VesselDto"];
+                        "text/json": components["schemas"]["VesselDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete: {
             parameters: {
@@ -3329,10 +6173,83 @@ export interface paths {
         };
         options?: never;
         head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateVesselRequest"];
+                    "text/json": components["schemas"]["UpdateVesselRequest"];
+                    "application/*+json": components["schemas"]["UpdateVesselRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/vessels/pending-claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PendingVesselClaimDto"][];
+                        "application/json": components["schemas"]["PendingVesselClaimDto"][];
+                        "text/json": components["schemas"]["PendingVesselClaimDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
-    "/staff/invite": {
+    "/vessels/{id}/claim": {
         parameters: {
             query?: never;
             header?: never;
@@ -3345,30 +6262,26 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["InviteStaffCommand"];
-                    "text/json": components["schemas"]["InviteStaffCommand"];
-                    "application/*+json": components["schemas"]["InviteStaffCommand"];
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description Created */
-                201: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["InviteStaffResult"];
-                        "application/json": components["schemas"]["InviteStaffResult"];
-                        "text/json": components["schemas"]["InviteStaffResult"];
+                        "text/plain": components["schemas"]["VesselDto"];
+                        "application/json": components["schemas"]["VesselDto"];
+                        "text/json": components["schemas"]["VesselDto"];
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3397,168 +6310,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/tenants": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TenantDto"][];
-                        "application/json": components["schemas"]["TenantDto"][];
-                        "text/json": components["schemas"]["TenantDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateTenantCommand"];
-                    "text/json": components["schemas"]["CreateTenantCommand"];
-                    "application/*+json": components["schemas"]["CreateTenantCommand"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CreateTenantResult"];
-                        "application/json": components["schemas"]["CreateTenantResult"];
-                        "text/json": components["schemas"]["CreateTenantResult"];
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tenants/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TenantDetailDto"];
-                        "application/json": components["schemas"]["TenantDetailDto"];
-                        "text/json": components["schemas"]["TenantDetailDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateTenantRequest"];
-                    "text/json": components["schemas"]["UpdateTenantRequest"];
-                    "application/*+json": components["schemas"]["UpdateTenantRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tenants/{id}/suspend": {
+    "/vessels/{id}/reject-claim": {
         parameters: {
             query?: never;
             header?: never;
@@ -3577,268 +6329,6 @@ export interface paths {
                 cookie?: never;
             };
             requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tenants/{id}/reactivate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/work-orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    status?: components["schemas"]["WorkOrderStatus"];
-                    assignedToUserId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["WorkOrderDto"][];
-                        "application/json": components["schemas"]["WorkOrderDto"][];
-                        "text/json": components["schemas"]["WorkOrderDto"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateWorkOrderRequest"];
-                    "text/json": components["schemas"]["CreateWorkOrderRequest"];
-                    "application/*+json": components["schemas"]["CreateWorkOrderRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                        "application/json": string;
-                        "text/json": string;
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/work-orders/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["WorkOrderDto"];
-                        "application/json": components["schemas"]["WorkOrderDto"];
-                        "text/json": components["schemas"]["WorkOrderDto"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateWorkOrderRequest"];
-                    "text/json": components["schemas"]["UpdateWorkOrderRequest"];
-                    "application/*+json": components["schemas"]["UpdateWorkOrderRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/work-orders/{id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CompleteWorkOrderRequest"];
-                    "text/json": components["schemas"]["CompleteWorkOrderRequest"];
-                    "application/*+json": components["schemas"]["CompleteWorkOrderRequest"];
-                };
-            };
             responses: {
                 /** @description No Content */
                 204: {
@@ -3889,152 +6379,166 @@ export interface components {
             unitPrice: number | string;
             /** Format: uuid */
             slipAssignmentId: null | string;
-        };
-        AddressDto: {
-            street: string;
-            city: string;
-            state: string;
-            zip: string;
-            country: string;
-        };
-        AllTiersCapabilitiesResponse: {
-            tiers: components["schemas"]["CapabilitiesResponse"][];
-        };
-        AnnouncementDto: {
             /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            marinaId: string;
+            reservationId: null | string;
+        };
+        AnnouncementBody: {
             title: string;
             body: string;
+            /** @default Both */
+            audience: string;
+            /** @default false */
             isPinned: boolean;
-            isPublished: boolean;
             /** Format: date-time */
-            publishedAt: null | string;
-            /** Format: date-time */
-            expiresAt: null | string;
-            /** Format: uuid */
-            createdByUserId: string;
-            /** Format: date-time */
-            createdAt: string;
+            expiresAt?: null | string;
         };
-        AssignmentType: number;
-        AuditLogDto: {
+        AuditLogEntryDto: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             tenantId: null | string;
-            tenantName: null | string;
             /** Format: uuid */
-            userId: string;
-            userEmail: string;
+            actorUserId: null | string;
+            actorName: string;
             action: string;
-            entityType: string;
-            /** Format: uuid */
-            entityId: string;
-            before: null | string;
-            after: null | string;
-            ipAddress: null | string;
+            targetType: null | string;
+            targetId: null | string;
+            details: null | string;
             /** Format: date-time */
-            timestamp: string;
+            occurredAt: string;
         };
-        AvailableContext: {
-            displayName: string;
-            role: null | string;
-            /** Format: uuid */
-            tenantId: string;
-            /** Format: uuid */
-            marinaId: null | string;
-            /** Format: uuid */
-            customerAccountId: null | string;
+        AuthResponse: {
+            accessToken: string;
+            refreshToken: string;
+            /** Format: date-time */
+            expiresAt: string;
+            user: components["schemas"]["UserProfileDto"];
         };
-        BoatDto: {
+        AvailabilityWindowDto: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            customerAccountId: string;
-            name: string;
-            make: null | string;
-            model: null | string;
+            slipId: string;
+            slipName: string;
+            listedByKind: string;
+            /** Format: uuid */
+            listedByMarinaId: null | string;
+            /** Format: uuid */
+            listedByBillingAccountId: null | string;
+            /** Format: uuid */
+            relatedAssignmentId: null | string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            instantBook: boolean;
             /** Format: int32 */
-            year: null | number | string;
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
             /** Format: double */
-            length: number | string;
+            basePricePerNight: number | string;
             /** Format: double */
-            beam: number | string;
+            weeklyDiscount: null | number | string;
             /** Format: double */
-            draft: number | string;
-            boatType: components["schemas"]["BoatType"];
-            hullColor: null | string;
-            registrationNumber: null | string;
-            registrationState: null | string;
-            insuranceProvider: null | string;
-            insurancePolicyNumber: null | string;
-            /** Format: date */
-            insuranceExpiresOn: null | string;
+            monthlyDiscount: null | number | string;
+            /** Format: double */
+            cleaningFee: null | number | string;
+            revenueSplit: components["schemas"]["RevenueSplitEntryDto"][];
+            status: string;
             /** Format: date-time */
             createdAt: string;
         };
-        BoatType: number;
-        CapabilitiesResponse: {
-            tier: string;
-            capabilities: string[];
-        };
-        ChangeEmailCommand: {
-            newEmail: string;
-            currentPassword: string;
-        };
-        ChangePasswordCommand: {
-            currentPassword: string;
-            newPassword: string;
-        };
-        ChooseContextCommand: {
+        BillingAccountDto: {
             /** Format: uuid */
-            userId: string;
-            context: components["schemas"]["AvailableContext"];
-        };
-        CompleteWorkOrderRequest: {
-            notes: null | string;
-        };
-        ContextToken: {
-            token: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        CreateAnnouncementRequest: {
-            title: string;
-            body: string;
-            publish: boolean;
-            isPinned: boolean;
-            /** Format: date-time */
-            expiresAt: null | string;
-        };
-        CreateBoatRequest: {
-            name: string;
-            make: null | string;
-            model: null | string;
-            /** Format: int32 */
-            year: null | number | string;
-            /** Format: double */
-            length: number | string;
-            /** Format: double */
-            beam: number | string;
-            /** Format: double */
-            draft: number | string;
-            boatType: components["schemas"]["BoatType"];
-            hullColor: null | string;
-            registrationNumber: null | string;
-            registrationState: null | string;
-            insuranceProvider: null | string;
-            insurancePolicyNumber: null | string;
-            /** Format: date */
-            insuranceExpiresOn: null | string;
-        };
-        CreateCustomerAccountCommand: {
+            id: string;
+            /** Format: uuid */
+            marinaId: string;
             displayName: string;
             billingEmail: string;
             billingPhone: null | string;
-            billingAddress: null | components["schemas"]["AddressDto"];
+            billingAddressStreet: null | string;
+            billingAddressCity: null | string;
+            billingAddressState: null | string;
+            billingAddressZip: null | string;
+            billingAddressCountry: null | string;
+            emergencyContactName: null | string;
+            emergencyContactPhone: null | string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BillingAccountMemberClaim: {
+            /** Format: uuid */
+            billingAccountId: string;
+            /** Format: uuid */
+            marinaId: string;
+            role: components["schemas"]["BillingAccountRole"];
+        };
+        BillingAccountMemberDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            billingAccountId: string;
+            /** Format: uuid */
+            userId: string;
+            userEmail: string;
+            userName: null | string;
+            role: string;
+            /** Format: date-time */
+            invitedAt: string;
+            /** Format: date-time */
+            acceptedAt: null | string;
+        };
+        BillingAccountRole: number;
+        ChangePasswordRequest: {
+            currentPassword: string;
+            newPassword: string;
+        };
+        ClientConfigDto: {
+            socialProviders: string[];
+        };
+        ConfirmEmailRequest: {
+            userId: string;
+            token: string;
+        };
+        CreateAvailabilityWindowRequest: {
+            /** Format: uuid */
+            slipId: string;
+            listedByKind: string;
+            /** Format: uuid */
+            listedByMarinaId: null | string;
+            /** Format: uuid */
+            listedByBillingAccountId: null | string;
+            /** Format: uuid */
+            relatedAssignmentId: null | string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            instantBook: boolean;
+            /** Format: int32 */
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
+            /** Format: double */
+            basePricePerNight: number | string;
+            /** Format: double */
+            weeklyDiscount: null | number | string;
+            /** Format: double */
+            monthlyDiscount: null | number | string;
+            /** Format: double */
+            cleaningFee: null | number | string;
+        };
+        CreateBillingAccountRequest: {
+            displayName: string;
+            billingEmail: string;
+            billingPhone: null | string;
+            billingAddressStreet: null | string;
+            billingAddressCity: null | string;
+            billingAddressState: null | string;
+            billingAddressZip: null | string;
+            billingAddressCountry: null | string;
             emergencyContactName: null | string;
             emergencyContactPhone: null | string;
             notes: null | string;
@@ -4042,53 +6546,73 @@ export interface components {
         CreateDockRequest: {
             name: string;
             description: null | string;
-            /**
-             * Format: int32
-             * @default 0
-             */
+            /** Format: int32 */
             sortOrder: number | string;
         };
-        CreateInvoiceCommand: {
+        CreateInvoiceRequest: {
             /** Format: uuid */
-            customerAccountId: string;
+            billingAccountId: string;
+            /** Format: uuid */
+            reservationId: null | string;
+            /** Format: uuid */
+            slipAssignmentId: null | string;
             /** Format: date */
             issuedDate: string;
             /** Format: date */
             dueDate: string;
+            /** Format: double */
+            taxAmount: number | string;
             notes: null | string;
+            lineItems: components["schemas"]["InvoiceLineItemRequest"][];
+        };
+        CreateLeaseInquiryRequest: {
             /** Format: uuid */
-            marinaId?: null | string;
+            vesselId: null | string;
+            desiredTerm: string;
+            /** Format: date */
+            desiredStartDate: null | string;
+            message: null | string;
         };
-        CreateMarinaCommand: {
-            name: string;
-            address: components["schemas"]["AddressDto"];
-            phoneNumber: string;
-            email: string;
-            timeZoneId: string;
-            website: null | string;
-            description: null | string;
+        CreateReservationRequest: {
+            /** Format: uuid */
+            vesselId: string;
+            /** Format: uuid */
+            availabilityWindowId: null | string;
+            /** Format: uuid */
+            slipId: null | string;
+            /** Format: date-time */
+            arrivesAt: string;
+            /** Format: date-time */
+            departsAt: string;
+            notes: null | string;
         };
-        CreateSlipAssignmentCommand: {
+        CreateSlipAssignmentRequest: {
             /** Format: uuid */
             slipId: string;
             /** Format: uuid */
-            customerAccountId: string;
+            billingAccountId: string;
             /** Format: uuid */
-            boatId: string;
-            assignmentType: components["schemas"]["AssignmentType"];
+            vesselId: string;
+            assignmentType: string;
             /** Format: date */
             startDate: string;
             /** Format: date */
             endDate: null | string;
             /** Format: double */
-            rateOverride: null | number | string;
+            baseRate: number | string;
+            allowOwnerSubletWhenAway: boolean;
+            allowHolderSublet: boolean;
+            /** Format: double */
+            ownerSubletShareToHolder: number | string;
+            /** Format: double */
+            holderSubletShareToOwner: number | string;
             notes: null | string;
         };
         CreateSlipRequest: {
             /** Format: uuid */
             dockId: null | string;
             name: string;
-            slipType: components["schemas"]["SlipType"];
+            slipType: null | string;
             /** Format: double */
             maxLength: number | string;
             /** Format: double */
@@ -4096,67 +6620,112 @@ export interface components {
             /** Format: double */
             maxDraft: number | string;
             hasElectric: boolean;
-            electric: null | components["schemas"]["ElectricService"];
+            /** Format: int32 */
+            electric: null | number | string;
             hasWater: boolean;
-            rateType: components["schemas"]["RateType"];
-            /** Format: double */
-            dailyRate: null | number | string;
-            /** Format: double */
-            monthlyRate: null | number | string;
-            /** Format: double */
-            annualRate: null | number | string;
-            status: components["schemas"]["SlipStatus"];
-            /** Format: double */
-            latitude: null | number | string;
-            /** Format: double */
-            longitude: null | number | string;
-            notes: null | string;
+            /** @default false */
+            hasPumpOut: boolean;
+            /** @default false */
+            isCovered: boolean;
+            /** @default false */
+            isIndoor: boolean;
+            amenities?: null | string[];
+            notes?: null | string;
         };
-        CreateTenantCommand: {
+        CreateSubletWindowRequest: {
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            instantBook: boolean;
+            /** Format: int32 */
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
+            /** Format: double */
+            basePricePerNight: number | string;
+            /** Format: double */
+            weeklyDiscount: null | number | string;
+            /** Format: double */
+            monthlyDiscount: null | number | string;
+            /** Format: double */
+            cleaningFee: null | number | string;
+        };
+        CreateTenantBody: {
             name: string;
             slug: string;
-            ownerEmail: string;
-            ownerFirstName: string;
-            ownerLastName: string;
-            ownerPassword: string;
-            subscriptionTier?: components["schemas"]["SubscriptionTier"];
+            billingEmail: null | string;
+            subscriptionTier: null | string;
         };
-        CreateTenantResult: {
-            /** Format: uuid */
-            tenantId: string;
-            /** Format: uuid */
-            ownerId: string;
-        };
-        CreateWorkOrderRequest: {
-            title: string;
-            description: string;
-            priority: components["schemas"]["Priority"];
-            /** Format: uuid */
-            maintenanceRequestId: null | string;
-            /** Format: uuid */
-            assignedToUserId: null | string;
-            /** Format: date */
-            scheduledDate: null | string;
-            notes: null | string;
-        };
-        CustomerAccountDto: {
+        CreateTenantResponse: {
             /** Format: uuid */
             id: string;
-            displayName: string;
-            billingEmail: string;
-            billingPhone: null | string;
-            billingAddress: null | components["schemas"]["AddressDto"];
-            emergencyContactName: null | string;
-            emergencyContactPhone: null | string;
-            notes: null | string;
-            isActive: boolean;
-            /** Format: date-time */
-            createdAt: string;
+            name: string;
+            slug: string;
         };
-        DemoSessionResult: {
-            token: string;
-            /** Format: date-time */
+        CreateVesselRecordRequest: {
+            /** Format: uuid */
+            billingAccountId: null | string;
+            /** Format: uuid */
+            vesselId: null | string;
+            claimEmail: null | string;
+            vesselName: null | string;
+            vesselMake: null | string;
+            vesselModel: null | string;
+            /** Format: int32 */
+            vesselYear: null | number | string;
+            /** Format: double */
+            vesselLength: null | number | string;
+            /** Format: double */
+            vesselBeam: null | number | string;
+            /** Format: double */
+            vesselDraft: null | number | string;
+            vesselBoatType: null | string;
+            vesselHullColor: null | string;
+            vesselRegistrationNumber: null | string;
+            vesselRegistrationState: null | string;
+            insuranceProvider: null | string;
+            insurancePolicyNumber: null | string;
+            /** Format: date */
+            insuranceExpiresOn: null | string;
+            notes: null | string;
+        };
+        CreateVesselRequest: {
+            name: string;
+            make: null | string;
+            model: null | string;
+            /** Format: int32 */
+            year: null | number | string;
+            /** Format: double */
+            length: number | string;
+            /** Format: double */
+            beam: number | string;
+            /** Format: double */
+            draft: number | string;
+            boatType: string;
+            hullColor: null | string;
+            registrationNumber: null | string;
+            registrationState: null | string;
+        };
+        CreateWorkOrderBody: {
+            /** Format: uuid */
+            maintenanceRequestId: null | string;
+            title: string;
+            description: string;
+            /** Format: uuid */
+            assignedToUserId: null | string;
+            /** @default Medium */
+            priority: string;
+            /** Format: date */
+            scheduledDate?: null | string;
+        };
+        DeclineLeaseInquiryRequest: {
+            reason: null | string;
+        };
+        DemoSessionDto: {
+            accessToken: string;
             expiresAt: string;
+            isDemo: boolean;
         };
         DockDto: {
             /** Format: uuid */
@@ -4170,55 +6739,36 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        ElectricService: number;
-        EndAssignmentRequest: {
+        EndSlipAssignmentRequest: {
             /** Format: date */
-            endDate: string;
+            endDate: null | string;
         };
-        GetProfileResult: {
-            firstName: string;
-            lastName: string;
+        ForgotPasswordRequest: {
             email: string;
-            phoneNumber: null | string;
-            emailConfirmed: boolean;
         };
-        HealthStatus: number;
-        HealthTargetsDto: {
-            /** Format: double */
-            occupancyWarningThreshold: null | number | string;
-            /** Format: double */
-            occupancyAlertThreshold: null | number | string;
-            /** Format: int32 */
-            overdueWarningDays: null | number | string;
-            /** Format: int32 */
-            overdueAlertDays: null | number | string;
-        };
-        InviteCustomerResult: {
-            /** Format: uuid */
-            userId: string;
-            temporaryPassword: string;
-        };
-        InviteStaffCommand: {
-            /** Format: uuid */
-            marinaId: string;
+        InviteMemberRequest: {
             email: string;
-            firstName: string;
-            lastName: string;
-            role: components["schemas"]["UserRole"];
+            role: string;
         };
-        InviteStaffResult: {
-            /** Format: uuid */
-            userId: string;
-            temporaryPassword: string;
+        InviteStaffRequest: {
+            email: string;
+            role: string;
         };
-        InvoiceDetailDto: {
+        InvoiceDto: {
             /** Format: uuid */
             id: string;
-            invoiceNumber: string;
             /** Format: uuid */
-            customerAccountId: string;
-            customerDisplayName: string;
-            status: components["schemas"]["InvoiceStatus"];
+            marinaId: string;
+            marinaName: string;
+            /** Format: uuid */
+            billingAccountId: string;
+            billingAccountName: string;
+            /** Format: uuid */
+            reservationId: null | string;
+            /** Format: uuid */
+            slipAssignmentId: null | string;
+            invoiceNumber: string;
+            status: string;
             /** Format: date */
             issuedDate: string;
             /** Format: date */
@@ -4239,34 +6789,6 @@ export interface components {
             lineItems: components["schemas"]["InvoiceLineItemDto"][];
             payments: components["schemas"]["PaymentDto"][];
         };
-        InvoiceDto: {
-            /** Format: uuid */
-            id: string;
-            invoiceNumber: string;
-            /** Format: uuid */
-            customerAccountId: string;
-            customerDisplayName: string;
-            status: components["schemas"]["InvoiceStatus"];
-            /** Format: date */
-            issuedDate: string;
-            /** Format: date */
-            dueDate: string;
-            /** Format: double */
-            subTotal: number | string;
-            /** Format: double */
-            taxAmount: number | string;
-            /** Format: double */
-            totalAmount: number | string;
-            /** Format: double */
-            amountPaid: number | string;
-            /** Format: double */
-            balanceDue: number | string;
-            notes: null | string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: uuid */
-            marinaId: string;
-        };
         InvoiceLineItemDto: {
             /** Format: uuid */
             id: string;
@@ -4279,84 +6801,325 @@ export interface components {
             lineTotal: number | string;
             /** Format: uuid */
             slipAssignmentId: null | string;
-        };
-        InvoiceStatus: number;
-        LoginCommand: {
-            email: string;
-            password: string;
-        };
-        LoginResult: {
-            token: null | string;
-            /** Format: date-time */
-            expiresAt: string;
             /** Format: uuid */
-            userId: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            role: null | string;
-            /** Format: uuid */
-            tenantId: null | string;
-            /** Format: uuid */
-            marinaId: null | string;
-            availableContexts?: components["schemas"]["AvailableContext"][];
+            reservationId: null | string;
         };
-        MaintenanceRequestDto: {
+        InvoiceLineItemRequest: {
+            description: string;
+            /** Format: double */
+            quantity: number | string;
+            /** Format: double */
+            unitPrice: number | string;
+            /** Format: uuid */
+            slipAssignmentId: null | string;
+            /** Format: uuid */
+            reservationId: null | string;
+        };
+        InvoiceSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            invoiceNumber: string;
+            status: string;
+            billingAccountName: string;
+            /** Format: date */
+            issuedDate: string;
+            /** Format: date */
+            dueDate: string;
+            /** Format: double */
+            totalAmount: number | string;
+            /** Format: double */
+            amountPaid: number | string;
+            /** Format: double */
+            balanceDue: number | string;
+        };
+        LeaseInquiryDto: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            customerAccountId: string;
-            customerDisplayName: string;
+            slipId: string;
+            slipName: string;
             /** Format: uuid */
-            slipId: null | string;
-            slipName: null | string;
+            marinaId: string;
+            marinaName: string;
             /** Format: uuid */
-            boatId: null | string;
-            boatName: null | string;
-            title: string;
-            description: string;
-            status: components["schemas"]["MaintenanceStatus"];
-            priority: components["schemas"]["Priority"];
+            requestingUserId: string;
+            requestingUserName: string;
+            requestingUserEmail: string;
+            /** Format: uuid */
+            vesselId: null | string;
+            vesselName: null | string;
+            desiredTerm: string;
+            /** Format: date */
+            desiredStartDate: null | string;
+            message: null | string;
+            agreedRateKind: null | string;
+            /** Format: double */
+            agreedBaseRate: null | number | string;
+            /** Format: date */
+            assignmentStartDate: null | string;
+            /** Format: date */
+            assignmentEndDate: null | string;
+            marinaNote: null | string;
+            status: string;
+            reviewedByUserName: null | string;
             /** Format: date-time */
-            submittedAt: string;
+            reviewedAt: null | string;
+            approvedByUserName: null | string;
             /** Format: date-time */
-            resolvedAt: null | string;
+            approvedAt: null | string;
+            declinedByUserName: null | string;
+            /** Format: date-time */
+            declinedAt: null | string;
             /** Format: uuid */
-            workOrderId: null | string;
+            slipAssignmentId: null | string;
+            /** Format: uuid */
+            billingAccountId: null | string;
+            /** Format: date-time */
+            createdAt: string;
         };
-        MaintenanceStatus: number;
+        LinkedProviderDto: {
+            provider: string;
+        };
+        ListingModerationDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            slipId: string;
+            slipName: string;
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            /** Format: uuid */
+            tenantId: string;
+            tenantName: string;
+            status: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            /** Format: double */
+            basePricePerNight: number | string;
+            listedByKind: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        LoginRequest: {
+            email: string;
+            password: string;
+        };
+        LogoutRequest: {
+            refreshToken: string;
+        };
         MarinaDto: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             tenantId: string;
             name: string;
-            address: components["schemas"]["AddressDto"];
-            phoneNumber: string;
-            email: string;
-            timeZoneId: string;
+            slug: string;
+            addressStreet: null | string;
+            addressCity: null | string;
+            addressState: null | string;
+            addressZip: null | string;
+            addressCountry: null | string;
+            /** Format: double */
+            latitude: null | number | string;
+            /** Format: double */
+            longitude: null | number | string;
+            phoneNumber: null | string;
+            email: null | string;
             website: null | string;
             description: null | string;
+            timeZoneId: string;
+            marinaType: string;
+            isListed: boolean;
+            isSetupComplete: boolean;
+            /** Format: int32 */
+            setupStep: number | string;
             /** Format: date-time */
             createdAt: string;
         };
-        MarinaMetricsDto: {
-            /** Format: int32 */
-            totalSlips: number | string;
-            /** Format: int32 */
-            occupiedSlips: number | string;
+        MarinaSignupRequest: {
+            tenantName: string;
+            marinaName: string;
+            marinaType: string;
+            slipName?: null | string;
             /** Format: double */
-            occupancyRate: number | string;
+            maxLength?: null | number | string;
             /** Format: double */
-            outstandingAR: number | string;
-            /** Format: int32 */
-            oldestOverdueDays: number | string;
-            /** Format: int32 */
-            activeCustomerCount: number | string;
-            healthStatus: components["schemas"]["HealthStatus"];
+            maxBeam?: null | number | string;
+            /** Format: double */
+            maxDraft?: null | number | string;
+            slipType?: null | string;
+            slipNotes?: null | string;
+            /** Format: uuid */
+            hostMarinaId?: null | string;
+            hostMarinaPolicy?: null | string;
         };
-        PagedResultOfAuditLogDto: {
-            items: components["schemas"]["AuditLogDto"][];
+        MarinaSignupResponse: {
+            tenant: components["schemas"]["TenantDto"];
+            marina: components["schemas"]["MarinaDto"];
+            accessToken: string;
+            refreshToken: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MarinaSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            addressCity: null | string;
+            addressState: null | string;
+            marinaType: string;
+        };
+        MarkAwayRequest: {
+            /** Format: date */
+            startsOn: string;
+            /** Format: date */
+            endsOn: string;
+            notes: null | string;
+        };
+        MembershipDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            userEmail: null | string;
+            userFirstName: null | string;
+            userLastName: null | string;
+            /** Format: uuid */
+            tenantId: string;
+            /** Format: uuid */
+            marinaId: null | string;
+            scope: string;
+            role: string;
+            /** Format: date-time */
+            invitedAt: string;
+            /** Format: date-time */
+            acceptedAt: null | string;
+            isPending: boolean;
+        };
+        MembershipRole: number;
+        MembershipScope: number;
+        MeMembershipDto: {
+            scope: components["schemas"]["MembershipScope"];
+            /** Format: uuid */
+            tenantId: string;
+            /** Format: uuid */
+            marinaId: null | string;
+            marinaName: null | string;
+            role: components["schemas"]["MembershipRole"];
+            tier: null | string;
+        };
+        MeResponse: {
+            /** Format: uuid */
+            id: string;
+            email: string;
+            emailConfirmed: boolean;
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
+            profilePhotoUrl: null | string;
+            marketingOptIn: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: null | string;
+            memberships: components["schemas"]["MeMembershipDto"][];
+            billingAccounts: components["schemas"]["BillingAccountMemberClaim"][];
+            isPlatformOperator: boolean;
+        };
+        MyMarinaDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tenantId: string;
+            name: string;
+            addressCity: null | string;
+            addressState: null | string;
+            marinaType: string;
+            isListed: boolean;
+            isSetupComplete: boolean;
+            /** Format: int32 */
+            setupStep: number | string;
+            /** Format: double */
+            latitude: null | number | string;
+            /** Format: double */
+            longitude: null | number | string;
+            userRole: null | string;
+            relationshipKind: string;
+        };
+        MySlipAssignmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            slipId: string;
+            slipName: string;
+            slipType: string;
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            /** Format: uuid */
+            billingAccountId: string;
+            /** Format: uuid */
+            vesselId: string;
+            vesselName: string;
+            assignmentType: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: null | string;
+            /** Format: double */
+            baseRate: number | string;
+            allowHolderSublet: boolean;
+            allowOwnerSubletWhenAway: boolean;
+            isActive: boolean;
+        };
+        OwnerAbsenceDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            slipAssignmentId: string;
+            /** Format: uuid */
+            slipId: string;
+            slipName: string;
+            /** Format: date */
+            startsOn: string;
+            /** Format: date */
+            endsOn: string;
+            notes: null | string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PagedResultOfAuditLogEntryDto: {
+            items: components["schemas"]["AuditLogEntryDto"][];
+            /** Format: int32 */
+            totalCount: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        PagedResultOfListingModerationDto: {
+            items: components["schemas"]["ListingModerationDto"][];
+            /** Format: int32 */
+            totalCount: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        PagedResultOfTenantSummaryDto: {
+            items: components["schemas"]["TenantSummaryDto"][];
+            /** Format: int32 */
+            totalCount: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        PagedResultOfUserSummaryDto: {
+            items: components["schemas"]["UserSummaryDto"][];
             /** Format: int32 */
             totalCount: number | string;
             /** Format: int32 */
@@ -4371,49 +7134,15 @@ export interface components {
             amount: number | string;
             /** Format: date */
             paidOn: string;
-            method: components["schemas"]["PaymentMethod"];
+            method: string;
             referenceNumber: null | string;
             notes: null | string;
-            /** Format: uuid */
-            recordedByUserId: string;
             /** Format: date-time */
             createdAt: string;
         };
-        PaymentMethod: number;
-        PlatformUserDto: {
+        PendingVesselClaimDto: {
             /** Format: uuid */
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            role: components["schemas"]["UserRole"];
-            /** Format: uuid */
-            tenantId: null | string;
-            tenantName: null | string;
-            /** Format: uuid */
-            marinaId: null | string;
-            marinaName: null | string;
-            isActive: boolean;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            lastLoginAt: null | string;
-        };
-        PortalAnnouncementDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            body: string;
-            isPinned: boolean;
-            /** Format: date-time */
-            publishedAt: string;
-            /** Format: date-time */
-            expiresAt: null | string;
-            marinaName: string;
-        };
-        PortalBoatDto: {
-            /** Format: uuid */
-            id: string;
+            vesselId: string;
             name: string;
             make: null | string;
             model: null | string;
@@ -4421,125 +7150,11 @@ export interface components {
             year: null | number | string;
             /** Format: double */
             length: number | string;
-            /** Format: double */
-            beam: number | string;
-            /** Format: double */
-            draft: number | string;
-            boatType: components["schemas"]["BoatType"];
-            registrationNumber: null | string;
-            /** Format: date */
-            insuranceExpiresOn: null | string;
-        };
-        PortalInvoiceDetailDto: {
+            boatType: string;
             /** Format: uuid */
-            id: string;
-            invoiceNumber: string;
-            status: components["schemas"]["InvoiceStatus"];
-            /** Format: date */
-            issuedDate: string;
-            /** Format: date */
-            dueDate: string;
-            /** Format: double */
-            subTotal: number | string;
-            /** Format: double */
-            taxAmount: number | string;
-            /** Format: double */
-            totalAmount: number | string;
-            /** Format: double */
-            amountPaid: number | string;
-            /** Format: double */
-            balanceDue: number | string;
-            notes: null | string;
-            /** Format: date-time */
-            createdAt: string;
-            lineItems: components["schemas"]["PortalInvoiceLineItemDto"][];
-            payments: components["schemas"]["PortalPaymentDto"][];
-        };
-        PortalInvoiceDto: {
-            /** Format: uuid */
-            id: string;
-            invoiceNumber: string;
-            status: components["schemas"]["InvoiceStatus"];
-            /** Format: date */
-            issuedDate: string;
-            /** Format: date */
-            dueDate: string;
-            /** Format: double */
-            totalAmount: number | string;
-            /** Format: double */
-            amountPaid: number | string;
-            /** Format: double */
-            balanceDue: number | string;
-            notes: null | string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        PortalInvoiceLineItemDto: {
-            description: string;
-            /** Format: double */
-            quantity: number | string;
-            /** Format: double */
-            unitPrice: number | string;
-            /** Format: double */
-            lineTotal: number | string;
-        };
-        PortalMaintenanceRequestDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            description: string;
-            status: components["schemas"]["MaintenanceStatus"];
-            priority: components["schemas"]["Priority"];
-            /** Format: uuid */
-            slipId: null | string;
-            slipName: null | string;
-            /** Format: uuid */
-            boatId: null | string;
-            boatName: null | string;
-            /** Format: date-time */
-            submittedAt: string;
-            /** Format: date-time */
-            resolvedAt: null | string;
-        };
-        PortalMeDto: {
-            /** Format: uuid */
-            userId: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            /** Format: uuid */
-            customerAccountId: string;
-            accountDisplayName: string;
-            billingEmail: string;
-            billingPhone: null | string;
-        };
-        PortalPaymentDto: {
-            /** Format: double */
-            amount: number | string;
-            /** Format: date */
-            paidOn: string;
-            method: components["schemas"]["PaymentMethod"];
-            referenceNumber: null | string;
-        };
-        PortalSlipAssignmentDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            slipId: string;
-            slipName: string;
-            dockName: null | string;
+            marinaId: string;
             marinaName: string;
-            boatName: string;
-            assignmentType: components["schemas"]["AssignmentType"];
-            /** Format: date */
-            startDate: string;
-            /** Format: date */
-            endDate: null | string;
-            /** Format: double */
-            rateOverride: null | number | string;
-            notes: null | string;
         };
-        Priority: number;
         ProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -4548,18 +7163,153 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
-        RateType: number;
+        PublicWindowSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            listingKind: string;
+            leaseTerm: null | string;
+            rateKind: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            instantBook: boolean;
+            /** Format: int32 */
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
+            /** Format: double */
+            basePricePerNight: number | string;
+            /** Format: double */
+            minCharge: null | number | string;
+            /** Format: double */
+            weeklyDiscount: null | number | string;
+            /** Format: double */
+            monthlyDiscount: null | number | string;
+            /** Format: double */
+            cleaningFee: null | number | string;
+        };
+        ReasonBody: {
+            reason: null | string;
+        };
         RecordPaymentRequest: {
             /** Format: double */
             amount: number | string;
             /** Format: date */
             paidOn: string;
-            method: components["schemas"]["PaymentMethod"];
+            method: string;
             referenceNumber: null | string;
             notes: null | string;
         };
+        RefreshRequest: {
+            refreshToken: string;
+        };
+        RegisterRequest: {
+            email: string;
+            password: string;
+            firstName: string;
+            lastName: string;
+            marketingOptIn: boolean;
+            termsAccepted: boolean;
+        };
+        ResendConfirmationRequest: {
+            email: string;
+        };
+        ReservationDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            boaterUserId: string;
+            /** Format: uuid */
+            vesselId: string;
+            vesselName: string;
+            /** Format: uuid */
+            slipId: string;
+            slipName: string;
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            /** Format: uuid */
+            hostMarinaId: null | string;
+            /** Format: uuid */
+            availabilityWindowId: string;
+            /** Format: date-time */
+            arrivesAt: string;
+            /** Format: date-time */
+            departsAt: string;
+            /** Format: int32 */
+            nights: number | string;
+            status: string;
+            /** Format: double */
+            basePrice: number | string;
+            /** Format: double */
+            fees: number | string;
+            /** Format: double */
+            taxes: number | string;
+            /** Format: double */
+            total: number | string;
+            paymentStatus: string;
+            instantBook: boolean;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            confirmedAt: null | string;
+            /** Format: date-time */
+            declinedAt: null | string;
+            /** Format: date-time */
+            cancelledAt: null | string;
+            /** Format: uuid */
+            cancelledByUserId: null | string;
+            notes: null | string;
+        };
         ResetPasswordRequest: {
+            email: string;
+            token: string;
             newPassword: string;
+        };
+        RevenueSplitEntryDto: {
+            payeeKind: string;
+            /** Format: uuid */
+            payeeId: null | string;
+            /** Format: double */
+            percent: number | string;
+        };
+        SetAvailabilityWindowStatusRequest: {
+            status: string;
+        };
+        SetupDockItem: {
+            name: string;
+            slips: components["schemas"]["SetupSlipItem"][];
+        };
+        SetupDocksRequest: {
+            docks: components["schemas"]["SetupDockItem"][];
+        };
+        SetupSlipItem: {
+            name: string;
+            /** Format: double */
+            maxLength: number | string;
+            /** Format: double */
+            maxBeam: number | string;
+            /** Format: double */
+            maxDraft: number | string;
+            slipType: string;
+            hasElectric: boolean;
+            /** Format: int32 */
+            electric: null | number | string;
+            hasWater: boolean;
+            hasPumpOut: boolean;
+            isCovered: boolean;
+            isIndoor: boolean;
+            amenities: string[];
+        };
+        SlipAssignmentConflict: {
+            /** Format: uuid */
+            assignmentId: string;
+            billingAccountDisplayName: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate: null | string;
         };
         SlipAssignmentDto: {
             /** Format: uuid */
@@ -4568,21 +7318,71 @@ export interface components {
             slipId: string;
             slipName: string;
             /** Format: uuid */
-            customerAccountId: string;
-            customerDisplayName: string;
+            billingAccountId: string;
+            billingAccountDisplayName: string;
             /** Format: uuid */
-            boatId: string;
-            boatName: string;
-            assignmentType: components["schemas"]["AssignmentType"];
+            vesselId: string;
+            vesselName: string;
+            assignmentType: string;
             /** Format: date */
             startDate: string;
             /** Format: date */
             endDate: null | string;
             /** Format: double */
-            rateOverride: null | number | string;
+            baseRate: number | string;
+            allowOwnerSubletWhenAway: boolean;
+            allowHolderSublet: boolean;
+            /** Format: double */
+            ownerSubletShareToHolder: number | string;
+            /** Format: double */
+            holderSubletShareToOwner: number | string;
             notes: null | string;
+            isActive: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        SlipAvailabilityResult: {
+            isAvailable: boolean;
+            conflicts: components["schemas"]["SlipAssignmentConflict"][];
+        };
+        SlipDetailDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slipType: string;
+            /** Format: double */
+            maxLength: number | string;
+            /** Format: double */
+            maxBeam: number | string;
+            /** Format: double */
+            maxDraft: number | string;
+            hasElectric: boolean;
+            /** Format: int32 */
+            electric: null | number | string;
+            hasWater: boolean;
+            /** Format: double */
+            latitude: null | number | string;
+            /** Format: double */
+            longitude: null | number | string;
+            addressCity: null | string;
+            addressState: null | string;
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            marinaDescription: null | string;
+            marinaPhoneNumber: null | string;
+            defaultTransientRateKind: null | string;
+            /** Format: double */
+            defaultTransientBaseRate: null | number | string;
+            /** Format: double */
+            defaultTransientMinCharge: null | number | string;
+            transientBookingAvailable: boolean;
+            defaultLeaseRateKind: null | string;
+            /** Format: double */
+            defaultLeaseBaseRate: null | number | string;
+            defaultLeaseTerm: null | string;
+            leaseInquiryAvailable: boolean;
+            openWindows: components["schemas"]["PublicWindowSummaryDto"][];
         };
         SlipDto: {
             /** Format: uuid */
@@ -4592,7 +7392,7 @@ export interface components {
             /** Format: uuid */
             dockId: null | string;
             name: string;
-            slipType: components["schemas"]["SlipType"];
+            slipType: string;
             /** Format: double */
             maxLength: number | string;
             /** Format: double */
@@ -4600,81 +7400,321 @@ export interface components {
             /** Format: double */
             maxDraft: number | string;
             hasElectric: boolean;
-            electric: null | components["schemas"]["ElectricService"];
+            /** Format: int32 */
+            electric: null | number | string;
             hasWater: boolean;
-            rateType: components["schemas"]["RateType"];
+            hasPumpOut: boolean;
+            isCovered: boolean;
+            isIndoor: boolean;
+            amenities: string[];
+            status: string;
+            defaultTransientRateKind: null | string;
             /** Format: double */
-            dailyRate: null | number | string;
+            defaultTransientBaseRate: null | number | string;
             /** Format: double */
-            monthlyRate: null | number | string;
+            defaultTransientMinCharge: null | number | string;
+            defaultLeaseRateKind: null | string;
             /** Format: double */
-            annualRate: null | number | string;
-            status: components["schemas"]["SlipStatus"];
-            /** Format: double */
-            latitude: null | number | string;
-            /** Format: double */
-            longitude: null | number | string;
+            defaultLeaseBaseRate: null | number | string;
+            defaultLeaseTerm: null | string;
             notes: null | string;
             /** Format: date-time */
             createdAt: string;
         };
-        SlipStatus: number;
-        SlipType: number;
-        SubmitMaintenanceRequestCommand: {
-            title: string;
-            description: string;
-            priority: components["schemas"]["Priority"];
+        SlipSearchResultDto: {
+            /** Format: uuid */
+            slipId: string;
+            slipName: string;
+            slipType: string;
+            /** Format: double */
+            maxLength: number | string;
+            /** Format: double */
+            maxBeam: number | string;
+            /** Format: double */
+            maxDraft: number | string;
+            hasElectric: boolean;
+            hasWater: boolean;
+            /** Format: double */
+            latitude: number | string;
+            /** Format: double */
+            longitude: number | string;
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            marinaCity: null | string;
+            marinaState: null | string;
+            /** Format: uuid */
+            bestWindowId: null | string;
+            listingKind: string;
+            rateKind: string;
+            /** Format: double */
+            basePricePerNight: number | string;
+            /** Format: double */
+            minCharge: null | number | string;
+            leaseTerm: null | string;
+            instantBook: boolean;
+            /** Format: double */
+            cleaningFee: null | number | string;
+            /** Format: int32 */
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
+            /** Format: double */
+            distanceMiles: number | string;
+        };
+        SubmitRequestBody: {
+            /** Format: uuid */
+            billingAccountId: null | string;
+            /** Format: uuid */
+            vesselId: null | string;
             /** Format: uuid */
             slipId: null | string;
             /** Format: uuid */
-            boatId: null | string;
-        };
-        SubscriptionTier: number;
-        TenantDetailDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            slug: string;
-            isActive: boolean;
-            subscriptionTier: components["schemas"]["SubscriptionTier"];
-            /** Format: date-time */
-            createdAt: string;
-            marinas: components["schemas"]["TenantMarinaDto"][];
-            owner: null | components["schemas"]["TenantOwnerDto"];
+            reservationId: null | string;
+            title: string;
+            description: string;
+            /** @default Medium */
+            priority: string;
         };
         TenantDto: {
             /** Format: uuid */
             id: string;
             name: string;
             slug: string;
+            subscriptionTier: string;
             isActive: boolean;
-            subscriptionTier: components["schemas"]["SubscriptionTier"];
             /** Format: date-time */
             createdAt: string;
         };
-        TenantMarinaDto: {
+        TenantSummaryDto: {
             /** Format: uuid */
             id: string;
             name: string;
+            slug: string;
+            subscriptionTier: string;
+            isActive: boolean;
+            isDemo: boolean;
+            /** Format: date-time */
+            suspendedAt: null | string;
             /** Format: date-time */
             createdAt: string;
+            /** Format: int32 */
+            marinaCount: number | string;
         };
-        TenantOwnerDto: {
+        UpdateAvailabilityWindowRequest: {
+            /** Format: date-time */
+            startsAt: null | string;
+            /** Format: date-time */
+            endsAt: null | string;
+            instantBook: null | boolean;
+            /** Format: int32 */
+            minNights: null | number | string;
+            /** Format: int32 */
+            maxNights: null | number | string;
+            /** Format: double */
+            basePricePerNight: null | number | string;
+            /** Format: double */
+            weeklyDiscount: null | number | string;
+            /** Format: double */
+            monthlyDiscount: null | number | string;
+            /** Format: double */
+            cleaningFee: null | number | string;
+        };
+        UpdateBillingAccountRequest: {
+            displayName: null | string;
+            billingEmail: null | string;
+            billingPhone: null | string;
+            billingAddressStreet: null | string;
+            billingAddressCity: null | string;
+            billingAddressState: null | string;
+            billingAddressZip: null | string;
+            billingAddressCountry: null | string;
+            emergencyContactName: null | string;
+            emergencyContactPhone: null | string;
+            notes: null | string;
+            isActive: null | boolean;
+        };
+        UpdateDockRequest: {
+            name: null | string;
+            description: null | string;
+            /** Format: int32 */
+            sortOrder: null | number | string;
+        };
+        UpdateLeaseInquiryRequest: {
+            agreedRateKind: null | string;
+            /** Format: double */
+            agreedBaseRate: null | number | string;
+            /** Format: date */
+            assignmentStartDate: null | string;
+            /** Format: date */
+            assignmentEndDate: null | string;
+            marinaNote: null | string;
+            markUnderReview: boolean;
+        };
+        UpdateMarinaRequest: {
+            name: null | string;
+            addressStreet: null | string;
+            addressCity: null | string;
+            addressState: null | string;
+            addressZip: null | string;
+            addressCountry: null | string;
+            /** Format: double */
+            latitude: null | number | string;
+            /** Format: double */
+            longitude: null | number | string;
+            phoneNumber: null | string;
+            email: null | string;
+            website: null | string;
+            description: null | string;
+            timeZoneId: null | string;
+            /** Format: int32 */
+            setupStep?: null | number | string;
+            isSetupComplete?: null | boolean;
+            isListed?: null | boolean;
+        };
+        UpdateProfileRequest: {
+            firstName: null | string;
+            lastName: null | string;
+            phoneNumber: null | string;
+            marketingOptIn: null | boolean;
+        };
+        UpdateRequestBody: {
+            status: string;
+            priority: string;
+        };
+        UpdateRoleRequest: {
+            role: string;
+        };
+        UpdateSlipAssignmentRequest: {
+            assignmentType: null | string;
+            /** Format: date */
+            startDate: null | string;
+            /** Format: date */
+            endDate: null | string;
+            /** Format: double */
+            baseRate: null | number | string;
+            allowOwnerSubletWhenAway: null | boolean;
+            allowHolderSublet: null | boolean;
+            /** Format: double */
+            ownerSubletShareToHolder: null | number | string;
+            /** Format: double */
+            holderSubletShareToOwner: null | number | string;
+            notes: null | string;
+        };
+        UpdateSlipRequest: {
             /** Format: uuid */
-            userId: string;
+            dockId: null | string;
+            name: null | string;
+            slipType: null | string;
+            /** Format: double */
+            maxLength: null | number | string;
+            /** Format: double */
+            maxBeam: null | number | string;
+            /** Format: double */
+            maxDraft: null | number | string;
+            hasElectric: null | boolean;
+            /** Format: int32 */
+            electric: null | number | string;
+            hasWater: null | boolean;
+            hasPumpOut: null | boolean;
+            isCovered: null | boolean;
+            isIndoor: null | boolean;
+            amenities: null | string[];
+            status: null | string;
+            defaultTransientRateKind: null | string;
+            /** Format: double */
+            defaultTransientBaseRate: null | number | string;
+            /** Format: double */
+            defaultTransientMinCharge: null | number | string;
+            clearTransientRate: boolean;
+            defaultLeaseRateKind: null | string;
+            /** Format: double */
+            defaultLeaseBaseRate: null | number | string;
+            defaultLeaseTerm: null | string;
+            clearLeaseRate: boolean;
+            notes: null | string;
+        };
+        UpdateVesselRecordRequest: {
+            /** Format: uuid */
+            billingAccountId: null | string;
+            insuranceProvider: null | string;
+            insurancePolicyNumber: null | string;
+            /** Format: date */
+            insuranceExpiresOn: null | string;
+            markInsuranceVerified: null | boolean;
+            notes: null | string;
+        };
+        UpdateVesselRequest: {
+            name: null | string;
+            make: null | string;
+            model: null | string;
+            /** Format: int32 */
+            year: null | number | string;
+            /** Format: double */
+            length: null | number | string;
+            /** Format: double */
+            beam: null | number | string;
+            /** Format: double */
+            draft: null | number | string;
+            boatType: null | string;
+            hullColor: null | string;
+            registrationNumber: null | string;
+            registrationState: null | string;
+        };
+        UpdateWorkOrderBody: {
+            title: string;
+            description: string;
+            /** Format: uuid */
+            assignedToUserId: null | string;
+            status: string;
+            priority: string;
+            /** Format: date */
+            scheduledDate: null | string;
+            notes: null | string;
+        };
+        UserProfileDto: {
+            /** Format: uuid */
+            id: string;
+            email: string;
+            emailConfirmed: boolean;
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
+            profilePhotoUrl: null | string;
+            marketingOptIn: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: null | string;
+        };
+        UserSummaryDto: {
+            /** Format: uuid */
+            id: string;
             email: string;
             firstName: string;
             lastName: string;
             isActive: boolean;
-        };
-        UpdateAnnouncementRequest: {
-            title: string;
-            body: string;
-            isPinned: boolean;
+            emailConfirmed: boolean;
             /** Format: date-time */
-            expiresAt: null | string;
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: null | string;
+            isPlatformOperator: boolean;
         };
-        UpdateBoatRequest: {
+        ValidationProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number | string;
+            detail?: null | string;
+            instance?: null | string;
+            errors?: {
+                [key: string]: string[];
+            };
+        };
+        VesselDto: {
+            /** Format: uuid */
+            id: string;
             name: string;
             make: null | string;
             model: null | string;
@@ -4686,126 +7726,42 @@ export interface components {
             beam: number | string;
             /** Format: double */
             draft: number | string;
-            boatType: components["schemas"]["BoatType"];
+            boatType: string;
             hullColor: null | string;
             registrationNumber: null | string;
             registrationState: null | string;
+            isArchived: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        VesselRecordDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            marinaId: string;
+            /** Format: uuid */
+            vesselId: string;
+            /** Format: uuid */
+            billingAccountId: null | string;
+            vesselName: string;
+            vesselMake: null | string;
+            vesselModel: null | string;
+            /** Format: int32 */
+            vesselYear: null | number | string;
+            /** Format: double */
+            vesselLength: number | string;
+            vesselBoatType: string;
+            vesselIsGhost: boolean;
             insuranceProvider: null | string;
             insurancePolicyNumber: null | string;
             /** Format: date */
             insuranceExpiresOn: null | string;
-        };
-        UpdateCustomerRequest: {
-            displayName: string;
-            billingEmail: string;
-            billingPhone: null | string;
-            billingAddress: null | components["schemas"]["AddressDto"];
-            emergencyContactName: null | string;
-            emergencyContactPhone: null | string;
-            notes: null | string;
-        };
-        UpdateDockRequest: {
-            name: string;
-            description: null | string;
-            /** Format: int32 */
-            sortOrder: number | string;
-        };
-        UpdateInvoiceDraftRequest: {
-            /** Format: date */
-            issuedDate: string;
-            /** Format: date */
-            dueDate: string;
-            notes: null | string;
-        };
-        UpdateLineItemRequest: {
-            description: string;
-            /** Format: double */
-            quantity: number | string;
-            /** Format: double */
-            unitPrice: number | string;
-        };
-        UpdateMaintenanceStatusRequest: {
-            status: components["schemas"]["MaintenanceStatus"];
-        };
-        UpdateMarinaRequest: {
-            name: string;
-            address: components["schemas"]["AddressDto"];
-            phoneNumber: string;
-            email: string;
-            timeZoneId: string;
-            website: null | string;
-            description: null | string;
-        };
-        UpdateProfileCommand: {
-            firstName: string;
-            lastName: string;
-            phoneNumber: null | string;
-        };
-        UpdateSlipRequest: {
-            name: string;
-            slipType: components["schemas"]["SlipType"];
-            /** Format: double */
-            maxLength: number | string;
-            /** Format: double */
-            maxBeam: number | string;
-            /** Format: double */
-            maxDraft: number | string;
-            hasElectric: boolean;
-            electric: null | components["schemas"]["ElectricService"];
-            hasWater: boolean;
-            rateType: components["schemas"]["RateType"];
-            /** Format: double */
-            dailyRate: null | number | string;
-            /** Format: double */
-            monthlyRate: null | number | string;
-            /** Format: double */
-            annualRate: null | number | string;
-            status: components["schemas"]["SlipStatus"];
-            /** Format: double */
-            latitude: null | number | string;
-            /** Format: double */
-            longitude: null | number | string;
-            notes: null | string;
-        };
-        UpdateTenantRequest: {
-            name: string;
-            isActive: boolean;
-            subscriptionTier: components["schemas"]["SubscriptionTier"];
-        };
-        UpdateWorkOrderRequest: {
-            title: string;
-            description: string;
-            priority: components["schemas"]["Priority"];
-            status: components["schemas"]["WorkOrderStatus"];
-            /** Format: uuid */
-            assignedToUserId: null | string;
-            /** Format: date */
-            scheduledDate: null | string;
-            notes: null | string;
-        };
-        UserRole: number;
-        WorkOrderDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            maintenanceRequestId: null | string;
-            maintenanceRequestTitle: null | string;
-            title: string;
-            description: string;
-            /** Format: uuid */
-            assignedToUserId: null | string;
-            assignedToName: null | string;
-            status: components["schemas"]["WorkOrderStatus"];
-            priority: components["schemas"]["Priority"];
-            /** Format: date */
-            scheduledDate: null | string;
             /** Format: date-time */
-            completedAt: null | string;
+            insuranceVerifiedAt: null | string;
             notes: null | string;
             /** Format: date-time */
             createdAt: string;
         };
-        WorkOrderStatus: number;
     };
     responses: never;
     parameters: never;

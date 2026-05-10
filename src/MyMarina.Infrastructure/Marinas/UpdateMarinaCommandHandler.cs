@@ -11,6 +11,7 @@ public class UpdateMarinaCommandHandler(AppDbContext db)
     public async Task<MarinaDto> HandleAsync(UpdateMarinaCommand command, CancellationToken ct = default)
     {
         var marina = await db.Marinas
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(m => m.Id == command.MarinaId, ct)
             ?? throw new KeyNotFoundException("Marina not found.");
 
@@ -27,6 +28,10 @@ public class UpdateMarinaCommandHandler(AppDbContext db)
         if (command.Website is not null) marina.Website = command.Website;
         if (command.Description is not null) marina.Description = command.Description;
         if (command.TimeZoneId is not null) marina.TimeZoneId = command.TimeZoneId;
+        if (command.SetupStep.HasValue) marina.SetupStep = command.SetupStep.Value;
+        if (command.IsSetupComplete.HasValue) marina.IsSetupComplete = command.IsSetupComplete.Value;
+        if (command.IsListed.HasValue) marina.IsListed = command.IsListed.Value;
+        marina.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(ct);
         return MarinaMappers.ToMarinaDto(marina);

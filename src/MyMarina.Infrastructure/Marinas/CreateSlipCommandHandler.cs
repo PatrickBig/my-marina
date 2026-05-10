@@ -22,6 +22,10 @@ public class CreateSlipCommandHandler(AppDbContext db)
             HasElectric = command.HasElectric,
             Electric = command.Electric,
             HasWater = command.HasWater,
+            HasPumpOut = command.HasPumpOut,
+            IsCovered = command.IsCovered,
+            IsIndoor = command.IsIndoor,
+            Amenities = command.Amenities is not null ? [.. command.Amenities] : [],
             Notes = command.Notes,
         };
         db.Slips.Add(slip);

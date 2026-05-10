@@ -40,7 +40,10 @@ public sealed record UpdateMarinaCommand(
     string? Email,
     string? Website,
     string? Description,
-    string? TimeZoneId
+    string? TimeZoneId,
+    int? SetupStep = null,
+    bool? IsSetupComplete = null,
+    bool? IsListed = null
 );
 
 // Dock management
@@ -61,6 +64,10 @@ public sealed record CreateSlipCommand(
     bool HasElectric,
     ElectricAmperage? Electric,
     bool HasWater,
+    bool HasPumpOut,
+    bool IsCovered,
+    bool IsIndoor,
+    IReadOnlyList<string>? Amenities,
     string? Notes
 );
 
@@ -77,6 +84,10 @@ public sealed record UpdateSlipCommand(
     bool? HasElectric,
     ElectricAmperage? Electric,
     bool? HasWater,
+    bool? HasPumpOut,
+    bool? IsCovered,
+    bool? IsIndoor,
+    IReadOnlyList<string>? Amenities,
     SlipStatus? Status,
     // Transient default rate (send null to clear)
     string? DefaultTransientRateKind,
@@ -92,6 +103,35 @@ public sealed record UpdateSlipCommand(
 );
 
 public sealed record DeleteSlipCommand(Guid SlipId, Guid MarinaId, Guid RequestingUserId);
+
+// Setup / lifecycle
+public sealed record SetupDocksCommand(
+    Guid MarinaId,
+    Guid RequestingUserId,
+    IReadOnlyList<SetupDockItem> Docks
+);
+
+public sealed record SetupDockItem(
+    string Name,
+    IReadOnlyList<SetupSlipItem> Slips
+);
+
+public sealed record SetupSlipItem(
+    string Name,
+    decimal MaxLength,
+    decimal MaxBeam,
+    decimal MaxDraft,
+    string SlipType,
+    bool HasElectric,
+    int? Electric,
+    bool HasWater,
+    bool HasPumpOut,
+    bool IsCovered,
+    bool IsIndoor,
+    IReadOnlyList<string> Amenities
+);
+
+public sealed record DeleteDraftMarinaCommand(Guid MarinaId, Guid RequestingUserId);
 
 // Queries
 public sealed record GetMarinaQuery(Guid MarinaId, Guid RequestingUserId);

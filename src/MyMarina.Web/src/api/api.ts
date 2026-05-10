@@ -195,6 +195,8 @@ export interface MarinaDto {
   timeZoneId: string;
   marinaType: MarinaType;
   isListed: boolean;
+  isSetupComplete: boolean;
+  setupStep: number;
   createdAt: string;
 }
 
@@ -219,6 +221,10 @@ export interface SlipDto {
   hasElectric: boolean;
   electric?: number | null;
   hasWater: boolean;
+  hasPumpOut: boolean;
+  isCovered: boolean;
+  isIndoor: boolean;
+  amenities: string[];
   status: SlipStatus;
   defaultTransientRateKind?: RateKind | null;
   defaultTransientBaseRate?: number | null;
@@ -261,6 +267,8 @@ export interface MyMarinaDto {
   addressState?: string | null;
   marinaType: MarinaType;
   isListed: boolean;
+  isSetupComplete: boolean;
+  setupStep: number;
   latitude?: number | null;
   longitude?: number | null;
   userRole?: string | null;
@@ -303,8 +311,34 @@ export const signupMarina = (data: MarinaSignupData) =>
 export const getMarina = (marinaId: string) =>
   apiClient.get<MarinaDto>(`/marinas/${marinaId}`).then((r) => r.data);
 
-export const updateMarina = (marinaId: string, data: Partial<Omit<MarinaDto, 'id' | 'tenantId' | 'slug' | 'createdAt' | 'isListed' | 'marinaType'>>) =>
+export const updateMarina = (marinaId: string, data: Partial<Omit<MarinaDto, 'id' | 'tenantId' | 'slug' | 'createdAt' | 'marinaType'> & { setupStep?: number; isSetupComplete?: boolean; isListed?: boolean }>) =>
   apiClient.patch<MarinaDto>(`/marinas/${marinaId}`, data).then((r) => r.data);
+
+export const deleteDraftMarina = (marinaId: string) =>
+  apiClient.delete(`/marinas/${marinaId}`);
+
+export interface SetupDockSlipData {
+  name: string;
+  maxLength: number;
+  maxBeam: number;
+  maxDraft: number;
+  slipType?: string;
+  hasElectric?: boolean;
+  electric?: number | null;
+  hasWater?: boolean;
+  hasPumpOut?: boolean;
+  isCovered?: boolean;
+  isIndoor?: boolean;
+  amenities?: string[];
+}
+
+export interface SetupDockData {
+  name: string;
+  slips: SetupDockSlipData[];
+}
+
+export const setupDocks = (marinaId: string, docks: SetupDockData[]) =>
+  apiClient.put(`/marinas/${marinaId}/setup/docks`, { docks });
 
 export const getDocks = (marinaId: string) =>
   apiClient.get<DockDto[]>(`/marinas/${marinaId}/docks`).then((r) => r.data);
@@ -324,13 +358,16 @@ export const getSlips = (marinaId: string, dockId?: string) =>
 export const createSlip = (marinaId: string, data: {
   dockId?: string | null; name: string; slipType?: SlipType;
   maxLength: number; maxBeam: number; maxDraft: number;
-  hasElectric: boolean; electric?: number | null; hasWater: boolean; notes?: string | null;
+  hasElectric: boolean; electric?: number | null; hasWater: boolean;
+  hasPumpOut?: boolean; isCovered?: boolean; isIndoor?: boolean; amenities?: string[];
+  notes?: string | null;
 }) => apiClient.post<SlipDto>(`/marinas/${marinaId}/slips`, data).then((r) => r.data);
 
 export const updateSlip = (marinaId: string, slipId: string, data: {
   dockId?: string | null; name?: string; slipType?: SlipType;
   maxLength?: number; maxBeam?: number; maxDraft?: number;
   hasElectric?: boolean; electric?: number | null; hasWater?: boolean;
+  hasPumpOut?: boolean; isCovered?: boolean; isIndoor?: boolean; amenities?: string[];
   status?: SlipStatus;
   defaultTransientRateKind?: RateKind | null;
   defaultTransientBaseRate?: number | null;

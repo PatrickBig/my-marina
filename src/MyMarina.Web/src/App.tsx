@@ -9,6 +9,7 @@ import { MarinaOnboardingPage } from '@/pages/MarinaOnboardingPage';
 import { PrivateDockOnboardingPage } from '@/pages/PrivateDockOnboardingPage';
 import { DockominionOnboardingPage } from '@/pages/DockominionOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
+import { MarinaSetupWizardPage } from '@/pages/MarinaSetupWizardPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { SlipDetailPage } from '@/pages/SlipDetailPage';
 import { MyTripsPage } from '@/pages/MyTripsPage';
@@ -38,6 +39,7 @@ export function App() {
     if (path === '/marina/new') return <MarinaOnboardingPage />;
     if (path === '/dock/new')   return <PrivateDockOnboardingPage />;
     if (path === '/slip/new')   return <DockominionOnboardingPage />;
+    if (path.match(/^\/marina\/[^/]+\/setup$/)) return <MarinaSetupWizardPage />;
     if (path.startsWith('/marina/')) return <MarinaDashboardPage />;
 
     return <HomePage />;

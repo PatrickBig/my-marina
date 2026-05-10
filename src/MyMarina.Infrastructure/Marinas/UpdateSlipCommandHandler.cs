@@ -24,6 +24,10 @@ public class UpdateSlipCommandHandler(AppDbContext db)
         if (command.HasElectric.HasValue) slip.HasElectric = command.HasElectric.Value;
         if (command.Electric is not null) slip.Electric = command.Electric;
         if (command.HasWater.HasValue) slip.HasWater = command.HasWater.Value;
+        if (command.HasPumpOut.HasValue) slip.HasPumpOut = command.HasPumpOut.Value;
+        if (command.IsCovered.HasValue) slip.IsCovered = command.IsCovered.Value;
+        if (command.IsIndoor.HasValue) slip.IsIndoor = command.IsIndoor.Value;
+        if (command.Amenities is not null) slip.Amenities = [.. command.Amenities];
         if (command.Status.HasValue) slip.Status = command.Status.Value;
         if (command.Notes is not null) slip.Notes = command.Notes;
 
