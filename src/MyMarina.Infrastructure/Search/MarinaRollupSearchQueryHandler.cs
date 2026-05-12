@@ -49,45 +49,47 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
             IncludeDemo:     query.IncludeDemo
         );
 
-        var eligibleSlips = await SlipAvailabilityFilter.GetEligibleSlipsAsync(db, baseSlipQuery, filters, ct);
+        // Lightweight projections only — avoids materializing full Slip entities for aggregation
+        var summaries = await SlipAvailabilityFilter.GetRollupSummariesAsync(db, baseSlipQuery, filters, ct);
 
-        if (eligibleSlips.Count == 0) return [];
+        if (summaries.Count == 0) return [];
 
-        // Step 3: Load marina details for marinas that have eligible slips
-        var eligibleMarinaIds = eligibleSlips.Select(e => e.Slip.MarinaId).Distinct().ToList();
+        // Step 3: Project marina details (no full entity load)
+        var eligibleMarinaIds = summaries.Select(s => s.MarinaId).Distinct().ToList();
         var marinas = await db.Marinas
             .Where(m => eligibleMarinaIds.Contains(m.Id))
+            .Select(m => new { m.Id, m.Name, m.AddressCity, m.AddressState, m.Latitude, m.Longitude })
             .ToDictionaryAsync(m => m.Id, ct);
 
-        // Step 4: Group by marina in memory and project rollup DTOs
+        // Step 4: Group summaries by marina — summaries are lightweight (MarinaId, Price, RateKind, InstantBook)
         var centerLat = ((double)query.North + (double)query.South) / 2.0;
         var centerLon = ((double)query.East  + (double)query.West)  / 2.0;
 
-        var rollups = eligibleSlips
-            .GroupBy(e => e.Slip.MarinaId)
+        var rollups = summaries
+            .GroupBy(s => s.MarinaId)
             .Where(g => marinas.ContainsKey(g.Key))
             .Select(g =>
             {
-                var marina   = marinas[g.Key];
-                var prices   = g.Select(e => e.Price).ToList();
-                var rateKinds = g.Select(e => e.RateKind).Distinct().ToList();
+                var marina    = marinas[g.Key];
+                var prices    = g.Select(s => s.Price).ToList();
+                var rateKinds = g.Select(s => s.RateKind).Distinct().ToList();
                 var rateKind  = rateKinds.Count > 1 ? "Mixed" : rateKinds[0];
                 var distance  = GeoHelper.HaversineDistanceMiles(
                     centerLat, centerLon,
                     (double)marina.Latitude!.Value, (double)marina.Longitude!.Value);
 
                 return new MarinaRollupResultDto(
-                    MarinaId:               marina.Id,
-                    MarinaName:             marina.Name,
-                    City:                   marina.AddressCity,
-                    State:                  marina.AddressState,
-                    Latitude:               marina.Latitude!.Value,
-                    Longitude:              marina.Longitude!.Value,
-                    AvailableCount:         g.Count(),
-                    MinPricePerNight:       prices.Min(),
-                    MaxPricePerNight:       prices.Max(),
-                    RateKind:               rateKind,
-                    InstantBookAvailable:   g.Any(e => e.InstantBook),
+                    MarinaId:                marina.Id,
+                    MarinaName:              marina.Name,
+                    City:                    marina.AddressCity,
+                    State:                   marina.AddressState,
+                    Latitude:                marina.Latitude!.Value,
+                    Longitude:               marina.Longitude!.Value,
+                    AvailableCount:          g.Count(),
+                    MinPricePerNight:        prices.Min(),
+                    MaxPricePerNight:        prices.Max(),
+                    RateKind:                rateKind,
+                    InstantBookAvailable:    g.Any(s => s.InstantBook),
                     DistanceMilesFromCenter: Math.Round(distance, 1)
                 );
             })

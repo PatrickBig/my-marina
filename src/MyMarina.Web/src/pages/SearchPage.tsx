@@ -98,6 +98,7 @@ export function SearchPage() {
   const [mapCenter, setMapCenter]     = useState<{ lat: number; lon: number } | null>(null);
   const boundsRef                     = useRef<Bounds | null>(null);
   const locating                      = useRef(false);
+  const abortRef                      = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (locating.current) return;
@@ -132,6 +133,10 @@ export function SearchPage() {
   }
 
   async function runSearchWithBounds(bounds: Bounds) {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
     setSearched(true);
@@ -147,9 +152,10 @@ export function SearchPage() {
         departsAt:  !isLease ? departsAt : undefined,
         leaseTerm:  isLease && leaseTerm ? leaseTerm : undefined,
         ...vp,
-      });
+      }, controller.signal);
       setResults(data);
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.name === 'CanceledError') return;
       setError('Search failed. Make sure the API is running.');
     } finally {
       setLoading(false);

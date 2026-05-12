@@ -717,42 +717,32 @@ export interface SlipDetailDto {
   openWindows: PublicWindowSummaryDto[];
 }
 
-export interface MarinaRollupSearchParams {
+interface BaseSearchParams {
+  listingKind?: ListingKind;
+  arrivesAt?: string;
+  departsAt?: string;
+  leaseTerm?: LeaseTerm;
+  vesselLength?: number;
+  vesselBeam?: number;
+  vesselDraft?: number;
+  slipType?: string;
+  hasElectric?: boolean;
+  hasWater?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface MarinaRollupSearchParams extends BaseSearchParams {
   north: number;
   south: number;
   east: number;
   west: number;
-  listingKind?: ListingKind;
-  arrivesAt?: string;
-  departsAt?: string;
-  leaseTerm?: LeaseTerm;
-  vesselLength?: number;
-  vesselBeam?: number;
-  vesselDraft?: number;
-  slipType?: string;
-  hasElectric?: boolean;
-  hasWater?: boolean;
-  page?: number;
-  pageSize?: number;
 }
 
-export interface SlipsAtMarinaParams {
-  listingKind?: ListingKind;
-  arrivesAt?: string;
-  departsAt?: string;
-  leaseTerm?: LeaseTerm;
-  vesselLength?: number;
-  vesselBeam?: number;
-  vesselDraft?: number;
-  slipType?: string;
-  hasElectric?: boolean;
-  hasWater?: boolean;
-  page?: number;
-  pageSize?: number;
-}
+export type SlipsAtMarinaParams = BaseSearchParams;
 
-export const searchMarinaRollup = (params: MarinaRollupSearchParams) =>
-  apiClient.get<MarinaRollupResultDto[]>('/marinas/search', { params }).then((r) => r.data);
+export const searchMarinaRollup = (params: MarinaRollupSearchParams, signal?: AbortSignal) =>
+  apiClient.get<MarinaRollupResultDto[]>('/marinas/search', { params, signal }).then((r) => r.data);
 
 export const searchSlipsAtMarina = (marinaId: string, params: SlipsAtMarinaParams) =>
   apiClient.get<SlipSearchResultDto[]>(`/marinas/${marinaId}/slips/search`, { params }).then((r) => r.data);

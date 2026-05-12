@@ -20,6 +20,8 @@ const sel = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:o
 
 export function VesselSelector({ onSelect, onUseDifferentDimensions, onNoVessels }: Props) {
   const { isAuthenticated } = useAuthStore();
+  // Subscribe to the token directly so the effect re-runs on login/logout
+  const accessToken = useAuthStore((s) => s.accessToken);
   const [vessels, setVessels] = useState<VesselDto[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -40,11 +42,12 @@ export function VesselSelector({ onSelect, onUseDifferentDimensions, onNoVessels
       setSelectedId(initial);
       localStorage.setItem(STORAGE_KEY, initial);
 
-      const v = active.find((x) => x.id === initial)!;
+      const v = active.find((x) => x.id === initial);
+      if (!v) { localStorage.removeItem(STORAGE_KEY); onNoVessels?.(); return; }
       onSelect(v.id, { length: v.length, beam: v.beam, draft: v.draft });
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [accessToken]);
 
   if (!isAuthenticated() || vessels.length === 0) return null;
 
