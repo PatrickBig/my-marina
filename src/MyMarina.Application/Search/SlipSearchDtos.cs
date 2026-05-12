@@ -1,5 +1,20 @@
 namespace MyMarina.Application.Search;
 
+public sealed record MarinaRollupResultDto(
+    Guid MarinaId,
+    string MarinaName,
+    string? City,
+    string? State,
+    decimal Latitude,
+    decimal Longitude,
+    int AvailableCount,
+    decimal MinPricePerNight,
+    decimal MaxPricePerNight,
+    string RateKind,            // "Flat" | "PerFoot" | "Mixed"
+    bool InstantBookAvailable,
+    double DistanceMilesFromCenter
+);
+
 public sealed record SlipSearchResultDto(
     Guid SlipId,
     string SlipName,

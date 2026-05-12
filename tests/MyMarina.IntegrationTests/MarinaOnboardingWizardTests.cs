@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace MyMarina.IntegrationTests;
 
+[Collection("Integration")]
 public class MarinaOnboardingWizardTests(ApiWebApplicationFactory factory)
-    : IClassFixture<ApiWebApplicationFactory>
 {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -201,7 +201,7 @@ public class MarinaOnboardingWizardTests(ApiWebApplicationFactory factory)
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
-    // ── Draft marina excluded from slip search ────────────────────────────────
+    // ── Draft marina excluded from marina rollup search ───────────────────────
 
     [Fact]
     public async Task SlipSearch_ExcludesDraftMarinaSlips()
@@ -222,19 +222,21 @@ public class MarinaOnboardingWizardTests(ApiWebApplicationFactory factory)
             MarinaId = marina.Id, Name = "Draft Slip",
             MaxLength = 40, MaxBeam = 14, MaxDraft = 5,
             Status = SlipStatus.Active,
+            DefaultTransientRateKind = Domain.Enums.RateKind.Flat, DefaultTransientBaseRate = 100m,
         };
 
         db.Tenants.Add(tenant); db.Marinas.Add(marina); db.Slips.Add(slip);
         await db.SaveChangesAsync();
 
         var client   = factory.CreateClient();
-        var response = await client.GetAsync($"/slips/search?lat=38.9784&lon=-76.4922&radiusMiles=1");
+        // Use the new marina rollup endpoint — draft (IsSetupComplete=false) marinas must be excluded
+        var response = await client.GetAsync("/marinas/search?north=39.0&south=38.9&east=-76.4&west=-76.6&listingKind=Transient");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var results = await response.Content.ReadFromJsonAsync<SlipSearchResult[]>();
+        var results = await response.Content.ReadFromJsonAsync<MarinaRollupResult[]>();
         Assert.NotNull(results);
-        Assert.DoesNotContain(results, r => r.SlipId == slip.Id);
+        Assert.DoesNotContain(results, r => r.MarinaId == marina.Id);
     }
 
-    private sealed record SlipSearchResult(Guid SlipId, string SlipName);
+    private sealed record MarinaRollupResult(Guid MarinaId, string MarinaName);
 }

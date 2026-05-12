@@ -3008,7 +3008,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/marinas/search": {
+    "/marinas/lookup": {
         parameters: {
             query?: never;
             header?: never;
@@ -3834,6 +3834,145 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/marinas/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    north?: number | string;
+                    south?: number | string;
+                    east?: number | string;
+                    west?: number | string;
+                    listingKind?: string;
+                    arrivesAt?: string;
+                    departsAt?: string;
+                    leaseTerm?: string;
+                    vesselLength?: number | string;
+                    vesselBeam?: number | string;
+                    vesselDraft?: number | string;
+                    slipType?: string;
+                    hasElectric?: boolean;
+                    hasWater?: boolean;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaRollupResultDto"][];
+                        "application/json": components["schemas"]["MarinaRollupResultDto"][];
+                        "text/json": components["schemas"]["MarinaRollupResultDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{id}/slips/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    listingKind?: string;
+                    arrivesAt?: string;
+                    departsAt?: string;
+                    leaseTerm?: string;
+                    vesselLength?: number | string;
+                    vesselBeam?: number | string;
+                    vesselDraft?: number | string;
+                    slipType?: string;
+                    hasElectric?: boolean;
+                    hasWater?: boolean;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipSearchResultDto"][];
+                        "application/json": components["schemas"]["SlipSearchResultDto"][];
+                        "text/json": components["schemas"]["SlipSearchResultDto"][];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/me": {
@@ -5532,70 +5671,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/slips/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    lat?: number | string;
-                    lon?: number | string;
-                    radiusMiles?: number | string;
-                    listingKind?: string;
-                    arrivesAt?: string;
-                    departsAt?: string;
-                    leaseTerm?: string;
-                    vesselLength?: number | string;
-                    vesselBeam?: number | string;
-                    vesselDraft?: number | string;
-                    slipType?: string;
-                    hasElectric?: boolean;
-                    hasWater?: boolean;
-                    page?: number | string;
-                    pageSize?: number | string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SlipSearchResultDto"][];
-                        "application/json": components["schemas"]["SlipSearchResultDto"][];
-                        "text/json": components["schemas"]["SlipSearchResultDto"][];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/slips/{id}": {
         parameters: {
             query?: never;
@@ -6938,6 +7013,27 @@ export interface components {
             setupStep: number | string;
             /** Format: date-time */
             createdAt: string;
+        };
+        MarinaRollupResultDto: {
+            /** Format: uuid */
+            marinaId: string;
+            marinaName: string;
+            city: null | string;
+            state: null | string;
+            /** Format: double */
+            latitude: number | string;
+            /** Format: double */
+            longitude: number | string;
+            /** Format: int32 */
+            availableCount: number | string;
+            /** Format: double */
+            minPricePerNight: number | string;
+            /** Format: double */
+            maxPricePerNight: number | string;
+            rateKind: string;
+            instantBookAvailable: boolean;
+            /** Format: double */
+            distanceMilesFromCenter: number | string;
         };
         MarinaSignupRequest: {
             tenantName: string;

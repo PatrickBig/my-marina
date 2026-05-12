@@ -7,7 +7,8 @@ using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.IntegrationTests;
 
-public class DemoSeedTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebApplicationFactory>
+[Collection("Integration")]
+public class DemoSeedTests(ApiWebApplicationFactory factory)
 {
     async Task EnsureSeeded()
     {
@@ -52,7 +53,7 @@ public class DemoSeedTests(ApiWebApplicationFactory factory) : IClassFixture<Api
 
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.Equal(1, await db.Tenants.CountAsync(t => t.IsDemo));
+        Assert.Equal(1, await db.Tenants.CountAsync(t => t.Id == DemoSeedScript.TenantId));
     }
 
     [Fact]

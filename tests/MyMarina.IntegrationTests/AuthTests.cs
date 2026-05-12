@@ -4,7 +4,8 @@ using MyMarina.Application.Identity;
 
 namespace MyMarina.IntegrationTests;
 
-public class AuthTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebApplicationFactory>
+[Collection("Integration")]
+public class AuthTests(ApiWebApplicationFactory factory)
 {
     [Fact]
     public async Task Register_ValidRequest_Returns204()
