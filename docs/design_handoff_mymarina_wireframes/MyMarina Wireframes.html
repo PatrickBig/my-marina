@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>MyMarina · Wireframes</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Architects+Daughter&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+  body { font-family: 'Kalam', sans-serif; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="wireframe-primitives.jsx"></script>
+<script type="text/babel" src="frames-boater.jsx"></script>
+<script type="text/babel" src="frames-operator.jsx"></script>
+<script type="text/babel" src="frames-onboarding.jsx"></script>
+<script type="text/babel" src="frames-other.jsx"></script>
+
+<script type="text/babel">
+const W = 720, H = 500;
+
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "showAnnotations": true,
+  "roughBorders": true,
+  "accentHue": 230
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAKS);
+
+  // Apply tweaks via document-level CSS variables on body
+  React.useEffect(() => {
+    document.body.style.setProperty('--wf-accent', `oklch(60% 0.13 ${tweaks.accentHue})`);
+    if (!tweaks.roughBorders) {
+      // disable wf-rough filter via style override
+      let s = document.getElementById('wf-rough-toggle');
+      if (!s) { s = document.createElement('style'); s.id = 'wf-rough-toggle'; document.head.appendChild(s); }
+      s.textContent = '[style*="url(#wf-rough)"], [style*="url(#wf-rough-strong)"] { filter: none !important; }';
+    } else {
+      const s = document.getElementById('wf-rough-toggle');
+      if (s) s.remove();
+    }
+    if (!tweaks.showAnnotations) {
+      let s = document.getElementById('wf-annot-toggle');
+      if (!s) { s = document.createElement('style'); s.id = 'wf-annot-toggle'; document.head.appendChild(s); }
+      // hide WFAnnotation (red marker style)
+      s.textContent = `div[style*="${WF_BAD}"][style*="rotate"] { display: none !important; }`;
+    } else {
+      const s = document.getElementById('wf-annot-toggle');
+      if (s) s.remove();
+    }
+  }, [tweaks]);
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="intro" title="MyMarina — Wireframes" subtitle="Two-sided marketplace for marina dockage. Low-fi exploration of the user-first refactor.">
+          <DCArtboard id="signin" label="Sign in / sign up" width={W} height={H}><FrameSignIn /></DCArtboard>
+          <DCArtboard id="claim" label="Vessel claim" width={W} height={H}><FrameVesselClaim /></DCArtboard>
+          <DCArtboard id="sublet" label="Listing-source diagram" width={W} height={H}><FrameSubletDiagram /></DCArtboard>
+        </DCSection>
+
+        <DCSection id="boater" title="Boater · marketplace + relationships" subtitle="Discovery (marina-first, viewport-bounded), booking, multi-marina dashboard, and the 'I'm Away' differentiator.">
+          <DCArtboard id="search" label="Search · step 1 · marinas" width={W} height={H}><FrameSearch /></DCArtboard>
+          <DCArtboard id="search-marina" label="Search · step 2 · slips at marina" width={W} height={H}><FrameSearchMarina /></DCArtboard>
+          <DCArtboard id="slip" label="Slip detail" width={W} height={H}><FrameSlipDetail /></DCArtboard>
+          <DCArtboard id="booking" label="Confirm reservation" width={W} height={H}><FrameBookingFlow /></DCArtboard>
+          <DCArtboard id="dash" label="Multi-marina dashboard" width={W} height={H}><FrameBoaterDashboard /></DCArtboard>
+          <DCArtboard id="myslip" label="My slip · I'm away" width={W} height={H}><FrameMySlipAway /></DCArtboard>
+        </DCSection>
+
+        <DCSection id="wizard" title="Commercial marina onboarding · the wizard" subtitle="Multi-step setup with draft state, geocoder, dock/slip bulk builder, preview-adjust, and explicit publish gate. Drafts are invisible to boaters.">
+          <DCArtboard id="home" label="Home · banner + draft card" width={W} height={H}><FrameOnboardHome /></DCArtboard>
+          <DCArtboard id="w1" label="Step 1 · profile" width={W} height={H}><FrameWizardProfile /></DCArtboard>
+          <DCArtboard id="w2" label="Step 2 · GPS + geocoder" width={W} height={H}><FrameWizardLocation /></DCArtboard>
+          <DCArtboard id="w3" label="Step 3 · dock & slip builder" width={W} height={H}><FrameWizardBuilder /></DCArtboard>
+          <DCArtboard id="w4" label="Step 4 · preview & adjust" width={W} height={H}><FrameWizardPreview /></DCArtboard>
+          <DCArtboard id="w5" label="Step 5 · publish" width={W} height={H}><FrameWizardPublish /></DCArtboard>
+        </DCSection>
+
+        <DCSection id="operator" title="Marina operator · the SaaS toolkit" subtitle="The 'run the marina without spreadsheets' surface for commercial marinas, yacht clubs, and HOAs.">
+          <DCArtboard id="opdash" label="Operator dashboard" width={W} height={H}><FrameOpDashboard /></DCArtboard>
+          <DCArtboard id="opslips" label="Slips & docks" width={W} height={H}><FrameOpSlips /></DCArtboard>
+          <DCArtboard id="opres" label="Reservation inbox" width={W} height={H}><FrameOpReservations /></DCArtboard>
+          <DCArtboard id="opbill" label="Billing accounts" width={W} height={H}><FrameOpBilling /></DCArtboard>
+          <DCArtboard id="oplisting" label="Listing calendar editor" width={W} height={H}><FrameOpListing /></DCArtboard>
+        </DCSection>
+
+        <DCSection id="private" title="Private slip owner · 'add my dock'" subtitle="Free-tier hosts. The Tenant + Marina + Slip auto-create is hidden — UX says 'your dock' / 'your slip'.">
+          <DCArtboard id="onboard" label="Onboarding wizard" width={W} height={H}><FramePrivateOnboard /></DCArtboard>
+          <DCArtboard id="pdash" label="Single-slip dashboard" width={W} height={H}><FramePrivateDashboard /></DCArtboard>
+          <DCArtboard id="dockominium" label="Dockominium · host-marina policy" width={W} height={H}><FramePrivateDockominium /></DCArtboard>
+        </DCSection>
+
+        <DCSection id="platform" title="Platform operator · trust &amp; safety" subtitle="MyMarina staff console. Global visibility with full audit logging.">
+          <DCArtboard id="pltenants" label="Tenants" width={W} height={H}><FramePlatformTenants /></DCArtboard>
+          <DCArtboard id="plmod" label="Listing moderation" width={W} height={H}><FramePlatformModeration /></DCArtboard>
+          <DCArtboard id="pluser" label="User detail" width={W} height={H}><FramePlatformUser /></DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="Look">
+          <TweakToggle label="Sketchy borders" value={tweaks.roughBorders} onChange={v => setTweak('roughBorders', v)} />
+          <TweakToggle label="Show annotations" value={tweaks.showAnnotations} onChange={v => setTweak('showAnnotations', v)} />
+          <TweakSlider label="Accent hue" min={0} max={360} step={5} value={tweaks.accentHue} onChange={v => setTweak('accentHue', v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

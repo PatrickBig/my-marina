@@ -3862,6 +3862,9 @@ export interface paths {
                     hasWater?: boolean;
                     priceMin?: number | string;
                     priceMax?: number | string;
+                    instantBookOnly?: boolean;
+                    hasPumpOut?: boolean;
+                    isAnyCovered?: boolean;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -7031,6 +7034,10 @@ export interface components {
             instantBookAvailable: boolean;
             /** Format: double */
             distanceMilesFromCenter: number | string;
+            photoUrl: null | string;
+            hasPumpOut: boolean;
+            hasElectric: boolean;
+            isAnyCovered: boolean;
         };
         MarinaSignupRequest: {
             tenantName: string;

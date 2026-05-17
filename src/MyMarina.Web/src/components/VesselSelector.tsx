@@ -16,7 +16,7 @@ interface Props {
   onNoVessels?: () => void;
 }
 
-const sel = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400';
+const sel = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 
 export function VesselSelector({ onSelect, onUseDifferentDimensions, onNoVessels }: Props) {
   const { isAuthenticated } = useAuthStore();
@@ -62,7 +62,7 @@ export function VesselSelector({ onSelect, onUseDifferentDimensions, onNoVessels
 
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-600 mb-1">Boat</label>
+      <label className="block text-xs font-medium text-foreground/80 mb-1">Boat</label>
       <div className="flex items-center gap-2">
         <select value={selectedId ?? ''} onChange={(e) => handleChange(e.target.value)} className={`${sel} w-52`}>
           {vessels.map((v) => (
@@ -74,13 +74,13 @@ export function VesselSelector({ onSelect, onUseDifferentDimensions, onNoVessels
         <button
           type="button"
           onClick={onUseDifferentDimensions}
-          className="text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
+          className="text-xs text-muted-foreground/70 hover:text-foreground/80 underline whitespace-nowrap"
         >
           use different dimensions
         </button>
       </div>
       {selected && (
-        <p className="text-xs text-slate-400 mt-0.5">
+        <p className="text-xs text-muted-foreground/70 mt-0.5">
           LOA {selected.length}′ · Beam {selected.beam}′ · Draft {selected.draft}′
         </p>
       )}

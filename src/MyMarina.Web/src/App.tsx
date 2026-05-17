@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 import { DemoBanner } from '@/components/DemoBanner';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -21,6 +23,21 @@ import { HomePage } from '@/pages/HomePage';
 
 export function App() {
   const { isAuthenticated } = useAuthStore();
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
+  const applySystemPreference = useThemeStore((s) => s.applySystemPreference);
+
+  // Apply .dark class whenever resolvedTheme changes (covers both manual toggle and OS changes)
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
+  }, [resolvedTheme]);
+
+  // Keep resolvedTheme in sync when the OS preference changes
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => applySystemPreference(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [applySystemPreference]);
   const path = window.location.pathname;
 
   function renderPage() {

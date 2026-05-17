@@ -45,7 +45,9 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                      && (query.VesselDraft  == null || s.MaxDraft  >= query.VesselDraft)
                      && (!hasSlipTypeFilter || s.SlipType == slipTypeFilter)
                      && (query.HasElectric == null || s.HasElectric == query.HasElectric)
-                     && (query.HasWater    == null || s.HasWater    == query.HasWater));
+                     && (query.HasWater    == null || s.HasWater    == query.HasWater)
+                     && (query.HasPumpOut  == null || !query.HasPumpOut.Value || s.HasPumpOut)
+                     && (query.IsAnyCovered == null || !query.IsAnyCovered.Value || s.IsCovered));
 
         // Step 3: Apply availability EXISTS predicates
         if (isLease)
@@ -133,16 +135,25 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     && (query.PriceMax == null || s.DefaultLeaseBaseRate <= query.PriceMax)));
         }
 
-        // Step 5: Single DB-level GROUP BY — count + instant-book flag per marina
-        List<(Guid MarinaId, int Count, bool InstantBook)> rollupData;
+        // Step 5: Single DB-level GROUP BY — count + instant-book + amenity flags per marina
+        // Amenity booleans (HasPumpOut, HasElectric, IsAnyCovered) are computed as ANY aggregates
+        // in the same GROUP BY pass as AvailableCount — no extra query passes.
+        List<RollupRow> rollupData;
 
         if (isLease)
         {
             var rows = await slipQ
                 .GroupBy(s => s.MarinaId)
-                .Select(g => new { MarinaId = g.Key, Count = g.Count() })
+                .Select(g => new
+                {
+                    MarinaId     = g.Key,
+                    Count        = g.Count(),
+                    HasPumpOut   = g.Any(s => s.HasPumpOut),
+                    HasElectric  = g.Any(s => s.HasElectric),
+                    IsAnyCovered = g.Any(s => s.IsCovered),
+                })
                 .ToListAsync(ct);
-            rollupData = rows.Select(r => (r.MarinaId, r.Count, false)).ToList();
+            rollupData = rows.Select(r => new RollupRow(r.MarinaId, r.Count, false, r.HasPumpOut, r.HasElectric, r.IsAnyCovered)).ToList();
         }
         else
         {
@@ -154,20 +165,27 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                 .GroupBy(s => s.MarinaId)
                 .Select(g => new
                 {
-                    MarinaId    = g.Key,
-                    Count       = g.Count(),
-                    InstantBook = g.Any(s =>
+                    MarinaId     = g.Key,
+                    Count        = g.Count(),
+                    InstantBook  = g.Any(s =>
                         db.AvailabilityWindows.Any(w => w.SlipId == s.Id
                             && w.Status == AvailabilityWindowStatus.Open
                             && w.ListingKind == ListingKind.Transient
                             && w.StartsAt <= arrivesAt
                             && w.EndsAt   >= departsAt
                             && w.InstantBook)
-                        || s.DefaultTransientRateKind != null)
+                        || s.DefaultTransientRateKind != null),
+                    HasPumpOut   = g.Any(s => s.HasPumpOut),
+                    HasElectric  = g.Any(s => s.HasElectric),
+                    IsAnyCovered = g.Any(s => s.IsCovered),
                 })
                 .ToListAsync(ct);
-            rollupData = rows.Select(r => (r.MarinaId, r.Count, r.InstantBook)).ToList();
+            rollupData = rows.Select(r => new RollupRow(r.MarinaId, r.Count, r.InstantBook, r.HasPumpOut, r.HasElectric, r.IsAnyCovered)).ToList();
         }
+
+        // Apply InstantBookOnly in memory — bounded by result count (marina count, not slip count)
+        if (query.InstantBookOnly == true)
+            rollupData = rollupData.Where(r => r.InstantBook).ToList();
 
         if (rollupData.Count == 0) return [];
 
@@ -199,7 +217,11 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     Longitude:               marina.Longitude!.Value,
                     AvailableCount:          r.Count,
                     InstantBookAvailable:    r.InstantBook,
-                    DistanceMilesFromCenter: Math.Round(distance, 1)
+                    DistanceMilesFromCenter: Math.Round(distance, 1),
+                    PhotoUrl:                null,
+                    HasPumpOut:              r.HasPumpOut,
+                    HasElectric:             r.HasElectric,
+                    IsAnyCovered:            r.IsAnyCovered
                 );
             })
             .OrderByDescending(r => r.AvailableCount)
@@ -210,4 +232,13 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
 
         return rollups;
     }
+
+    private sealed record RollupRow(
+        Guid MarinaId,
+        int Count,
+        bool InstantBook,
+        bool HasPumpOut,
+        bool HasElectric,
+        bool IsAnyCovered
+    );
 }

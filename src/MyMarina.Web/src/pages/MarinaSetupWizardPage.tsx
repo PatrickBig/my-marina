@@ -17,9 +17,9 @@ import {
 import { useWizardDraft } from '@/hooks/useWizardDraft';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
-const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400';
-const btn = 'rounded-lg bg-slate-800 text-white px-5 py-2.5 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors';
-const btnSecondary = 'rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors';
+const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
+const btn = 'rounded-lg bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors';
+const btnSecondary = 'rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-medium hover:bg-muted/30 transition-colors';
 
 // ─── Wizard draft shape ───────────────────────────────────────────────────────
 interface WizardDraft {
@@ -89,45 +89,45 @@ function Step1({ marina, onNext }: { marina: MarinaDto; onNext: (data: Step1Data
     <form onSubmit={handleSubmit(onNext)} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Street address</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Street address</label>
           <input {...register('addressStreet')} type="text" placeholder="123 Harbor Way" className={input} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">City <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium text-foreground mb-1">City <span className="text-red-500">*</span></label>
           <input {...register('addressCity')} type="text" placeholder="Annapolis" className={input} />
           {errors.addressCity && <p className="mt-1 text-xs text-red-600">{errors.addressCity.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">State <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium text-foreground mb-1">State <span className="text-red-500">*</span></label>
           <input {...register('addressState')} type="text" placeholder="MD" maxLength={2} className={input} />
           {errors.addressState && <p className="mt-1 text-xs text-red-600">{errors.addressState.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">ZIP code</label>
+          <label className="block text-sm font-medium text-foreground mb-1">ZIP code</label>
           <input {...register('addressZip')} type="text" placeholder="21401" className={input} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Timezone <span className="text-red-500">*</span></label>
-          <select {...register('timeZoneId')} className={`${input} bg-white`}>
+          <label className="block text-sm font-medium text-foreground mb-1">Timezone <span className="text-red-500">*</span></label>
+          <select {...register('timeZoneId')} className={`${input} bg-card`}>
             {US_TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
           </select>
           {errors.timeZoneId && <p className="mt-1 text-xs text-red-600">{errors.timeZoneId.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
           <input {...register('phoneNumber')} type="tel" placeholder="(410) 555-0100" className={input} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Email</label>
           <input {...register('email')} type="email" placeholder="info@mymarina.com" className={input} />
           {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Website</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Website</label>
           <input {...register('website')} type="url" placeholder="https://mymarina.com" className={input} />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Description</label>
           <textarea {...register('description')} rows={3} placeholder="Tell boaters about your marina…" className={input} />
         </div>
       </div>
@@ -179,7 +179,7 @@ function Step2({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Place your marina on the map. Boaters use this to find you in search results.
         Drag the pin to fine-tune the location.
       </p>
@@ -191,13 +191,13 @@ function Step2({
           {geocoding ? 'Locating…' : 'Locate on map from address'}
         </button>
         {precisionLabel && (
-          <p className="text-sm text-slate-500">{precisionLabel}</p>
+          <p className="text-sm text-muted-foreground">{precisionLabel}</p>
         )}
       </div>
-      <div className="h-80 rounded-xl overflow-hidden border border-slate-200">
+      <div className="h-80 rounded-xl overflow-hidden border border-border">
         <MapPicker lat={lat} lng={lng} onPositionChange={(la, ln) => { setLat(la); setLng(ln); }} />
       </div>
-      <div className="flex gap-4 text-sm text-slate-500">
+      <div className="flex gap-4 text-sm text-muted-foreground">
         <span>Lat: {lat.toFixed(6)}</span>
         <span>Lng: {lng.toFixed(6)}</span>
       </div>
@@ -323,14 +323,14 @@ function Step3({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-slate-700">Does your marina have docks?</label>
+        <label className="text-sm font-medium text-foreground">Does your marina have docks?</label>
         <div className="flex gap-2">
           {[true, false].map((v) => (
             <button
               key={String(v)} type="button"
               onClick={() => upd({ hasDocks: v })}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                s.hasDocks === v ? 'bg-slate-800 text-white border-slate-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                s.hasDocks === v ? 'bg-foreground text-background border-foreground' : 'border-border text-foreground/80 hover:bg-muted/30'
               }`}
             >
               {v ? 'Yes' : 'No (free-standing moorings)'}
@@ -341,81 +341,81 @@ function Step3({
 
       {s.hasDocks && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-            <h3 className="sm:col-span-2 text-sm font-semibold text-slate-700">Dock setup</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-border bg-muted/30">
+            <h3 className="sm:col-span-2 text-sm font-semibold text-foreground">Dock setup</h3>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Number of docks</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Number of docks</label>
               <input type="number" min={1} max={200} value={s.dockCount}
                 onChange={(e) => upd({ dockCount: Number(e.target.value) })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Dock naming</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Dock naming</label>
               <select value={s.dockConvKind} onChange={(e) => upd({ dockConvKind: e.target.value as DockConvention['kind'] })}
-                className={`${input} bg-white`}>
+                className={`${input} bg-card`}>
                 {DOCK_CONVENTIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             {s.dockConvKind !== 'Manual' && (
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Prefix (optional)</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Prefix (optional)</label>
                 <input type="text" value={s.dockPrefix} placeholder='e.g. "Dock "'
                   onChange={(e) => upd({ dockPrefix: e.target.value })} className={input} />
               </div>
             )}
             {dockNames.length > 0 && (
               <div className="sm:col-span-2">
-                <p className="text-xs text-slate-500 mb-1">Preview:</p>
-                <p className="text-sm text-slate-700">
+                <p className="text-xs text-muted-foreground mb-1">Preview:</p>
+                <p className="text-sm text-foreground">
                   {previewNames.join(', ')}{dockNames.length > 4 ? ` … (${dockNames.length} total)` : ''}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-            <h3 className="sm:col-span-2 text-sm font-semibold text-slate-700">Slip setup</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-border bg-muted/30">
+            <h3 className="sm:col-span-2 text-sm font-semibold text-foreground">Slip setup</h3>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Slips per dock</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Slips per dock</label>
               <input type="number" min={1} max={500} value={s.slipsPerDock}
                 onChange={(e) => upd({ slipsPerDock: Number(e.target.value) })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Slip naming</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Slip naming</label>
               <select value={s.slipConvKind} onChange={(e) => upd({ slipConvKind: e.target.value as SlipConvention['kind'] })}
-                className={`${input} bg-white`}>
+                className={`${input} bg-card`}>
                 {SLIP_CONVENTIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             {(s.slipConvKind === 'PerDockReset' || s.slipConvKind === 'PerDockGlobal') && (
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Separator</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Separator</label>
                 <input type="text" value={s.slipSeparator} maxLength={3}
                   onChange={(e) => upd({ slipSeparator: e.target.value })} className={`${input} w-20`} />
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-            <h3 className="sm:col-span-3 text-sm font-semibold text-slate-700">Default slip dimensions & amenities</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-border bg-muted/30">
+            <h3 className="sm:col-span-3 text-sm font-semibold text-foreground">Default slip dimensions & amenities</h3>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Max length (ft)</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Max length (ft)</label>
               <input type="number" step="0.5" value={s.defaultMaxLength}
                 onChange={(e) => upd({ defaultMaxLength: Number(e.target.value) })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Max beam (ft)</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Max beam (ft)</label>
               <input type="number" step="0.5" value={s.defaultMaxBeam}
                 onChange={(e) => upd({ defaultMaxBeam: Number(e.target.value) })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Max draft (ft)</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Max draft (ft)</label>
               <input type="number" step="0.5" value={s.defaultMaxDraft}
                 onChange={(e) => upd({ defaultMaxDraft: Number(e.target.value) })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Slip type</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Slip type</label>
               <select value={s.defaultSlipType} onChange={(e) => upd({ defaultSlipType: e.target.value })}
-                className={`${input} bg-white`}>
+                className={`${input} bg-card`}>
                 {['Floating', 'Fixed', 'Mooring', 'DryStorage', 'Anchorage'].map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
@@ -427,7 +427,7 @@ function Step3({
                 { key: 'defaultHasWater',    label: 'Water' },
                 { key: 'defaultHasPumpOut',  label: 'Pump-out' },
               ].map(({ key, label }) => (
-                <label key={key} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <label key={key} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
                   <input type="checkbox" checked={s[key as keyof Step3State] as boolean}
                     onChange={(e) => upd({ [key]: e.target.checked } as Partial<Step3State>)}
                     className="rounded" />
@@ -436,7 +436,7 @@ function Step3({
               ))}
             </div>
             <div className="sm:col-span-3">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Custom amenity tags</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Custom amenity tags</label>
               <div className="flex gap-2">
                 <input type="text" value={s.customAmenityInput} placeholder="e.g. Fuel dock"
                   onChange={(e) => upd({ customAmenityInput: e.target.value })}
@@ -456,10 +456,10 @@ function Step3({
               {s.amenities.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {s.amenities.map((a) => (
-                    <span key={a} className="flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 text-xs px-2.5 py-0.5">
+                    <span key={a} className="flex items-center gap-1 rounded-full bg-muted text-foreground text-xs px-2.5 py-0.5">
                       {a}
                       <button type="button" onClick={() => upd({ amenities: s.amenities.filter((x) => x !== a) })}
-                        className="text-slate-400 hover:text-slate-700">×</button>
+                        className="text-muted-foreground/70 hover:text-foreground">×</button>
                     </span>
                   ))}
                 </div>
@@ -611,7 +611,7 @@ function Step4({
     setRangeEdit(null);
   }
 
-  if (loading) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (loading) return <p className="text-sm text-muted-foreground/70">Loading…</p>;
 
   const totalSlips = docks.reduce((acc, d) => acc + d.slips.length, 0);
 
@@ -647,7 +647,7 @@ function Step4({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Review your {docks.length} dock{docks.length !== 1 ? 's' : ''} and {totalSlips} slip{totalSlips !== 1 ? 's' : ''}.
         Click any cell to edit it inline. Click a row to select it; shift+click to select a range.
       </p>
@@ -658,9 +658,9 @@ function Step4({
           const isBulkOpen = bulkEdit?.dockId === dock.id;
 
           return (
-            <div key={dock.id} className="rounded-xl border border-slate-200 overflow-hidden">
+            <div key={dock.id} className="rounded-xl border border-border overflow-hidden">
               {/* Dock header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
+              <div className="flex items-center justify-between px-4 py-3 bg-muted/30">
                 <button
                   type="button"
                   onClick={() => setCollapsed((prev) => {
@@ -668,11 +668,11 @@ function Step4({
                     if (next.has(dock.id)) next.delete(dock.id); else next.add(dock.id);
                     return next;
                   })}
-                  className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
+                  className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground"
                 >
                   <span>{isCollapsed ? '▸' : '▾'}</span>
                   <span>{dock.name}</span>
-                  <span className="text-xs font-normal text-slate-400">({dock.slips.length} slips)</span>
+                  <span className="text-xs font-normal text-muted-foreground/70">({dock.slips.length} slips)</span>
                 </button>
                 <button
                   type="button"
@@ -682,7 +682,7 @@ function Step4({
                     maxBeam:   String(dock.slips[0]?.maxBeam ?? 14),
                     maxDraft:  String(dock.slips[0]?.maxDraft ?? 5),
                   })}
-                  className="text-xs text-slate-500 hover:text-slate-800 underline"
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
                 >
                   {isBulkOpen ? 'Cancel bulk edit' : 'Edit all slips'}
                 </button>
@@ -712,12 +712,12 @@ function Step4({
               {!isCollapsed && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200">
+                    <thead className="bg-muted/30 border-b border-border">
                       <tr>
-                        <th className="text-left px-4 py-2 font-medium text-slate-500">Slip</th>
-                        <th className="text-right px-4 py-2 font-medium text-slate-500">Length</th>
-                        <th className="text-right px-4 py-2 font-medium text-slate-500">Beam</th>
-                        <th className="text-right px-4 py-2 font-medium text-slate-500">Draft</th>
+                        <th className="text-left px-4 py-2 font-medium text-muted-foreground">Slip</th>
+                        <th className="text-right px-4 py-2 font-medium text-muted-foreground">Length</th>
+                        <th className="text-right px-4 py-2 font-medium text-muted-foreground">Beam</th>
+                        <th className="text-right px-4 py-2 font-medium text-muted-foreground">Draft</th>
                         <th className="px-4 py-2" />
                       </tr>
                     </thead>
@@ -728,8 +728,8 @@ function Step4({
                           <tr
                             key={slip.id}
                             onClick={(e) => handleRowClick(slip.id, e)}
-                            className={`border-b border-slate-100 last:border-0 cursor-pointer select-none ${
-                              isSelected ? 'bg-blue-50' : 'hover:bg-slate-50'
+                            className={`border-b border-border/50 last:border-0 cursor-pointer select-none ${
+                              isSelected ? 'bg-blue-50' : 'hover:bg-muted/30'
                             }`}
                           >
                             <td className="px-4 py-2">{editableCell(slip, 'name', slip.name)}</td>
@@ -751,11 +751,11 @@ function Step4({
                       })}
                     </tbody>
                   </table>
-                  <div className="px-4 py-2 border-t border-slate-100">
+                  <div className="px-4 py-2 border-t border-border/50">
                     <button
                       type="button"
                       onClick={() => handleAddSlip(dock)}
-                      className="text-xs text-slate-500 hover:text-slate-800 underline"
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
                     >
                       + Add slip
                     </button>
@@ -767,13 +767,13 @@ function Step4({
         })}
 
         {docks.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-8">No docks configured.</p>
+          <p className="text-sm text-muted-foreground/70 text-center py-8">No docks configured.</p>
         )}
       </div>
 
       {/* Sticky bulk-selection bar */}
       {selectedSlips.size > 0 && (
-        <div className="sticky bottom-4 rounded-xl border border-blue-200 bg-white shadow-lg px-4 py-3 flex items-center gap-3 flex-wrap">
+        <div className="sticky bottom-4 rounded-xl border border-blue-200 bg-card shadow-lg px-4 py-3 flex items-center gap-3 flex-wrap">
           <span className="text-sm font-medium text-blue-700 shrink-0">
             {selectedSlips.size} slip{selectedSlips.size !== 1 ? 's' : ''} selected
           </span>
@@ -781,12 +781,12 @@ function Step4({
             <>
               {(['maxLength', 'maxBeam', 'maxDraft'] as const).map((f) => (
                 <div key={f} className="flex items-center gap-1">
-                  <label className="text-xs text-slate-500">{f === 'maxLength' ? 'Length' : f === 'maxBeam' ? 'Beam' : 'Draft'}</label>
+                  <label className="text-xs text-muted-foreground">{f === 'maxLength' ? 'Length' : f === 'maxBeam' ? 'Beam' : 'Draft'}</label>
                   <input
                     type="number" step="0.5" placeholder="—"
                     value={rangeEdit[f]}
                     onChange={(e) => setRangeEdit({ ...rangeEdit, [f]: e.target.value })}
-                    className="w-20 rounded border border-slate-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className="w-20 rounded border border-border px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
                   />
                 </div>
               ))}
@@ -795,7 +795,7 @@ function Step4({
                 Apply to {selectedSlips.size} slips
               </button>
               <button type="button" onClick={() => setRangeEdit(null)}
-                className="text-xs text-slate-400 hover:text-slate-600">
+                className="text-xs text-muted-foreground/70 hover:text-foreground/80">
                 Cancel
               </button>
             </>
@@ -808,7 +808,7 @@ function Step4({
               </button>
               <button type="button"
                 onClick={() => { setSelectedSlips(new Set()); setLastClickedSlipId(null); }}
-                className="text-xs text-slate-400 hover:text-slate-600">
+                className="text-xs text-muted-foreground/70 hover:text-foreground/80">
                 Clear selection
               </button>
             </>
@@ -839,30 +839,30 @@ function Step5({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-2">
-        <h3 className="text-sm font-semibold text-slate-700">Summary</h3>
-        <p className="text-sm text-slate-600"><span className="font-medium">Marina:</span> {marina.name}</p>
-        <p className="text-sm text-slate-600"><span className="font-medium">Type:</span> {marina.marinaType}</p>
+      <div className="rounded-xl border border-border bg-muted/30 p-5 space-y-2">
+        <h3 className="text-sm font-semibold text-foreground">Summary</h3>
+        <p className="text-sm text-foreground/80"><span className="font-medium">Marina:</span> {marina.name}</p>
+        <p className="text-sm text-foreground/80"><span className="font-medium">Type:</span> {marina.marinaType}</p>
         {marina.addressCity && (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-foreground/80">
             <span className="font-medium">Location:</span> {[marina.addressCity, marina.addressState].filter(Boolean).join(', ')}
           </p>
         )}
         {marina.latitude && (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-foreground/80">
             <span className="font-medium">GPS:</span> {marina.latitude.toFixed(5)}, {marina.longitude?.toFixed(5)}
           </p>
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-slate-700">Marketplace listing</h3>
+      <div className="rounded-xl border border-border p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Marketplace listing</h3>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" checked={isListed} onChange={(e) => setIsListed(e.target.checked)}
             className="mt-0.5 rounded" />
           <div>
-            <p className="text-sm font-medium text-slate-700">List on marketplace immediately</p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-medium text-foreground">List on marketplace immediately</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               When listed, boaters can find and book your slips right away.
               You can always update this later from your dashboard.
             </p>
@@ -937,10 +937,10 @@ export function MarinaSetupWizardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-muted/30">
         <NavBar />
         <div className="flex items-center justify-center py-20">
-          <p className="text-slate-400">Loading…</p>
+          <p className="text-muted-foreground/70">Loading…</p>
         </div>
       </div>
     );
@@ -948,7 +948,7 @@ export function MarinaSetupWizardPage() {
 
   if (error || !marina) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-muted/30">
         <NavBar />
         <div className="flex items-center justify-center py-20">
           <p className="text-red-600">{error ?? 'Unknown error'}</p>
@@ -958,24 +958,24 @@ export function MarinaSetupWizardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
       <div className="max-w-3xl mx-auto py-10 px-4">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide mb-1">
             Setting up · {marina.name}
           </p>
-          <h1 className="text-2xl font-semibold text-slate-800">{STEPS[step - 1]}</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{STEPS[step - 1]}</h1>
 
           {/* Step progress bar */}
           <div className="flex gap-1.5 mt-4">
             {STEPS.map((label, i) => (
               <div key={label} className="flex-1 flex flex-col gap-1">
                 <div className={`h-1.5 rounded-full transition-colors ${
-                  i + 1 < step ? 'bg-slate-800' : i + 1 === step ? 'bg-slate-500' : 'bg-slate-200'
+                  i + 1 < step ? 'bg-foreground' : i + 1 === step ? 'bg-primary' : 'bg-muted'
                 }`} />
-                <span className="text-xs text-slate-400 truncate hidden sm:block">{label}</span>
+                <span className="text-xs text-muted-foreground/70 truncate hidden sm:block">{label}</span>
               </div>
             ))}
           </div>
@@ -989,18 +989,18 @@ export function MarinaSetupWizardPage() {
               await updateMarina(marinaId, { setupStep: step - 1 });
               const toast = document.createElement('div');
               toast.textContent = 'Progress saved';
-              toast.className = 'fixed bottom-4 right-4 rounded-lg bg-slate-800 text-white text-sm px-4 py-2 shadow-lg z-50';
+              toast.className = 'fixed bottom-4 right-4 rounded-lg bg-primary text-primary-foreground text-sm px-4 py-2 shadow-lg z-50';
               document.body.appendChild(toast);
               setTimeout(() => toast.remove(), 2000);
             }}
-            className="text-xs text-slate-400 hover:text-slate-600 underline"
+            className="text-xs text-muted-foreground/70 hover:text-foreground/80 underline"
           >
             Save progress
           </button>
         </div>
 
         {/* Step content */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8">
           {step === 1 && <Step1 marina={marina} onNext={handleStep1} />}
           {step === 2 && <Step2 marina={marina} onBack={() => setStep(1)} onNext={handleStep2} />}
           {step === 3 && <Step3 onBack={() => setStep(2)} onNext={handleStep3} />}

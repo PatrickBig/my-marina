@@ -1,4 +1,43 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ── Design token quick-reference ──────────────────────────────────────────
+ *
+ * Tailwind utility → CSS custom property → semantic role
+ *
+ * SURFACES
+ *   bg-background       --background      Page/app background
+ *   bg-card             --card            Cards, panels, nav bar
+ *   bg-muted            --muted           Subtle fills, disabled states
+ *   bg-popover          --popover         Floating panels, tooltips
+ *
+ * TEXT
+ *   text-foreground           --foreground         Primary body text
+ *   text-card-foreground      --card-foreground     Text on cards
+ *   text-muted-foreground     --muted-foreground    Secondary / placeholder text
+ *   text-popover-foreground   --popover-foreground  Text on popovers
+ *
+ * BRAND
+ *   bg-primary / text-primary             --primary        Ocean blue CTA
+ *   text-primary-foreground               --primary-foreground  Text on primary bg
+ *   bg-secondary / text-secondary         --secondary      Muted brand tint
+ *   bg-accent / text-accent               --accent         Sea-foam teal highlight
+ *   text-accent-foreground                --accent-foreground   Text on accent bg
+ *
+ * STATE
+ *   text-destructive / border-destructive --destructive    Errors, warnings
+ *   text-destructive-foreground           --destructive-foreground
+ *
+ * CHROME
+ *   border-border       --border          Default border color
+ *   border-input        --input           Form field border
+ *   ring-ring           --ring            Focus ring color
+ *   rounded-sm/md/lg/xl --radius-*        Shared border-radius scale
+ *
+ * NOTE: The global NavBar (NavBar.css) uses hardcoded dark-navy values
+ *       intentionally — the bar is always dark regardless of page theme.
+ * ──────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
   --color-background: var(--background);
@@ -27,48 +66,48 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+  --background:              oklch(99% 0.004 230);
+  --foreground:              oklch(18% 0.06 245);
+  --card:                    oklch(100% 0 0);
+  --card-foreground:         oklch(18% 0.06 245);
+  --popover:                 oklch(100% 0 0);
+  --popover-foreground:      oklch(18% 0.06 245);
+  --primary:                 oklch(52% 0.18 235);
+  --primary-foreground:      oklch(99% 0.004 230);
+  --secondary:               oklch(94% 0.04 230);
+  --secondary-foreground:    oklch(28% 0.08 240);
+  --muted:                   oklch(96% 0.02 230);
+  --muted-foreground:        oklch(52% 0.05 235);
+  --accent:                  oklch(80% 0.10 185);
+  --accent-foreground:       oklch(20% 0.06 220);
+  --destructive:             oklch(58% 0.22 25);
+  --destructive-foreground:  oklch(99% 0 0);
+  --border:                  oklch(88% 0.04 230);
+  --input:                   oklch(88% 0.04 230);
+  --ring:                    oklch(52% 0.18 235);
+  --radius:                  0.625rem;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background:              oklch(16% 0.06 245);
+  --foreground:              oklch(94% 0.01 230);
+  --card:                    oklch(21% 0.07 245);
+  --card-foreground:         oklch(94% 0.01 230);
+  --popover:                 oklch(21% 0.07 245);
+  --popover-foreground:      oklch(94% 0.01 230);
+  --primary:                 oklch(65% 0.18 225);
+  --primary-foreground:      oklch(16% 0.06 245);
+  --secondary:               oklch(27% 0.07 245);
+  --secondary-foreground:    oklch(90% 0.02 230);
+  --muted:                   oklch(24% 0.06 245);
+  --muted-foreground:        oklch(65% 0.04 230);
+  --accent:                  oklch(35% 0.09 200);
+  --accent-foreground:       oklch(85% 0.08 185);
+  --destructive:             oklch(65% 0.20 25);
+  --destructive-foreground:  oklch(99% 0 0);
+  --border:                  oklch(30% 0.07 245);
+  --input:                   oklch(30% 0.07 245);
+  --ring:                    oklch(65% 0.18 225);
 }
 
 * {

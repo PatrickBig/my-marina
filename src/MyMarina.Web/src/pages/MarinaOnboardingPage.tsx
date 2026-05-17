@@ -52,25 +52,25 @@ export function MarinaOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h1 className="text-2xl font-semibold text-slate-800 mb-1">Set up your marina</h1>
-        <p className="text-slate-500 text-sm mb-6">
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">Set up your marina</h1>
+        <p className="text-muted-foreground text-sm mb-6">
           Create your marina account to start managing slips and staff.
         </p>
 
         {/* Private host shortcuts */}
-        <div className="mb-6 rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+        <div className="mb-6 rounded-lg border border-border/50 bg-muted/30 p-4 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Not a commercial marina?
           </p>
           <div className="flex gap-2">
             <a href="/dock/new"
-              className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 transition-colors text-center">
+              className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-medium hover:bg-muted/30 transition-colors text-center">
               Add my private dock
             </a>
             <a href="/slip/new"
-              className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 font-medium hover:bg-slate-50 transition-colors text-center">
+              className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-medium hover:bg-muted/30 transition-colors text-center">
               Add my slip at a marina
             </a>
           </div>
@@ -84,14 +84,14 @@ export function MarinaOnboardingPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Organization name
             </label>
             <input
               {...register('tenantName')}
               type="text"
               placeholder="Sunset Harbor LLC"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
             {errors.tenantName && (
               <p className="mt-1 text-xs text-red-600">{errors.tenantName.message}</p>
@@ -99,14 +99,14 @@ export function MarinaOnboardingPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Marina name
             </label>
             <input
               {...register('marinaName')}
               type="text"
               placeholder="Sunset Harbor Marina"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
             {errors.marinaName && (
               <p className="mt-1 text-xs text-red-600">{errors.marinaName.message}</p>
@@ -114,12 +114,12 @@ export function MarinaOnboardingPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Marina type
             </label>
             <select
               {...register('marinaType')}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card"
             >
               {(Object.keys(MARINA_TYPE_LABELS) as OrgMarinaType[]).map((t) => (
                 <option key={t} value={t}>{MARINA_TYPE_LABELS[t]}</option>
@@ -130,13 +130,13 @@ export function MarinaOnboardingPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-slate-800 text-white py-2.5 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
+            className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
           >
             {isSubmitting ? 'Creating…' : 'Create marina'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-400">
+        <p className="mt-4 text-center text-xs text-muted-foreground/70">
           <a href="/" className="hover:underline">Back to home</a>
         </p>
       </div>

@@ -18,9 +18,6 @@ L.Icon.Default.mergeOptions({
 const DEFAULT_LAT = 38.9784;
 const DEFAULT_LON = -76.4922;
 
-const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400';
-const btn = 'rounded-lg bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
-
 interface Bounds { north: number; south: number; east: number; west: number }
 
 function MapController({
@@ -56,6 +53,44 @@ function MapController({
   return null;
 }
 
+// Photo placeholder shown when marina has no photo yet
+function MarinaPhotoPlaceholder() {
+  return (
+    <div
+      className="w-20 h-20 shrink-0 rounded-lg flex items-center justify-center text-white/70 text-xl"
+      style={{ background: 'linear-gradient(135deg, oklch(52% 0.18 235) 0%, oklch(80% 0.10 185) 100%)' }}
+    >
+      ⚓
+    </div>
+  );
+}
+
+function AmenityBadge({ label, color }: { label: string; color: string }) {
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${color}`}>
+      {label}
+    </span>
+  );
+}
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`text-xs px-3 py-1 rounded-full border font-medium transition-colors ${
+        active
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+const inputCls = 'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
+
 export function SearchPage() {
   const today    = new Date().toISOString().slice(0, 10);
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
@@ -69,32 +104,33 @@ export function SearchPage() {
   const [leaseTerm, setLeaseTerm]     = useState<LeaseTerm | ''>('');
   const [locationText, setLocationText] = useState('');
 
-  // Price range filter — only active when listingKind is selected
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
 
-  // Vessel state — filled from VesselSelector or manual inputs
-  const [vesselDims, setVesselDims]   = useState<VesselDimensions | null>(null);
-  const [manualLength, setManualLength] = useState('');
-  const [manualBeam, setManualBeam]   = useState('');
-  const [manualDraft, setManualDraft] = useState('');
-  // Anonymous users start in manual mode immediately (no flash); auth users wait for vessel load
-  const [showManual, setShowManual]   = useState(!authed);
-  // True once VesselSelector confirms vessels exist — controls "pick a boat" toggle in manual mode
-  const [hasVessels, setHasVessels]   = useState(false);
+  // Amenity filter chips
+  const [chipInstant,  setChipInstant]  = useState(false);
+  const [chipElectric, setChipElectric] = useState(false);
+  const [chipPumpOut,  setChipPumpOut]  = useState(false);
+  const [chipCovered,  setChipCovered]  = useState(false);
 
-  const [results, setResults]         = useState<MarinaRollupResultDto[]>([]);
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState<string | null>(null);
-  const [searched, setSearched]       = useState(false);
-  const [hoveredId, setHoveredId]     = useState<string | null>(null);
+  const [vesselDims, setVesselDims]     = useState<VesselDimensions | null>(null);
+  const [manualLength, setManualLength] = useState('');
+  const [manualBeam, setManualBeam]     = useState('');
+  const [manualDraft, setManualDraft]   = useState('');
+  const [showManual, setShowManual]     = useState(!authed);
+  const [hasVessels, setHasVessels]     = useState(false);
+
+  const [results, setResults]           = useState<MarinaRollupResultDto[]>([]);
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [searched, setSearched]         = useState(false);
+  const [hoveredId, setHoveredId]       = useState<string | null>(null);
   const [showSearchHere, setShowSearchHere] = useState(false);
 
-  // Map state
-  const [mapCenter, setMapCenter]     = useState<{ lat: number; lon: number } | null>(null);
-  const boundsRef                     = useRef<Bounds | null>(null);
-  const locating                      = useRef(false);
-  const abortRef                      = useRef<AbortController | null>(null);
+  const [mapCenter, setMapCenter]       = useState<{ lat: number; lon: number } | null>(null);
+  const boundsRef                       = useRef<Bounds | null>(null);
+  const locating                        = useRef(false);
+  const abortRef                        = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (locating.current) return;
@@ -144,11 +180,15 @@ export function SearchPage() {
         north: bounds.north, south: bounds.south,
         east:  bounds.east,  west:  bounds.west,
         listingKind,
-        arrivesAt:  !isLease ? arrivesAt : undefined,
-        departsAt:  !isLease ? departsAt : undefined,
-        leaseTerm:  isLease && leaseTerm ? leaseTerm : undefined,
-        priceMin:   priceMin ? Number(priceMin) : undefined,
-        priceMax:   priceMax ? Number(priceMax) : undefined,
+        arrivesAt:      !isLease ? arrivesAt : undefined,
+        departsAt:      !isLease ? departsAt : undefined,
+        leaseTerm:      isLease && leaseTerm ? leaseTerm : undefined,
+        priceMin:       priceMin ? Number(priceMin) : undefined,
+        priceMax:       priceMax ? Number(priceMax) : undefined,
+        instantBookOnly: chipInstant   || undefined,
+        hasPumpOut:      chipPumpOut   || undefined,
+        isAnyCovered:    chipCovered   || undefined,
+        hasElectric:     chipElectric  || undefined,
         ...vp,
       }, controller.signal);
       setResults(data);
@@ -162,7 +202,6 @@ export function SearchPage() {
 
   function runSearchAtCenter(lat: number, lon: number) {
     setMapCenter({ lat, lon });
-    // Approximate a 25-mile bounding box for the initial zoom-10 view
     const delta = 0.4;
     runSearchWithBounds({ north: lat + delta, south: lat - delta, east: lon + delta, west: lon - delta });
   }
@@ -207,26 +246,32 @@ export function SearchPage() {
 
   function handleListingKindChange(k: ListingKind) {
     setListingKind(k);
-    // Clear price filter when listing kind changes so stale values don't linger
     setPriceMin('');
     setPriceMax('');
     setResults([]);
     setSearched(false);
   }
 
+  const summaryText = searched
+    ? `${results.length} marina${results.length !== 1 ? 's' : ''} in view`
+    : null;
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
       <NavBar />
 
-      <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 pt-3 pb-4">
+      {/* Filter bar */}
+      <div className="bg-card border-b border-border shadow-sm shrink-0">
+        <div className="px-4 pt-3 pb-3">
           {/* Transient / Lease toggle */}
-          <div className="flex gap-1 mb-3 w-fit rounded-lg bg-slate-100 p-1">
+          <div className="flex gap-1 mb-3 w-fit rounded-lg bg-muted p-1">
             {(['Transient', 'Lease'] as ListingKind[]).map((k) => (
               <button key={k} type="button"
                 onClick={() => handleListingKindChange(k)}
                 className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  listingKind === k ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>
+                  listingKind === k
+                    ? 'bg-card shadow text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'}`}>
                 {k === 'Transient' ? 'Transient dockage' : 'Seasonal / annual lease'}
               </button>
             ))}
@@ -235,15 +280,15 @@ export function SearchPage() {
           <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
             {/* Location */}
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Location</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Location</label>
               <div className="flex gap-1.5">
                 <input type="text" value={locationText} onChange={(e) => setLocationText(e.target.value)}
-                  placeholder="City, state or zip" className={`${input} w-48`} />
+                  placeholder="City, state or zip" className={`${inputCls} w-48`} />
                 <button type="button" title="Use GPS"
                   onClick={() => navigator.geolocation?.getCurrentPosition(
                     (p) => { setLocationText(''); runSearchAtCenter(p.coords.latitude, p.coords.longitude); },
                     () => alert('Location access denied.'))}
-                  className="rounded-lg border border-slate-300 px-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 text-sm">
+                  className="rounded-lg border border-border px-2 text-muted-foreground hover:text-foreground hover:bg-muted text-sm transition-colors">
                   📍
                 </button>
               </div>
@@ -253,25 +298,24 @@ export function SearchPage() {
             {listingKind === 'Transient' && (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Arrival</label>
-                  <input type="date" value={arrivesAt} onChange={(e) => setArrivesAt(e.target.value)} className={`${input} w-36`} />
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Arrival</label>
+                  <input type="date" value={arrivesAt} onChange={(e) => setArrivesAt(e.target.value)} className={`${inputCls} w-36`} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Departure</label>
-                  <input type="date" value={departsAt} onChange={(e) => setDepartsAt(e.target.value)} className={`${input} w-36`} />
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Departure</label>
+                  <input type="date" value={departsAt} onChange={(e) => setDepartsAt(e.target.value)} className={`${inputCls} w-36`} />
                 </div>
               </>
             )}
             {listingKind === 'Lease' && (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Desired start</label>
-                  <input type="date" value={arrivesAt} onChange={(e) => setArrivesAt(e.target.value)} className={`${input} w-36`} />
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Desired start</label>
+                  <input type="date" value={arrivesAt} onChange={(e) => setArrivesAt(e.target.value)} className={`${inputCls} w-36`} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Lease term</label>
-                  <select value={leaseTerm} onChange={(e) => setLeaseTerm(e.target.value as LeaseTerm | '')}
-                    className={`${input} w-32`}>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Lease term</label>
+                  <select value={leaseTerm} onChange={(e) => setLeaseTerm(e.target.value as LeaseTerm | '')} className={`${inputCls} w-32`}>
                     <option value="">Any</option>
                     <option value="Monthly">Monthly</option>
                     <option value="Seasonal">Seasonal</option>
@@ -281,29 +325,19 @@ export function SearchPage() {
               </>
             )}
 
-            {/* Price range — visible only when a listing kind is active */}
+            {/* Price range */}
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Price min</label>
-              <input
-                type="number" min="0" step="1"
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                placeholder="$"
-                className={`${input} w-24`}
-              />
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Price min</label>
+              <input type="number" min="0" step="1" value={priceMin} onChange={(e) => setPriceMin(e.target.value)}
+                placeholder="$" className={`${inputCls} w-24`} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Price max</label>
-              <input
-                type="number" min="0" step="1"
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                placeholder="$"
-                className={`${input} w-24`}
-              />
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Price max</label>
+              <input type="number" min="0" step="1" value={priceMax} onChange={(e) => setPriceMax(e.target.value)}
+                placeholder="$" className={`${inputCls} w-24`} />
             </div>
 
-            {/* Vessel picker or manual dimensions */}
+            {/* Vessel */}
             {!showManual ? (
               <VesselSelector
                 onSelect={(_id, dims) => { setVesselDims(dims); setHasVessels(true); }}
@@ -319,17 +353,15 @@ export function SearchPage() {
                 <div className="flex items-end">
                   {hasVessels ? (
                     <button type="button" onClick={() => { setShowManual(false); setVesselDims(null); }}
-                      className="text-xs text-slate-400 hover:text-slate-600 underline mb-2">
+                      className="text-xs text-muted-foreground hover:text-foreground underline mb-2">
                       pick a boat
                     </button>
                   ) : authed ? (
-                    <a href="/boats"
-                      className="text-xs text-slate-500 hover:text-slate-700 underline mb-2">
+                    <a href="/boats" className="text-xs text-muted-foreground hover:text-foreground underline mb-2">
                       Add a vessel →
                     </a>
                   ) : (
-                    <a href="/login"
-                      className="text-xs text-slate-500 hover:text-slate-700 underline mb-2">
+                    <a href="/login" className="text-xs text-muted-foreground hover:text-foreground underline mb-2">
                       Create an account to save your vessel
                     </a>
                   )}
@@ -337,69 +369,36 @@ export function SearchPage() {
               </>
             )}
 
-            <button type="submit" disabled={loading} className={btn}>
+            <button type="submit" disabled={loading}
+              className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
               {loading ? 'Searching…' : 'Search'}
             </button>
           </form>
-          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+          {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+        </div>
+
+        {/* Filter chips row */}
+        <div className="flex gap-2 px-4 pb-3 flex-wrap">
+          <FilterChip label="Instant Book" active={chipInstant}  onClick={() => setChipInstant(!chipInstant)} />
+          <FilterChip label="Electric"     active={chipElectric} onClick={() => setChipElectric(!chipElectric)} />
+          <FilterChip label="Pump-out"     active={chipPumpOut}  onClick={() => setChipPumpOut(!chipPumpOut)} />
+          <FilterChip label="Covered"      active={chipCovered}  onClick={() => setChipCovered(!chipCovered)} />
         </div>
       </div>
 
-      {/* Map + results */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Map */}
-          <div className="relative h-[480px] rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-            <MapContainer center={[DEFAULT_LAT, DEFAULT_LON]} zoom={10} style={{ height: '100%', width: '100%' }}>
-              <MapController
-                center={mapCenter}
-                onBoundsChange={(b) => { boundsRef.current = b; }}
-                onUserMoved={() => setShowSearchHere(true)}
-              />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {results.map((r) => (
-                <Marker key={r.marinaId} position={[r.latitude, r.longitude]}>
-                  <Popup>
-                    <div className="text-sm">
-                      <p className="font-semibold">{r.marinaName}</p>
-                      <p className="text-slate-500">{r.city}{r.state ? `, ${r.state}` : ''}</p>
-                      <p className="mt-1">{r.availableCount} available</p>
-                      <button
-                        type="button"
-                        onClick={() => navigateToMarina(r.marinaId)}
-                        className="text-blue-600 underline mt-1 block text-left">
-                        View slips
-                      </button>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+      {/* Split panel: list (left) + map (right) */}
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
 
-            {showSearchHere && (
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]">
-                <button
-                  type="button"
-                  onClick={() => { if (boundsRef.current) runSearchWithBounds(boundsRef.current); }}
-                  className="rounded-full bg-white border border-slate-300 shadow-md px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                  Search this area
-                </button>
-              </div>
-            )}
+        {/* Marina list panel */}
+        <div className="w-full md:w-96 shrink-0 flex flex-col border-r border-border overflow-hidden md:h-full h-80">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30 shrink-0">
+            <span className="text-xs font-medium text-muted-foreground">
+              {summaryText ?? 'Enter a location or allow GPS access to find marinas'}
+            </span>
           </div>
-
-          {/* Marina list */}
-          <div className="space-y-3 overflow-y-auto max-h-[480px] pr-1">
-            {!searched && (
-              <p className="text-sm text-slate-400 pt-2">
-                Enter a location or allow GPS access, then click Search to find marinas near you.
-              </p>
-            )}
+          <div className="overflow-y-auto flex-1 p-3 space-y-2">
             {searched && results.length === 0 && !loading && (
-              <p className="text-sm text-slate-400 pt-2">
+              <p className="text-sm text-muted-foreground pt-2">
                 No marinas with available {listingKind === 'Lease' ? 'lease listings' : 'slips'} found.
                 Try panning the map and clicking "Search this area."
               </p>
@@ -411,28 +410,75 @@ export function SearchPage() {
                 onClick={() => navigateToMarina(r.marinaId)}
                 onMouseEnter={() => setHoveredId(r.marinaId)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`w-full text-left bg-white rounded-xl border p-4 hover:shadow-md transition-shadow ${
-                  hoveredId === r.marinaId ? 'border-slate-400' : 'border-slate-200'}`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{r.marinaName}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {r.city}{r.state ? `, ${r.state}` : ''}
-                      {' · '}{r.distanceMilesFromCenter} mi from center
+                className={`w-full text-left bg-card rounded-xl border p-3 hover:shadow-md transition-all ${
+                  hoveredId === r.marinaId ? 'border-primary/50 shadow-sm' : 'border-border'}`}>
+                <div className="flex gap-3">
+                  {/* Photo slot */}
+                  {r.photoUrl
+                    ? <img src={r.photoUrl} alt={r.marinaName} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                    : <MarinaPhotoPlaceholder />}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="text-sm font-semibold text-foreground truncate">{r.marinaName}</p>
+                      <p className="text-xs text-muted-foreground shrink-0">{r.distanceMilesFromCenter} mi</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {r.city}{r.state ? `, ${r.state}` : ''} · {r.availableCount} slip{r.availableCount !== 1 ? 's' : ''} fit
                     </p>
-                  </div>
-                  <div className="text-right ml-4 shrink-0">
-                    <p className="text-xs text-slate-500 mt-0.5">{r.availableCount} available</p>
-                    {r.instantBookAvailable && (
-                      <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                        Instant
-                      </span>
-                    )}
+                    {/* Amenity badges */}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {r.instantBookAvailable && <AmenityBadge label="Instant" color="bg-primary/10 text-primary" />}
+                      {r.hasElectric           && <AmenityBadge label="Electric" color="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" />}
+                      {r.hasPumpOut            && <AmenityBadge label="Pump-out" color="bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400" />}
+                      {r.isAnyCovered          && <AmenityBadge label="Covered"  color="bg-muted text-muted-foreground" />}
+                    </div>
+                    <p className="text-xs text-primary mt-2 font-medium">View slips →</p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Map panel */}
+        <div className="relative flex-1">
+          <MapContainer center={[DEFAULT_LAT, DEFAULT_LON]} zoom={10} style={{ height: '100%', width: '100%' }}>
+            <MapController
+              center={mapCenter}
+              onBoundsChange={(b) => { boundsRef.current = b; }}
+              onUserMoved={() => setShowSearchHere(true)}
+            />
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {results.map((r) => (
+              <Marker key={r.marinaId} position={[r.latitude, r.longitude]}>
+                <Popup>
+                  <div className="text-sm">
+                    <p className="font-semibold">{r.marinaName}</p>
+                    <p className="text-muted-foreground text-xs">{r.city}{r.state ? `, ${r.state}` : ''}</p>
+                    <p className="mt-1">{r.availableCount} available</p>
+                    <button type="button" onClick={() => navigateToMarina(r.marinaId)}
+                      className="text-primary underline mt-1 block text-left text-xs">
+                      View slips
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+
+          {showSearchHere && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]">
+              <button type="button"
+                onClick={() => { if (boundsRef.current) runSearchWithBounds(boundsRef.current); }}
+                className="rounded-full bg-card border border-border shadow-md px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                Search this area
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

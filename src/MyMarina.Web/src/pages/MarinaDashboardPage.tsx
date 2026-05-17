@@ -121,26 +121,26 @@ function MarinaInfoPanel({ marina, onSaved }: { marina: MarinaDto; onSaved: (m: 
 
   if (!editing) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-lg font-semibold text-slate-800">{marina.name}</h2>
-            <p className="text-sm text-slate-500 mt-0.5">{marina.marinaType} · {marina.timeZoneId}</p>
+            <h2 className="text-lg font-semibold text-foreground">{marina.name}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{marina.marinaType} · {marina.timeZoneId}</p>
             {marina.addressCity && (
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {[marina.addressStreet, marina.addressCity, marina.addressState, marina.addressZip].filter(Boolean).join(', ')}
               </p>
             )}
             {marina.latitude != null && marina.longitude != null ? (
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 📍 {marina.latitude.toFixed(5)}, {marina.longitude.toFixed(5)}
               </p>
             ) : (
               <p className="text-sm text-amber-600 mt-1">⚠ No location set — slips won't appear in search</p>
             )}
-            {marina.description && <p className="text-sm text-slate-600 mt-2">{marina.description}</p>}
+            {marina.description && <p className="text-sm text-foreground/80 mt-2">{marina.description}</p>}
           </div>
-          <button onClick={() => setEditing(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+          <button onClick={() => setEditing(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
             Edit
           </button>
         </div>
@@ -149,8 +149,8 @@ function MarinaInfoPanel({ marina, onSaved }: { marina: MarinaDto; onSaved: (m: 
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h2 className="text-base font-semibold text-slate-800 mb-4">Edit marina info</h2>
+    <div className="bg-card rounded-xl border border-border p-6">
+      <h2 className="text-base font-semibold text-foreground mb-4">Edit marina info</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <Field label="Marina name" error={errors.name?.message}>
           <input {...register('name')} className={input} />
@@ -292,19 +292,19 @@ function DocksPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Docks</h2>
-        <button onClick={() => setShowCreate(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Docks</h2>
+        <button onClick={() => setShowCreate(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
           + Add dock
         </button>
       </div>
 
       {docks.length === 0 && !showCreate && (
-        <p className="text-sm text-slate-400">No docks yet. Slips can also be free-standing.</p>
+        <p className="text-sm text-muted-foreground/70">No docks yet. Slips can also be free-standing.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {docks.map((dock) => (
           <li key={dock.id} className="py-3">
             {editingId === dock.id ? (
@@ -321,15 +321,15 @@ function DocksPanel({ marinaId }: { marinaId: string }) {
             ) : (
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-sm font-medium text-slate-700">{dock.name}</span>
+                  <span className="text-sm font-medium text-foreground">{dock.name}</span>
                   {dock.description && (
-                    <span className="ml-2 text-xs text-slate-400">{dock.description}</span>
+                    <span className="ml-2 text-xs text-muted-foreground/70">{dock.description}</span>
                   )}
-                  <span className="ml-2 text-xs text-slate-300">#{dock.sortOrder}</span>
+                  <span className="ml-2 text-xs text-muted-foreground/50">#{dock.sortOrder}</span>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setEditingId(dock.id)} className="text-xs text-slate-400 hover:text-slate-700">Edit</button>
-                  <button onClick={() => handleDelete(dock.id)} className="text-xs text-slate-400 hover:text-red-500">Remove</button>
+                  <button onClick={() => setEditingId(dock.id)} className="text-xs text-muted-foreground/70 hover:text-foreground">Edit</button>
+                  <button onClick={() => handleDelete(dock.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">Remove</button>
                 </div>
               </div>
             )}
@@ -338,8 +338,8 @@ function DocksPanel({ marinaId }: { marinaId: string }) {
       </ul>
 
       {showCreate && (
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <p className="text-xs font-medium text-slate-500 mb-2">New dock</p>
+        <div className="mt-4 border-t border-border/50 pt-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">New dock</p>
           <DockForm
             defaultValues={{ sortOrder: String(docks.length) }}
             onSubmit={handleCreate}
@@ -412,13 +412,13 @@ function SlipForm({
           <input {...register('name')} placeholder="A-1" className={input} />
         </Field>
         <Field label="Dock (optional)">
-          <select {...register('dockId')} className={`${input} bg-white`}>
+          <select {...register('dockId')} className={`${input} bg-card`}>
             <option value="">— Free-standing —</option>
             {docks.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </Field>
         <Field label="Slip type">
-          <select {...register('slipType')} className={`${input} bg-white`}>
+          <select {...register('slipType')} className={`${input} bg-card`}>
             {(Object.keys(SLIP_TYPE_LABELS) as SlipType[]).map((t) => (
               <option key={t} value={t}>{SLIP_TYPE_LABELS[t]}</option>
             ))}
@@ -426,7 +426,7 @@ function SlipForm({
         </Field>
         {showStatus && (
           <Field label="Status">
-            <select {...register('status')} className={`${input} bg-white`}>
+            <select {...register('status')} className={`${input} bg-card`}>
               {Object.entries(SLIP_STATUS_LABELS).map(([v, label]) => (
                 <option key={v} value={v}>{label}</option>
               ))}
@@ -444,15 +444,15 @@ function SlipForm({
         </Field>
       </div>
       <div className="flex flex-wrap gap-4 items-center text-sm">
-        <label className="flex items-center gap-2 text-slate-600">
+        <label className="flex items-center gap-2 text-foreground/80">
           <input {...register('hasWater')} type="checkbox" /> Water hookup
         </label>
-        <label className="flex items-center gap-2 text-slate-600">
+        <label className="flex items-center gap-2 text-foreground/80">
           <input {...register('hasElectric')} type="checkbox" /> Electric hookup
         </label>
         {hasElectric && (
           <Field label="Amperage">
-            <select {...register('electric')} className={`${input} bg-white`}>
+            <select {...register('electric')} className={`${input} bg-card`}>
               <option value="">— Select —</option>
               <option value="30">30A</option>
               <option value="50">50A</option>
@@ -466,10 +466,10 @@ function SlipForm({
       </Field>
 
       {/* Transient pricing */}
-      <div className="border border-slate-100 rounded-lg p-3 space-y-2">
+      <div className="border border-border/50 rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-slate-600">Transient default rate</p>
-          <label className="flex items-center gap-1 text-xs text-slate-500">
+          <p className="text-xs font-medium text-foreground/80">Transient default rate</p>
+          <label className="flex items-center gap-1 text-xs text-muted-foreground">
             <input {...register('clearTransientRate')} type="checkbox" />
             Clear rate
           </label>
@@ -477,7 +477,7 @@ function SlipForm({
         {!clearTransient && (
           <div className="grid grid-cols-3 gap-2">
             <Field label="Rate kind">
-              <select {...register('defaultTransientRateKind')} className={`${input} bg-white`}>
+              <select {...register('defaultTransientRateKind')} className={`${input} bg-card`}>
                 <option value="">— none —</option>
                 <option value="Flat">Flat ($/night)</option>
                 <option value="PerFoot">Per foot ($/ft/night)</option>
@@ -494,10 +494,10 @@ function SlipForm({
       </div>
 
       {/* Lease pricing */}
-      <div className="border border-slate-100 rounded-lg p-3 space-y-2">
+      <div className="border border-border/50 rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-slate-600">Lease default rate</p>
-          <label className="flex items-center gap-1 text-xs text-slate-500">
+          <p className="text-xs font-medium text-foreground/80">Lease default rate</p>
+          <label className="flex items-center gap-1 text-xs text-muted-foreground">
             <input {...register('clearLeaseRate')} type="checkbox" />
             Clear rate
           </label>
@@ -505,7 +505,7 @@ function SlipForm({
         {!clearLease && (
           <div className="grid grid-cols-3 gap-2">
             <Field label="Rate kind">
-              <select {...register('defaultLeaseRateKind')} className={`${input} bg-white`}>
+              <select {...register('defaultLeaseRateKind')} className={`${input} bg-card`}>
                 <option value="">— none —</option>
                 <option value="Flat">Flat</option>
                 <option value="PerFoot">Per foot</option>
@@ -515,7 +515,7 @@ function SlipForm({
               <input {...register('defaultLeaseBaseRate')} type="number" step="0.01" className={input} />
             </Field>
             <Field label="Default term">
-              <select {...register('defaultLeaseTerm')} className={`${input} bg-white`}>
+              <select {...register('defaultLeaseTerm')} className={`${input} bg-card`}>
                 <option value="">— any —</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Seasonal">Seasonal</option>
@@ -597,24 +597,24 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Slips</h2>
-        <button onClick={() => setShowCreate(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Slips</h2>
+        <button onClick={() => setShowCreate(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
           + Add slip
         </button>
       </div>
 
       {slips.length === 0 && !showCreate && (
-        <p className="text-sm text-slate-400">No slips yet.</p>
+        <p className="text-sm text-muted-foreground/70">No slips yet.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {slips.map((slip) => (
           <li key={slip.id} className="py-3">
             {editingSlipId === slip.id ? (
               <div>
-                <p className="text-xs font-medium text-slate-500 mb-2">Editing {slip.name}</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Editing {slip.name}</p>
                 <SlipForm
                   docks={docks}
                   showStatus
@@ -647,15 +647,15 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
             ) : (
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-sm font-medium text-slate-700">{slip.name}</span>
+                  <span className="text-sm font-medium text-foreground">{slip.name}</span>
                   {slip.dockId && (
-                    <span className="ml-2 text-xs text-slate-400">
+                    <span className="ml-2 text-xs text-muted-foreground/70">
                       {docks.find((d) => d.id === slip.dockId)?.name ?? 'Dock'}
                     </span>
                   )}
-                  <span className="ml-2 text-xs text-slate-400">{slip.slipType} · {slip.maxLength}′ L · {slip.maxBeam}′ B · {slip.maxDraft}′ D</span>
-                  {slip.hasWater && <span className="ml-1 text-xs text-slate-400">· Water</span>}
-                  {slip.hasElectric && <span className="ml-1 text-xs text-slate-400">· Electric {slip.electric}A</span>}
+                  <span className="ml-2 text-xs text-muted-foreground/70">{slip.slipType} · {slip.maxLength}′ L · {slip.maxBeam}′ B · {slip.maxDraft}′ D</span>
+                  {slip.hasWater && <span className="ml-1 text-xs text-muted-foreground/70">· Water</span>}
+                  {slip.hasElectric && <span className="ml-1 text-xs text-muted-foreground/70">· Electric {slip.electric}A</span>}
                   {slip.defaultTransientBaseRate != null && (
                     <span className="ml-1 text-xs text-blue-500">
                       · T: ${slip.defaultTransientBaseRate}{slip.defaultTransientRateKind === 'PerFoot' ? '/ft' : ''}/night
@@ -668,10 +668,10 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
                   )}
                 </div>
                 <div className="flex gap-3 shrink-0 ml-3">
-                  <button onClick={() => setEditingSlipId(slip.id)} className="text-xs text-slate-400 hover:text-slate-700">
+                  <button onClick={() => setEditingSlipId(slip.id)} className="text-xs text-muted-foreground/70 hover:text-foreground">
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(slip.id)} className="text-xs text-slate-400 hover:text-red-500">
+                  <button onClick={() => handleDelete(slip.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">
                     Remove
                   </button>
                 </div>
@@ -682,8 +682,8 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
       </ul>
 
       {showCreate && (
-        <div className="mt-4 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-medium text-slate-700 mb-3">New slip</h3>
+        <div className="mt-4 border-t border-border/50 pt-4">
+          <h3 className="text-sm font-medium text-foreground mb-3">New slip</h3>
           <SlipForm
             docks={docks}
             onSubmit={handleCreate}
@@ -732,17 +732,17 @@ function BillingAccountsPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Billing Accounts</h2>
-        <button onClick={() => setShowCreate((v) => !v)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Billing Accounts</h2>
+        <button onClick={() => setShowCreate((v) => !v)} className="text-sm text-muted-foreground hover:text-foreground underline">
           {showCreate ? 'Cancel' : '+ Add account'}
         </button>
       </div>
 
       {showCreate && (
-        <form onSubmit={handleSubmit(onCreate)} className="mb-4 p-4 bg-slate-50 rounded-lg space-y-3">
-          <h3 className="text-sm font-medium text-slate-700">New billing account</h3>
+        <form onSubmit={handleSubmit(onCreate)} className="mb-4 p-4 bg-muted/30 rounded-lg space-y-3">
+          <h3 className="text-sm font-medium text-foreground">New billing account</h3>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Account name" error={errors.displayName?.message}>
               <input {...register('displayName')} placeholder="John Smith" className={input} />
@@ -770,24 +770,24 @@ function BillingAccountsPanel({ marinaId }: { marinaId: string }) {
       )}
 
       {accounts.length === 0 && !showCreate && (
-        <p className="text-sm text-slate-400">No billing accounts yet.</p>
+        <p className="text-sm text-muted-foreground/70">No billing accounts yet.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {accounts.map((acct) => (
           <li key={acct.id}>
             <div
-              className="py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 -mx-2 px-2 rounded"
+              className="py-3 flex justify-between items-center cursor-pointer hover:bg-muted/30 -mx-2 px-2 rounded"
               onClick={() => setExpanded((v) => (v === acct.id ? null : acct.id))}
             >
               <div>
-                <span className="text-sm font-medium text-slate-700">{acct.displayName}</span>
-                <span className="ml-2 text-xs text-slate-400">{acct.billingEmail}</span>
+                <span className="text-sm font-medium text-foreground">{acct.displayName}</span>
+                <span className="ml-2 text-xs text-muted-foreground/70">{acct.billingEmail}</span>
                 {!acct.isActive && (
                   <span className="ml-2 text-xs text-red-500">Inactive</span>
                 )}
               </div>
-              <span className="text-xs text-slate-400">{expanded === acct.id ? '▲' : '▼'}</span>
+              <span className="text-xs text-muted-foreground/70">{expanded === acct.id ? '▲' : '▼'}</span>
             </div>
             {expanded === acct.id && (
               <BillingAccountDetail marinaId={marinaId} account={acct} onUpdated={(updated) =>
@@ -908,15 +908,15 @@ function BillingAccountDetail({
         </div>
       ) : (
         <div className="flex items-start justify-between">
-          <div className="space-y-0.5 text-slate-500">
+          <div className="space-y-0.5 text-muted-foreground">
             {account.billingPhone && <p>📞 {account.billingPhone}</p>}
             {account.emergencyContactName && (
               <p>🆘 {account.emergencyContactName}{account.emergencyContactPhone ? ` · ${account.emergencyContactPhone}` : ''}</p>
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setEditing(true)} className="text-xs text-slate-400 hover:text-slate-700 underline">Edit</button>
-            <button onClick={handleToggleActive} className="text-xs text-slate-400 hover:text-slate-700 underline">
+            <button onClick={() => setEditing(true)} className="text-xs text-muted-foreground/70 hover:text-foreground underline">Edit</button>
+            <button onClick={handleToggleActive} className="text-xs text-muted-foreground/70 hover:text-foreground underline">
               {account.isActive ? 'Deactivate' : 'Reactivate'}
             </button>
           </div>
@@ -925,16 +925,16 @@ function BillingAccountDetail({
 
       {/* Members */}
       <div>
-        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Members</p>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Members</p>
         {members.length === 0 ? (
-          <p className="text-xs text-slate-400">No platform members linked.</p>
+          <p className="text-xs text-muted-foreground/70">No platform members linked.</p>
         ) : (
           <ul className="space-y-1">
             {members.map((m) => (
               <li key={m.id} className="flex items-center justify-between">
-                <span className="text-xs text-slate-600">
+                <span className="text-xs text-foreground/80">
                   {m.userName || m.userEmail} · {m.role}
-                  {!m.acceptedAt && <span className="ml-1 text-slate-400">(pending)</span>}
+                  {!m.acceptedAt && <span className="ml-1 text-muted-foreground/70">(pending)</span>}
                 </span>
                 <button onClick={() => handleRemoveMember(m.id)} className="text-xs text-red-400 hover:text-red-600">Remove</button>
               </li>
@@ -944,7 +944,7 @@ function BillingAccountDetail({
         <form onSubmit={handleInvite} className="flex gap-2 mt-2">
           <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}
             type="email" placeholder="Invite by email…" className={`${input} text-xs py-1.5`} />
-          <button type="submit" disabled={inviting} className="rounded-lg bg-slate-800 text-white px-3 py-1.5 text-xs hover:bg-slate-700 disabled:opacity-50">
+          <button type="submit" disabled={inviting} className="rounded-lg bg-foreground text-background px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-50">
             {inviting ? '…' : 'Invite'}
           </button>
         </form>
@@ -953,23 +953,23 @@ function BillingAccountDetail({
       {/* Vessels */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Vessels</p>
-          <button onClick={() => setShowAddVessel((v) => !v)} className="text-xs text-slate-400 hover:text-slate-700 underline">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vessels</p>
+          <button onClick={() => setShowAddVessel((v) => !v)} className="text-xs text-muted-foreground/70 hover:text-foreground underline">
             {showAddVessel ? 'Cancel' : '+ Add vessel'}
           </button>
         </div>
         {vessels.length === 0 && !showAddVessel && (
-          <p className="text-xs text-slate-400">No vessels on file.</p>
+          <p className="text-xs text-muted-foreground/70">No vessels on file.</p>
         )}
         <ul className="space-y-1">
           {vessels.map((v) => (
-            <li key={v.id} className="text-xs text-slate-600">
+            <li key={v.id} className="text-xs text-foreground/80">
               {v.vesselName}
               {v.vesselMake && ` · ${v.vesselMake}`}
               {v.vesselLength && ` · ${v.vesselLength}′`}
-              {v.vesselIsGhost && <span className="ml-1 text-slate-400">(unregistered)</span>}
+              {v.vesselIsGhost && <span className="ml-1 text-muted-foreground/70">(unregistered)</span>}
               {v.insuranceExpiresOn && (
-                <span className={`ml-2 ${new Date(v.insuranceExpiresOn) < new Date() ? 'text-red-500' : 'text-slate-400'}`}>
+                <span className={`ml-2 ${new Date(v.insuranceExpiresOn) < new Date() ? 'text-red-500' : 'text-muted-foreground/70'}`}>
                   Ins. exp. {new Date(v.insuranceExpiresOn).toLocaleDateString()}
                 </span>
               )}
@@ -977,41 +977,41 @@ function BillingAccountDetail({
           ))}
         </ul>
         {showAddVessel && (
-          <form onSubmit={handleAddVessel} className="mt-2 space-y-2 p-3 bg-slate-50 rounded-lg">
+          <form onSubmit={handleAddVessel} className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Vessel name *</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Vessel name *</label>
                 <input value={vesselName} onChange={(e) => setVesselName(e.target.value)}
                   placeholder="Sea Breeze" className={`${input} text-xs py-1.5`} required />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Make / brand</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Make / brand</label>
                 <input value={vesselMake} onChange={(e) => setVesselMake(e.target.value)}
                   placeholder="Catalina" className={`${input} text-xs py-1.5`} />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Length (ft)</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Length (ft)</label>
                 <input type="number" step="0.1" value={vesselLength} onChange={(e) => setVesselLength(e.target.value)}
                   className={`${input} text-xs py-1.5`} />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Beam (ft)</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Beam (ft)</label>
                 <input type="number" step="0.1" value={vesselBeam} onChange={(e) => setVesselBeam(e.target.value)}
                   className={`${input} text-xs py-1.5`} />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Draft (ft)</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Draft (ft)</label>
                 <input type="number" step="0.1" value={vesselDraft} onChange={(e) => setVesselDraft(e.target.value)}
                   className={`${input} text-xs py-1.5`} />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-0.5">Owner email (to claim)</label>
+                <label className="block text-xs text-muted-foreground mb-0.5">Owner email (to claim)</label>
                 <input type="email" value={claimEmail} onChange={(e) => setClaimEmail(e.target.value)}
                   placeholder="Optional" className={`${input} text-xs py-1.5`} />
               </div>
             </div>
             <button type="submit" disabled={addingVessel}
-              className="rounded-lg bg-slate-800 text-white px-3 py-1.5 text-xs hover:bg-slate-700 disabled:opacity-50">
+              className="rounded-lg bg-foreground text-background px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-50">
               {addingVessel ? 'Adding…' : 'Add vessel'}
             </button>
           </form>
@@ -1128,24 +1128,24 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Slip Assignments</h2>
-        <button onClick={() => setShowForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Slip Assignments</h2>
+        <button onClick={() => setShowForm(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
           + New assignment
         </button>
       </div>
 
       {assignments.length === 0 && !showForm && (
-        <p className="text-sm text-slate-400">No active assignments.</p>
+        <p className="text-sm text-muted-foreground/70">No active assignments.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {assignments.map((a) => (
           <li key={a.id} className="py-3">
             {editingId === a.id ? (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-800">{a.slipName} — editing</p>
+                <p className="text-sm font-medium text-foreground">{a.slipName} — editing</p>
                 <div className="grid grid-cols-2 gap-2">
                   <Field label="End date (leave blank for open-ended)">
                     <input type="date" value={editForm.endDate}
@@ -1168,20 +1168,20 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
             ) : (
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm font-medium text-slate-800">
+                  <p className="text-sm font-medium text-foreground">
                     {a.slipName}
-                    <span className="ml-2 text-xs text-slate-400 font-normal">{a.assignmentType}</span>
+                    <span className="ml-2 text-xs text-muted-foreground/70 font-normal">{a.assignmentType}</span>
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {a.billingAccountDisplayName} · {a.vesselName}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
                     {a.startDate} – {a.endDate ?? 'open-ended'} · ${a.baseRate.toLocaleString()}/period
                   </p>
                 </div>
                 <div className="flex gap-3 shrink-0 ml-3">
-                  <button onClick={() => startEdit(a)} className="text-xs text-slate-400 hover:text-slate-700">Edit</button>
-                  <button onClick={() => handleEnd(a.id)} className="text-xs text-slate-400 hover:text-red-500">End</button>
+                  <button onClick={() => startEdit(a)} className="text-xs text-muted-foreground/70 hover:text-foreground">Edit</button>
+                  <button onClick={() => handleEnd(a.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">End</button>
                 </div>
               </div>
             )}
@@ -1190,12 +1190,12 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
       </ul>
 
       {showForm && (
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-medium text-slate-700">New assignment</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-border/50 pt-4">
+          <h3 className="text-sm font-medium text-foreground">New assignment</h3>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Slip" error={errors.slipId?.message}>
-              <select {...register('slipId')} className={`${input} bg-white`}>
+              <select {...register('slipId')} className={`${input} bg-card`}>
                 <option value="">— select slip —</option>
                 {slips.map((s) => (
                   <option key={s.id} value={s.id}>{s.name} ({s.maxLength}′)</option>
@@ -1204,7 +1204,7 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
             </Field>
 
             <Field label="Assignment type">
-              <select {...register('assignmentType')} className={`${input} bg-white`}>
+              <select {...register('assignmentType')} className={`${input} bg-card`}>
                 {ASSIGNMENT_TYPES.map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
@@ -1212,7 +1212,7 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
             </Field>
 
             <Field label="Billing account" error={errors.billingAccountId?.message}>
-              <select {...register('billingAccountId')} className={`${input} bg-white`}>
+              <select {...register('billingAccountId')} className={`${input} bg-card`}>
                 <option value="">— select account —</option>
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>{a.displayName}</option>
@@ -1221,7 +1221,7 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
             </Field>
 
             <Field label="Vessel" error={errors.vesselId?.message}>
-              <select {...register('vesselId')} className={`${input} bg-white`} disabled={!selectedAccountId}>
+              <select {...register('vesselId')} className={`${input} bg-card`} disabled={!selectedAccountId}>
                 <option value="">— select vessel —</option>
                 {vesselRecords.map((r) => (
                   <option key={r.vesselId} value={r.vesselId}>{r.vesselName}{r.vesselIsGhost ? ' (unregistered)' : ''}</option>
@@ -1243,10 +1243,10 @@ function AssignmentsPanel({ marinaId }: { marinaId: string }) {
           </div>
 
           <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2 text-slate-600">
+            <label className="flex items-center gap-2 text-foreground/80">
               <input {...register('allowHolderSublet')} type="checkbox" /> Holder may sublet
             </label>
-            <label className="flex items-center gap-2 text-slate-600">
+            <label className="flex items-center gap-2 text-foreground/80">
               <input {...register('allowOwnerSubletWhenAway')} type="checkbox" /> Marina may sublet when away
             </label>
           </div>
@@ -1339,28 +1339,28 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Marketplace Listings</h2>
-        <button onClick={() => setShowForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Marketplace Listings</h2>
+        <button onClick={() => setShowForm(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
           + New listing window
         </button>
       </div>
 
       {windows.length === 0 && !showForm && (
-        <p className="text-sm text-slate-400">No listing windows yet. Create one to accept transient bookings.</p>
+        <p className="text-sm text-muted-foreground/70">No listing windows yet. Create one to accept transient bookings.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {windows.map((w) => (
           <li key={w.id} className="py-3 flex justify-between items-start">
             <div>
-              <p className="text-sm font-medium text-slate-800">
+              <p className="text-sm font-medium text-foreground">
                 {w.slipName}
                 <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
                   w.status === 'Open' ? 'bg-emerald-50 text-emerald-700'
                   : w.status === 'Paused' ? 'bg-amber-50 text-amber-700'
-                  : 'bg-slate-100 text-slate-500'
+                  : 'bg-muted text-muted-foreground'
                 }`}>
                   {STATUS_LABELS[w.status]}
                 </span>
@@ -1368,13 +1368,13 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
                   <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">Instant</span>
                 )}
               </p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {new Date(w.startsAt).toLocaleDateString()} – {new Date(w.endsAt).toLocaleDateString()}
                 {' · '}${w.basePricePerNight.toFixed(2)}/night
                 {w.cleaningFee ? ` + $${w.cleaningFee.toFixed(2)} cleaning` : ''}
               </p>
               {(w.minNights || w.maxNights) && (
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
                   {w.minNights ? `Min ${w.minNights}n` : ''}
                   {w.minNights && w.maxNights ? ' · ' : ''}
                   {w.maxNights ? `Max ${w.maxNights}n` : ''}
@@ -1383,17 +1383,17 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
             </div>
             <div className="flex gap-2 mt-1">
               {w.status === 'Open' && (
-                <button onClick={() => handleSetStatus(w.id, 'Paused')} className="text-xs text-slate-400 hover:text-amber-600">
+                <button onClick={() => handleSetStatus(w.id, 'Paused')} className="text-xs text-muted-foreground/70 hover:text-amber-600">
                   Pause
                 </button>
               )}
               {w.status === 'Paused' && (
-                <button onClick={() => handleSetStatus(w.id, 'Open')} className="text-xs text-slate-400 hover:text-emerald-600">
+                <button onClick={() => handleSetStatus(w.id, 'Open')} className="text-xs text-muted-foreground/70 hover:text-emerald-600">
                   Reopen
                 </button>
               )}
               {w.status !== 'Closed' && (
-                <button onClick={() => handleSetStatus(w.id, 'Closed')} className="text-xs text-slate-400 hover:text-red-500">
+                <button onClick={() => handleSetStatus(w.id, 'Closed')} className="text-xs text-muted-foreground/70 hover:text-red-500">
                   Close
                 </button>
               )}
@@ -1403,11 +1403,11 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
       </ul>
 
       {showForm && (
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-medium text-slate-700">New listing window</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-3 border-t border-border/50 pt-4">
+          <h3 className="text-sm font-medium text-foreground">New listing window</h3>
 
           <Field label="Slip" error={errors.slipId?.message}>
-            <select {...register('slipId')} className={`${input} bg-white`}>
+            <select {...register('slipId')} className={`${input} bg-card`}>
               <option value="">— select slip —</option>
               {slips.map((s) => (
                 <option key={s.id} value={s.id}>{s.name} ({s.maxLength}′)</option>
@@ -1442,7 +1442,7 @@ function ListingsPanel({ marinaId }: { marinaId: string }) {
             </Field>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-foreground/80">
             <input {...register('instantBook')} type="checkbox" />
             Instant book (no approval required)
           </label>
@@ -1517,17 +1517,17 @@ function SubletPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h2 className="text-base font-semibold text-slate-800 mb-4">Holder Absences & Sublet Opportunities</h2>
+    <div className="bg-card rounded-xl border border-border p-6">
+      <h2 className="text-base font-semibold text-foreground mb-4">Holder Absences & Sublet Opportunities</h2>
 
-      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground/70">Loading…</p>}
 
       {!loading && absences.length === 0 && (
-        <p className="text-sm text-slate-400">No holder absences reported yet.</p>
+        <p className="text-sm text-muted-foreground/70">No holder absences reported yet.</p>
       )}
 
       {!loading && absences.length > 0 && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-border/50">
           {absences.map((a) => {
             const asgn = assignmentBySlipId[a.slipId];
             const canSublet = !!asgn;
@@ -1535,10 +1535,10 @@ function SubletPanel({ marinaId }: { marinaId: string }) {
               <li key={a.id} className="py-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">
+                    <p className="text-sm font-medium text-foreground">
                       {a.slipName}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Away {a.startsOn} – {a.endsOn}
                       {a.notes && ` · ${a.notes}`}
                     </p>
@@ -1557,40 +1557,40 @@ function SubletPanel({ marinaId }: { marinaId: string }) {
                 </div>
 
                 {showFormFor === a.id && (
-                  <div className="mt-3 bg-slate-50 rounded-lg p-3 space-y-2">
-                    <p className="text-xs font-medium text-slate-700">
+                  <div className="mt-3 bg-muted/30 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-foreground">
                       Sublet listing for {a.slipName}
-                      <span className="font-normal text-slate-400 ml-1">
+                      <span className="font-normal text-muted-foreground/70 ml-1">
                         (holder gets {((asgn.ownerSubletShareToHolder ?? 0) * 100).toFixed(0)}% of revenue)
                       </span>
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Start</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Start</label>
                         <input type="date" value={formState.startsAt}
                           onChange={(e) => setFormState({ ...formState, startsAt: e.target.value })}
                           className={input} />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">End</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">End</label>
                         <input type="date" value={formState.endsAt}
                           onChange={(e) => setFormState({ ...formState, endsAt: e.target.value })}
                           className={input} />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Price/night ($)</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Price/night ($)</label>
                         <input type="number" step="0.01" min="0.01" value={formState.basePricePerNight}
                           onChange={(e) => setFormState({ ...formState, basePricePerNight: e.target.value })}
                           className={input} />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Cleaning fee ($)</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1">Cleaning fee ($)</label>
                         <input type="number" step="0.01" min="0" value={formState.cleaningFee}
                           onChange={(e) => setFormState({ ...formState, cleaningFee: e.target.value })}
                           className={input} />
                       </div>
                     </div>
-                    <label className="flex items-center gap-2 text-xs text-slate-600">
+                    <label className="flex items-center gap-2 text-xs text-foreground/80">
                       <input type="checkbox" checked={formState.instantBook}
                         onChange={(e) => setFormState({ ...formState, instantBook: e.target.checked })} />
                       Instant book
@@ -1624,8 +1624,8 @@ const INBOX_STATUS_BADGE: Record<string, string> = {
   PendingHostMarinaApproval: 'bg-amber-50 text-amber-700',
   Confirmed:                 'bg-emerald-50 text-emerald-700',
   Declined:                  'bg-red-50 text-red-600',
-  Cancelled:                 'bg-slate-100 text-slate-500',
-  Completed:                 'bg-slate-100 text-slate-600',
+  Cancelled:                 'bg-muted text-muted-foreground',
+  Completed:                 'bg-muted text-muted-foreground',
   NoShow:                    'bg-red-50 text-red-600',
 };
 
@@ -1680,9 +1680,9 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
   );
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">
+        <h2 className="text-base font-semibold text-foreground">
           Reservation Inbox
           {pending.length > 0 && (
             <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
@@ -1693,7 +1693,7 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-600 bg-white"
+          className="text-xs border border-border rounded px-2 py-1 text-foreground/80 bg-card"
         >
           <option value="">All statuses</option>
           <option value="PendingApproval">Pending approval</option>
@@ -1705,24 +1705,24 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
         </select>
       </div>
 
-      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground/70">Loading…</p>}
 
       {!loading && reservations.length === 0 && (
-        <p className="text-sm text-slate-400">No reservations found.</p>
+        <p className="text-sm text-muted-foreground/70">No reservations found.</p>
       )}
 
       {!loading && pending.length > 0 && (
         <div className="mb-4 space-y-3">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Awaiting action</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Awaiting action</p>
           {pending.map((r) => (
             <div key={r.id} className="border border-amber-200 bg-amber-50/40 rounded-lg p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm font-medium text-slate-800">{r.slipName} · {r.vesselName}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-sm font-medium text-foreground">{r.slipName} · {r.vesselName}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {fmtDate(r.arrivesAt)} – {fmtDate(r.departsAt)} · {r.nights}n · ${r.total.toFixed(2)}
                   </p>
-                  {r.notes && <p className="text-xs text-slate-400 mt-0.5 italic">"{r.notes}"</p>}
+                  {r.notes && <p className="text-xs text-muted-foreground/70 mt-0.5 italic">"{r.notes}"</p>}
                 </div>
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${INBOX_STATUS_BADGE[r.status]}`}>
                   {INBOX_STATUS_LABEL[r.status]}
@@ -1730,7 +1730,7 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
               </div>
               <div className="mt-3 flex gap-2">
                 {r.status === 'PendingHostMarinaApproval' && r.hostMarinaId !== marinaId ? (
-                  <p className="text-xs text-slate-500 italic">
+                  <p className="text-xs text-muted-foreground italic">
                     Awaiting approval from the host marina before you can act.
                   </p>
                 ) : (
@@ -1756,24 +1756,24 @@ function InboxPanel({ marinaId }: { marinaId: string }) {
       )}
 
       {!loading && others.length > 0 && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-border/50">
           {others.map((r) => (
             <li key={r.id} className="py-3 flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-slate-800">
+                <p className="text-sm font-medium text-foreground">
                   {r.slipName}
-                  <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${INBOX_STATUS_BADGE[r.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${INBOX_STATUS_BADGE[r.status] ?? 'bg-muted text-muted-foreground'}`}>
                     {INBOX_STATUS_LABEL[r.status] ?? r.status}
                   </span>
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {r.vesselName} · {fmtDate(r.arrivesAt)} – {fmtDate(r.departsAt)} · ${r.total.toFixed(2)}
                 </p>
               </div>
               {r.status === 'Confirmed' && (
                 <button
                   onClick={() => handleNoShow(r.id)}
-                  className="text-xs text-slate-400 hover:text-red-500 mt-1"
+                  className="text-xs text-muted-foreground/70 hover:text-red-500 mt-1"
                 >
                   No-show
                 </button>
@@ -1817,32 +1817,32 @@ function StaffPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Staff</h2>
-        <button onClick={() => setShowForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+        <h2 className="text-base font-semibold text-foreground">Staff</h2>
+        <button onClick={() => setShowForm(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
           + Invite
         </button>
       </div>
 
       {staff.length === 0 && !showForm && (
-        <p className="text-sm text-slate-400">No staff yet.</p>
+        <p className="text-sm text-muted-foreground/70">No staff yet.</p>
       )}
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-border/50">
         {staff.map((m) => (
           <li key={m.id} className="py-2.5 flex justify-between items-center">
             <div>
-              <span className="text-sm text-slate-700">{m.userEmail ?? m.userId}</span>
+              <span className="text-sm text-foreground">{m.userEmail ?? m.userId}</span>
               <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
                 m.isPending
                   ? 'bg-amber-50 text-amber-700'
-                  : 'bg-slate-100 text-slate-500'
+                  : 'bg-muted text-muted-foreground'
               }`}>
                 {m.isPending ? 'Pending' : m.role}
               </span>
             </div>
-            <button onClick={() => handleRevoke(m.id)} className="text-xs text-slate-400 hover:text-red-500">
+            <button onClick={() => handleRevoke(m.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">
               Remove
             </button>
           </li>
@@ -1850,7 +1850,7 @@ function StaffPanel({ marinaId }: { marinaId: string }) {
       </ul>
 
       {showForm && (
-        <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+        <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
           <div className="flex gap-2">
             <input
               value={inviteEmail}
@@ -1862,7 +1862,7 @@ function StaffPanel({ marinaId }: { marinaId: string }) {
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as 'Staff' | 'Manager')}
-              className={`${input} w-28 bg-white`}
+              className={`${input} w-28 bg-card`}
             >
               <option value="Staff">Staff</option>
               <option value="Manager">Manager</option>
@@ -1885,12 +1885,12 @@ function StaffPanel({ marinaId }: { marinaId: string }) {
 // ─── Invoicing panel ─────────────────────────────────────────────────────────
 
 const INV_STATUS_BADGE: Record<string, string> = {
-  Draft:         'bg-slate-100 text-slate-500',
+  Draft:         'bg-muted text-muted-foreground',
   Sent:          'bg-blue-50 text-blue-700',
   PartiallyPaid: 'bg-amber-50 text-amber-700',
   Paid:          'bg-emerald-50 text-emerald-700',
   Overdue:       'bg-red-50 text-red-700',
-  Voided:        'bg-slate-100 text-slate-400',
+  Voided:        'bg-muted text-muted-foreground/70',
 };
 
 function fmtDateOnly(d: string) {
@@ -1999,14 +1999,14 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Invoices</h2>
+        <h2 className="text-base font-semibold text-foreground">Invoices</h2>
         <div className="flex items-center gap-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-600 bg-white"
+            className="text-xs border border-border rounded px-2 py-1 text-foreground/80 bg-card"
           >
             <option value="">All statuses</option>
             <option value="Draft">Draft</option>
@@ -2016,41 +2016,41 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
             <option value="Overdue">Overdue</option>
             <option value="Voided">Voided</option>
           </select>
-          <button onClick={() => setShowCreateForm(true)} className="text-sm text-slate-500 hover:text-slate-800 underline">
+          <button onClick={() => setShowCreateForm(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
             + New invoice
           </button>
         </div>
       </div>
 
-      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground/70">Loading…</p>}
 
       {!loading && invoices.length === 0 && !showCreateForm && (
-        <p className="text-sm text-slate-400">No invoices found.</p>
+        <p className="text-sm text-muted-foreground/70">No invoices found.</p>
       )}
 
       {!loading && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-border/50">
           {invoices.map((inv) => (
             <li key={inv.id} className="py-3">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-slate-800">{inv.invoiceNumber}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${INV_STATUS_BADGE[inv.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                    <span className="text-sm font-medium text-foreground">{inv.invoiceNumber}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${INV_STATUS_BADGE[inv.status] ?? 'bg-muted text-muted-foreground'}`}>
                       {inv.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">{inv.billingAccountName}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">{inv.billingAccountName}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
                     Issued {fmtDateOnly(inv.issuedDate)} · Due {fmtDateOnly(inv.dueDate)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-800">
+                  <p className="text-sm font-semibold text-foreground">
                     ${inv.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   {inv.balanceDue > 0 && inv.status !== 'Voided' && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       Balance: ${inv.balanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   )}
@@ -2074,26 +2074,26 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
 
               {/* Payment form */}
               {payingFor === inv.id && (
-                <div className="mt-3 bg-slate-50 rounded-lg p-3 space-y-2">
-                  <p className="text-xs font-medium text-slate-700">Record payment for {inv.invoiceNumber}</p>
+                <div className="mt-3 bg-muted/30 rounded-lg p-3 space-y-2">
+                  <p className="text-xs font-medium text-foreground">Record payment for {inv.invoiceNumber}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Amount ($)</label>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">Amount ($)</label>
                       <input type="number" step="0.01" min="0.01"
                         value={payForm.amount}
                         onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
                         className={input} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">Date</label>
                       <input type="date"
                         value={payForm.paidOn}
                         onChange={(e) => setPayForm({ ...payForm, paidOn: e.target.value })}
                         className={input} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Method</label>
-                      <select value={payForm.method} onChange={(e) => setPayForm({ ...payForm, method: e.target.value })} className={`${input} bg-white`}>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">Method</label>
+                      <select value={payForm.method} onChange={(e) => setPayForm({ ...payForm, method: e.target.value })} className={`${input} bg-card`}>
                         <option>Cash</option>
                         <option>Check</option>
                         <option>CreditCard</option>
@@ -2102,7 +2102,7 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Reference # (optional)</label>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1">Reference # (optional)</label>
                       <input type="text" value={payForm.referenceNumber}
                         onChange={(e) => setPayForm({ ...payForm, referenceNumber: e.target.value })}
                         className={input} />
@@ -2125,10 +2125,10 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
 
       {/* Create invoice form */}
       {showCreateForm && (
-        <div className="mt-4 border-t border-slate-100 pt-4 space-y-3">
-          <h3 className="text-sm font-medium text-slate-700">New invoice</h3>
+        <div className="mt-4 border-t border-border/50 pt-4 space-y-3">
+          <h3 className="text-sm font-medium text-foreground">New invoice</h3>
           <Field label="Billing account">
-            <select value={form.billingAccountId} onChange={(e) => setForm({ ...form, billingAccountId: e.target.value })} className={`${input} bg-white`}>
+            <select value={form.billingAccountId} onChange={(e) => setForm({ ...form, billingAccountId: e.target.value })} className={`${input} bg-card`}>
               <option value="">— select account —</option>
               {accounts.map((a) => <option key={a.id} value={a.id}>{a.displayName}</option>)}
             </select>
@@ -2141,18 +2141,18 @@ function InvoicingPanel({ marinaId }: { marinaId: string }) {
               <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className={input} />
             </Field>
           </div>
-          <p className="text-xs font-medium text-slate-600 mt-1">Line item</p>
+          <p className="text-xs font-medium text-foreground/80 mt-1">Line item</p>
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-3 sm:col-span-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
               <input type="text" value={form.lineDesc} onChange={(e) => setForm({ ...form, lineDesc: e.target.value })} placeholder="Monthly slip fee" className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Qty</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Qty</label>
               <input type="number" step="1" min="1" value={form.lineQty} onChange={(e) => setForm({ ...form, lineQty: e.target.value })} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Unit price ($)</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Unit price ($)</label>
               <input type="number" step="0.01" min="0.01" value={form.lineUnit} onChange={(e) => setForm({ ...form, lineUnit: e.target.value })} className={input} />
             </div>
           </div>
@@ -2182,7 +2182,7 @@ const INQSTATUS_BADGE: Record<string, string> = {
   UnderReview: 'bg-blue-50 text-blue-700',
   Approved:    'bg-emerald-50 text-emerald-700',
   Declined:    'bg-red-50 text-red-700',
-  Withdrawn:   'bg-slate-100 text-slate-500',
+  Withdrawn:   'bg-muted text-muted-foreground',
 };
 
 function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
@@ -2263,13 +2263,13 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
   const closed  = inquiries.filter((i) => ['Approved', 'Declined', 'Withdrawn'].includes(i.status));
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Lease Inquiries</h2>
+        <h2 className="text-base font-semibold text-foreground">Lease Inquiries</h2>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-600 bg-white"
+          className="text-xs border border-border rounded px-2 py-1 text-foreground/80 bg-card"
         >
           <option value="">All statuses</option>
           <option value="Pending">Pending</option>
@@ -2280,29 +2280,29 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
         </select>
       </div>
 
-      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground/70">Loading…</p>}
 
       {!loading && inquiries.length === 0 && (
-        <p className="text-sm text-slate-400">No lease inquiries yet.</p>
+        <p className="text-sm text-muted-foreground/70">No lease inquiries yet.</p>
       )}
 
       {!loading && pending.length > 0 && (
         <div className="mb-6 space-y-3">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Awaiting action</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Awaiting action</p>
           {pending.map((inq) => (
             <div key={inq.id} className="border border-amber-200 bg-amber-50/40 rounded-lg p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800">{inq.slipName}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">
+                  <p className="text-sm font-medium text-foreground">{inq.slipName}</p>
+                  <p className="text-xs text-foreground/80 mt-0.5">
                     {inq.requestingUserName} ({inq.requestingUserEmail})
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {inq.desiredTerm}
                     {inq.desiredStartDate && ` · Start: ${inq.desiredStartDate}`}
                     {inq.vesselName && ` · ${inq.vesselName}`}
                   </p>
-                  {inq.message && <p className="text-xs text-slate-400 mt-1 italic">"{inq.message}"</p>}
+                  {inq.message && <p className="text-xs text-muted-foreground/70 mt-1 italic">"{inq.message}"</p>}
                   {inq.agreedBaseRate != null && (
                     <p className="text-xs text-blue-600 mt-1">
                       Agreed: {inq.agreedRateKind === 'PerFoot' ? `$${inq.agreedBaseRate}/ft` : `$${inq.agreedBaseRate}`}/{inq.desiredTerm}
@@ -2310,8 +2310,8 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
                       {inq.assignmentEndDate && ` to ${inq.assignmentEndDate}`}
                     </p>
                   )}
-                  {inq.marinaNote && <p className="text-xs text-slate-500 mt-1">Note: {inq.marinaNote}</p>}
-                  <p className="text-xs text-slate-300 mt-1">Received {new Date(inq.createdAt).toLocaleDateString()}</p>
+                  {inq.marinaNote && <p className="text-xs text-muted-foreground mt-1">Note: {inq.marinaNote}</p>}
+                  <p className="text-xs text-muted-foreground/50 mt-1">Received {new Date(inq.createdAt).toLocaleDateString()}</p>
                 </div>
                 <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ml-3 ${INQSTATUS_BADGE[inq.status]}`}>
                   {inq.status === 'UnderReview' ? 'Under Review' : inq.status}
@@ -2324,7 +2324,7 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
                     <Field label="Agreed rate kind">
                       <select value={editForm.agreedRateKind}
                         onChange={(e) => setEditForm((f) => ({ ...f, agreedRateKind: e.target.value }))}
-                        className={`${input} bg-white`}>
+                        className={`${input} bg-card`}>
                         <option value="">— not set —</option>
                         <option value="Flat">Flat</option>
                         <option value="PerFoot">Per foot</option>
@@ -2351,7 +2351,7 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
                       onChange={(e) => setEditForm((f) => ({ ...f, marinaNote: e.target.value }))}
                       className={`${input} resize-none`} />
                   </Field>
-                  <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <label className="flex items-center gap-2 text-sm text-foreground/80">
                     <input type="checkbox" checked={editForm.markUnderReview}
                       onChange={(e) => setEditForm((f) => ({ ...f, markUnderReview: e.target.checked }))} />
                     Mark as under review
@@ -2401,19 +2401,19 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
 
       {!loading && closed.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">History</p>
-          <ul className="divide-y divide-slate-100">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">History</p>
+          <ul className="divide-y divide-border/50">
             {closed.map((inq) => (
               <li key={inq.id} className="py-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-800">{inq.slipName}</p>
+                      <p className="text-sm font-medium text-foreground">{inq.slipName}</p>
                       <span className={`text-xs px-1.5 py-0.5 rounded-full ${INQSTATUS_BADGE[inq.status]}`}>
                         {inq.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {inq.requestingUserName} · {inq.desiredTerm}
                       {inq.desiredStartDate && ` · ${inq.desiredStartDate}`}
                     </p>
@@ -2431,7 +2431,7 @@ function LeaseInquiriesPanel({ marinaId }: { marinaId: string }) {
                       </p>
                     )}
                     {inq.status === 'Withdrawn' && (
-                      <p className="text-xs text-slate-400 mt-0.5">Withdrawn by boater</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">Withdrawn by boater</p>
                     )}
                   </div>
                 </div>
@@ -2460,15 +2460,15 @@ export function MarinaDashboardPage() {
       .finally(() => setLoading(false));
   }, [marinaId]);
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 text-sm">Loading…</div>;
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">Loading…</div>;
   if (error || !marina || !marinaId) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <p className="text-slate-500 text-sm">{error ?? 'Marina not found.'}</p>
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground text-sm">{error ?? 'Marina not found.'}</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <NavBar />
       <MarinaStatusBanner marina={marina} onUpdated={setMarina} />
       <div className="max-w-4xl mx-auto py-10 px-4 space-y-6">
@@ -2521,13 +2521,13 @@ function MarinaStatusBanner({ marina, onUpdated }: { marina: MarinaDto; onUpdate
 
   if (!marina.isListed) {
     return (
-      <div className="bg-slate-100 border-b border-slate-200 px-4 py-3">
+      <div className="bg-muted border-b border-border px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-slate-400 text-lg">⚪</span>
+            <span className="text-muted-foreground text-lg">⚪</span>
             <div>
-              <p className="text-sm font-medium text-slate-700">Not listed on marketplace</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-sm font-medium text-foreground">Not listed on marketplace</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Boaters cannot find or book your slips yet. Go live when you're ready.
               </p>
             </div>
@@ -2588,14 +2588,14 @@ function MarinaStatusBanner({ marina, onUpdated }: { marina: MarinaDto; onUpdate
 
 // ─── shared style tokens ─────────────────────────────────────────────────────
 
-const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400';
-const btn = 'rounded-lg bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
-const btnSecondary = 'rounded-lg border border-slate-300 text-slate-600 px-4 py-2 text-sm hover:bg-slate-50 transition-colors';
+const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
+const btn = 'rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+const btnSecondary = 'rounded-lg border border-border text-muted-foreground px-4 py-2 text-sm hover:bg-muted/30 transition-colors';
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
       {children}
       {error && <p className="mt-0.5 text-xs text-red-600">{error}</p>}
     </div>
@@ -2613,7 +2613,7 @@ const REQ_STATUS_COLORS: Record<string, string> = {
 };
 
 const WO_STATUS_COLORS: Record<string, string> = {
-  Open:       'bg-slate-100 text-slate-600',
+  Open:       'bg-muted text-muted-foreground',
   InProgress: 'bg-blue-50 text-blue-700',
   OnHold:     'bg-yellow-50 text-yellow-700',
   Completed:  'bg-green-50 text-green-700',
@@ -2664,12 +2664,12 @@ function MaintenancePanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h2 className="text-base font-semibold text-slate-800 mb-4">Maintenance</h2>
+    <div className="bg-card rounded-xl border border-border p-6">
+      <h2 className="text-base font-semibold text-foreground mb-4">Maintenance</h2>
       <div className="flex gap-2 mb-4">
         {(['requests', 'workOrders'] as const).map((t) => (
           <button key={t} onClick={() => setActiveTab(t)}
-            className={`text-sm px-3 py-1 rounded-lg ${activeTab === t ? 'bg-slate-800 text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+            className={`text-sm px-3 py-1 rounded-lg ${activeTab === t ? 'bg-foreground text-background' : 'border border-border text-muted-foreground hover:bg-muted/30'}`}>
             {t === 'requests' ? `Requests (${requests.length})` : `Work Orders (${workOrders.length})`}
           </button>
         ))}
@@ -2677,25 +2677,25 @@ function MaintenancePanel({ marinaId }: { marinaId: string }) {
 
       {activeTab === 'requests' && (
         requests.length === 0
-          ? <p className="text-sm text-slate-400">No maintenance requests.</p>
+          ? <p className="text-sm text-muted-foreground/70">No maintenance requests.</p>
           : <div className="space-y-3">
             {requests.map((r) => (
-              <div key={r.id} className="border border-slate-100 rounded-lg p-3">
+              <div key={r.id} className="border border-border/50 rounded-lg p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">{r.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{r.boaterName} · {new Date(r.submittedAt).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-foreground">{r.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{r.boaterName} · {new Date(r.submittedAt).toLocaleDateString()}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] ?? ''}`}>{r.status}</span>
                     {!['Completed','Declined'].includes(r.status) && (
-                      <button onClick={() => advanceRequest(r)} className="text-xs text-slate-400 hover:text-slate-700 underline">
+                      <button onClick={() => advanceRequest(r)} className="text-xs text-muted-foreground/70 hover:text-foreground underline">
                         Advance
                       </button>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">{r.description}</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">{r.description}</p>
               </div>
             ))}
           </div>
@@ -2707,7 +2707,7 @@ function MaintenancePanel({ marinaId }: { marinaId: string }) {
             {showWoForm ? 'Cancel' : 'New work order'}
           </button>
           {showWoForm && (
-            <form onSubmit={handleCreateWo} className="border border-slate-100 rounded-lg p-3 space-y-2">
+            <form onSubmit={handleCreateWo} className="border border-border/50 rounded-lg p-3 space-y-2">
               <input value={woTitle} onChange={(e) => setWoTitle(e.target.value)} className={input} placeholder="Title" required />
               <textarea value={woDesc} onChange={(e) => setWoDesc(e.target.value)} className={`${input} h-20 resize-none`} placeholder="Description" required />
               <div className="flex gap-2">
@@ -2723,24 +2723,24 @@ function MaintenancePanel({ marinaId }: { marinaId: string }) {
             </form>
           )}
           {workOrders.length === 0
-            ? <p className="text-sm text-slate-400">No work orders.</p>
+            ? <p className="text-sm text-muted-foreground/70">No work orders.</p>
             : workOrders.map((w) => (
-              <div key={w.id} className="border border-slate-100 rounded-lg p-3">
+              <div key={w.id} className="border border-border/50 rounded-lg p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">{w.title}</p>
-                    {w.assignedToName && <p className="text-xs text-slate-500">{w.assignedToName}</p>}
+                    <p className="text-sm font-medium text-foreground">{w.title}</p>
+                    {w.assignedToName && <p className="text-xs text-muted-foreground">{w.assignedToName}</p>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${WO_STATUS_COLORS[w.status] ?? ''}`}>{w.status}</span>
                     {!['Completed','Cancelled'].includes(w.status) && (
-                      <button onClick={() => advanceWorkOrder(w)} className="text-xs text-slate-400 hover:text-slate-700 underline">
+                      <button onClick={() => advanceWorkOrder(w)} className="text-xs text-muted-foreground/70 hover:text-foreground underline">
                         Advance
                       </button>
                     )}
                   </div>
                 </div>
-                {w.scheduledDate && <p className="text-xs text-slate-400 mt-1">Scheduled: {w.scheduledDate}</p>}
+                {w.scheduledDate && <p className="text-xs text-muted-foreground/70 mt-1">Scheduled: {w.scheduledDate}</p>}
               </div>
             ))
           }
@@ -2782,16 +2782,16 @@ function AnnouncementsPanel({ marinaId }: { marinaId: string }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-slate-800">Announcements</h2>
+        <h2 className="text-base font-semibold text-foreground">Announcements</h2>
         <button onClick={() => setShowForm((v) => !v)} className={btn}>
           {showForm ? 'Cancel' : 'New announcement'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="border border-slate-100 rounded-lg p-3 mb-4 space-y-2">
+        <form onSubmit={handleCreate} className="border border-border/50 rounded-lg p-3 mb-4 space-y-2">
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={input} placeholder="Title" required />
           <textarea value={body} onChange={(e) => setBody(e.target.value)} className={`${input} h-24 resize-none`} placeholder="Body (Markdown supported)" required />
           <div className="flex gap-2 flex-wrap">
@@ -2800,7 +2800,7 @@ function AnnouncementsPanel({ marinaId }: { marinaId: string }) {
               <option value="Customers">Customers</option>
               <option value="IncomingBoaters">Incoming Boaters</option>
             </select>
-            <label className="flex items-center gap-1 text-sm text-slate-600">
+            <label className="flex items-center gap-1 text-sm text-foreground/80">
               <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} /> Pin
             </label>
           </div>
@@ -2809,15 +2809,15 @@ function AnnouncementsPanel({ marinaId }: { marinaId: string }) {
       )}
 
       {announcements.length === 0
-        ? <p className="text-sm text-slate-400">No announcements yet.</p>
+        ? <p className="text-sm text-muted-foreground/70">No announcements yet.</p>
         : <div className="space-y-3">
           {announcements.map((a) => (
-            <div key={a.id} className="border border-slate-100 rounded-lg p-3">
+            <div key={a.id} className="border border-border/50 rounded-lg p-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  {a.isPinned && <span className="text-xs text-slate-400 mr-1">📌</span>}
-                  <span className="text-sm font-medium text-slate-800">{a.title}</span>
-                  <span className="ml-2 text-xs text-slate-400">{a.audience}</span>
+                  {a.isPinned && <span className="text-xs text-muted-foreground/70 mr-1">📌</span>}
+                  <span className="text-sm font-medium text-foreground">{a.title}</span>
+                  <span className="ml-2 text-xs text-muted-foreground/70">{a.audience}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {a.publishedAt
@@ -2827,7 +2827,7 @@ function AnnouncementsPanel({ marinaId }: { marinaId: string }) {
                   <button onClick={() => handleDelete(a)} className="text-xs text-red-400 hover:underline">Delete</button>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{a.body}</p>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
             </div>
           ))}
         </div>

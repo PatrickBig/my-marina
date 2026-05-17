@@ -190,13 +190,13 @@ function VesselCard({ vessel, onEdit, onArchive }: {
       <CardContent className="pt-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="font-medium text-slate-800">{vessel.name}</p>
-            <p className="text-sm text-slate-500">
+            <p className="font-medium text-foreground">{vessel.name}</p>
+            <p className="text-sm text-muted-foreground">
               {[vessel.make, vessel.model, vessel.year].filter(Boolean).join(' ')}
               {vessel.make || vessel.model || vessel.year ? ' · ' : ''}
               {BOAT_TYPE_LABELS[vessel.boatType]}
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
               {vessel.length}ft LOA · {vessel.beam}ft beam · {vessel.draft}ft draft
             </p>
           </div>
@@ -243,11 +243,11 @@ export function MyBoatsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-5xl mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold text-slate-800">My Boats</h1>
+          <h1 className="text-xl font-semibold text-foreground">My Boats</h1>
           {!showForm && !editingVessel && (
             <Button onClick={() => setShowForm(true)}>Add a boat</Button>
           )}
@@ -269,9 +269,9 @@ export function MyBoatsPage() {
         )}
 
         {loading ? (
-          <p className="text-slate-500 text-sm">Loading…</p>
+          <p className="text-muted-foreground text-sm">Loading…</p>
         ) : vessels.length === 0 ? (
-          <p className="text-slate-500 text-sm">
+          <p className="text-muted-foreground text-sm">
             No boats yet.{' '}
             <button className="underline" onClick={() => setShowForm(true)}>
               Add your first boat

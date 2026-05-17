@@ -1,0 +1,327 @@
+/* ─── MyMarina top bar ───────────────────────────────────────────────────────
+   Colors are fixed (always dark navy) regardless of the page light/dark theme.
+   Responsive collapse uses CSS container queries at 760px and 500px.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.mm-topbar-shell {
+  container-type: inline-size;
+  container-name: mm-topbar;
+  position: relative;
+  background: #0e1c2e;
+}
+
+.mm-topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  color: #ffffff;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Brand ── */
+.mm-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 28px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.mm-brand:focus-visible {
+  outline: 2px solid #5ab7ff;
+  outline-offset: 3px;
+}
+
+/* ── Primary nav ── */
+.mm-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mm-nav-link {
+  color: #c6d2e0;
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s ease, color 0.12s ease;
+  line-height: 1;
+  font-family: inherit;
+}
+.mm-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+.mm-nav-link:focus-visible {
+  outline: 2px solid #5ab7ff;
+  outline-offset: 1px;
+}
+.mm-nav-link[aria-current="page"] {
+  color: #5ab7ff;
+  background: rgba(90, 183, 255, 0.16);
+}
+
+/* My account (collapsed mode) — hidden by default, shown below 760px */
+.mm-account-btn {
+  display: none;
+}
+.mm-account-btn[data-active="true"] .mm-active-dot {
+  display: inline-block;
+}
+.mm-active-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #5ab7ff;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Spacer ── */
+.mm-spacer {
+  flex: 1;
+}
+
+/* ── Right cluster ── */
+.mm-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Icon button (notifications) */
+.mm-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+.mm-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+.mm-icon-btn:focus-visible {
+  outline: 2px solid #5ab7ff;
+  outline-offset: 1px;
+}
+
+/* Avatar pill button */
+.mm-avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.mm-avatar-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.mm-avatar-btn:focus-visible {
+  outline: 2px solid #5ab7ff;
+  outline-offset: 1px;
+}
+
+/* Avatar circle with initials */
+.mm-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5ab7ff 0%, #2c6cb0 100%);
+  color: #062035;
+  font-weight: 700;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+/* Chevron icon */
+.mm-chev {
+  width: 11px;
+  height: 11px;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* ── Dropdown menus ── */
+.mm-menu {
+  position: absolute;
+  top: calc(56px - 4px);
+  background: #16263c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px;
+  min-width: 232px;
+  box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  color: #ffffff;
+  animation: mm-menu-in 0.12s ease-out;
+}
+.mm-menu[data-align="right"] {
+  right: 22px;
+}
+.mm-menu[data-align="left"] {
+  left: 22px;
+}
+
+@keyframes mm-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Menu items */
+.mm-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-family: inherit;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.mm-menu-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.mm-menu-item:focus-visible {
+  outline: 2px solid #5ab7ff;
+  outline-offset: 1px;
+}
+.mm-menu-item.danger {
+  color: #ef6b6b;
+}
+.mm-menu-item.danger svg {
+  color: #ef6b6b;
+}
+.mm-menu-item svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.mm-menu-meta {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-left: auto;
+}
+.mm-menu-meta.danger {
+  color: #ef6b6b;
+}
+
+.mm-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 2px;
+}
+
+.mm-section-label {
+  padding: 8px 12px 4px;
+  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mm-menu-header {
+  padding: 10px 12px 8px;
+}
+.mm-menu-header-name {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 13px;
+}
+.mm-menu-header-email {
+  color: #94a3b8;
+  font-size: 11.5px;
+  margin-top: 1px;
+}
+
+/* ── Responsive collapse via container queries ── */
+
+/* Default (≥ 760px): full nav, avatar shows name, notifications visible */
+.mm-collapsible {
+  display: inline-flex;
+}
+.mm-avatar-name {
+  display: inline;
+}
+
+@container mm-topbar (max-width: 760px) {
+  .mm-collapsible {
+    display: none;
+  }
+  .mm-account-btn {
+    display: inline-flex;
+  }
+  .mm-avatar-name {
+    display: none;
+  }
+}
+
+@container mm-topbar (max-width: 500px) {
+  .mm-wordmark {
+    display: none;
+  }
+  .mm-brand {
+    margin-right: 14px;
+  }
+  .mm-notif-btn {
+    display: none;
+  }
+}
+
+@container mm-topbar (max-width: 360px) {
+  .mm-topbar {
+    padding: 0 14px;
+  }
+}

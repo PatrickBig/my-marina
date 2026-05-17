@@ -9,7 +9,11 @@ public sealed record MarinaRollupResultDto(
     decimal Longitude,
     int AvailableCount,
     bool InstantBookAvailable,
-    double DistanceMilesFromCenter
+    double DistanceMilesFromCenter,
+    string? PhotoUrl,
+    bool HasPumpOut,
+    bool HasElectric,
+    bool IsAnyCovered
 );
 
 public sealed record SlipSearchResultDto(

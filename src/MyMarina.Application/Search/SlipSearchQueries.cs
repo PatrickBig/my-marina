@@ -16,10 +16,13 @@ public sealed record MarinaRollupSearchQuery(
     string? SlipType,
     bool? HasElectric,
     bool? HasWater,
-    string ListingKind,   // "Transient" (default) | "Lease"
-    string? LeaseTerm,   // "Monthly" | "Seasonal" | "Annual" — only for Lease searches
+    string ListingKind,        // "Transient" (default) | "Lease"
+    string? LeaseTerm,         // "Monthly" | "Seasonal" | "Annual" — only for Lease searches
     decimal? PriceMin,
     decimal? PriceMax,
+    bool? InstantBookOnly,     // filter: only marinas with at least one instant-book slip
+    bool? HasPumpOut,          // filter: only marinas with at least one pump-out slip
+    bool? IsAnyCovered,        // filter: only marinas with at least one covered slip
     int Page,
     int PageSize,
     bool IncludeDemo

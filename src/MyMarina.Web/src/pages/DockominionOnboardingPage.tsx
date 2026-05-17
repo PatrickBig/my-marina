@@ -86,35 +86,35 @@ export function DockominionOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-6">
           {(['slip', 'marina', 'policy'] as Step[]).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              {i > 0 && <div className="h-px w-4 bg-slate-200" />}
+              {i > 0 && <div className="h-px w-4 bg-muted" />}
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
                   step === s
-                    ? 'bg-slate-800 text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : (step === 'marina' && s === 'slip') || step === 'policy'
-                    ? 'bg-slate-200 text-slate-500'
-                    : 'bg-slate-100 text-slate-400'
+                    ? 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-muted-foreground/70'
                 }`}
               >
                 {i + 1}
               </div>
             </div>
           ))}
-          <span className="ml-2 text-xs text-slate-500">
+          <span className="ml-2 text-xs text-muted-foreground">
             {step === 'slip' ? 'Your slip' : step === 'marina' ? 'Your marina' : 'Coordination'}
           </span>
         </div>
 
-        <h1 className="text-2xl font-semibold text-slate-800 mb-1">
+        <h1 className="text-2xl font-semibold text-foreground mb-1">
           {step === 'slip' ? 'Add your slip' : step === 'marina' ? 'Which marina is it at?' : 'Marina coordination'}
         </h1>
-        <p className="text-slate-500 text-sm mb-6">
+        <p className="text-muted-foreground text-sm mb-6">
           {step === 'slip'   && 'Tell us about the slip you own at a marina.'}
           {step === 'marina' && 'Search for your marina so we can coordinate bookings. You can skip this.'}
           {step === 'policy' && `How should bookings at your slip be coordinated with ${hostMarina?.name}?`}
@@ -130,39 +130,39 @@ export function DockominionOnboardingPage() {
           {step === 'slip' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Slip name / identifier</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Slip name / identifier</label>
                 <input
                   {...register('slipLabel')}
                   type="text"
                   placeholder="Slip 42B"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 {errors.slipLabel && <p className="mt-1 text-xs text-red-600">{errors.slipLabel.message}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Max length (ft)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Max length (ft)</label>
                   <input {...register('maxLength', { valueAsNumber: true })} type="number" step="0.5" min="1"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   {errors.maxLength && <p className="mt-1 text-xs text-red-600">{errors.maxLength.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Max beam (ft)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Max beam (ft)</label>
                   <input {...register('maxBeam', { valueAsNumber: true })} type="number" step="0.5" min="1"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   {errors.maxBeam && <p className="mt-1 text-xs text-red-600">{errors.maxBeam.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Max draft (ft)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Max draft (ft)</label>
                   <input {...register('maxDraft', { valueAsNumber: true })} type="number" step="0.25" min="0.5"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400" />
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   {errors.maxDraft && <p className="mt-1 text-xs text-red-600">{errors.maxDraft.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Slip type</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Slip type</label>
                   <select {...register('slipType')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white">
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card">
                     <option value="Floating">Floating</option>
                     <option value="Fixed">Fixed</option>
                     <option value="Mooring">Mooring</option>
@@ -170,15 +170,15 @@ export function DockominionOnboardingPage() {
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Notes for boaters (optional)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Notes for boaters (optional)</label>
                   <textarea {...register('slipNotes')} rows={2}
                     placeholder="Access code, parking, gate instructions…"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none" />
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                 </div>
               </div>
 
               <button type="button" onClick={handleSlipNext}
-                className="w-full rounded-lg bg-slate-800 text-white py-2.5 text-sm font-medium hover:bg-slate-700 transition-colors mt-2">
+                className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors mt-2">
                 Continue
               </button>
             </div>
@@ -197,24 +197,24 @@ export function DockominionOnboardingPage() {
               {POLICY_OPTIONS.map((opt) => (
                 <label key={opt.value}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    policy === opt.value ? 'border-slate-800 bg-slate-50' : 'border-slate-200 hover:border-slate-300'
+                    policy === opt.value ? 'border-primary bg-muted/30' : 'border-border hover:border-primary/50'
                   }`}>
                   <input type="radio" name="policy" value={opt.value} checked={policy === opt.value}
-                    onChange={() => setPolicy(opt.value)} className="mt-0.5 accent-slate-800" />
+                    onChange={() => setPolicy(opt.value)} className="mt-0.5 accent-primary" />
                   <div>
-                    <p className="text-sm font-medium text-slate-800">{opt.label}</p>
-                    <p className="text-xs text-slate-500">{opt.description}</p>
+                    <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.description}</p>
                   </div>
                 </label>
               ))}
 
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={() => setStep('marina')}
-                  className="flex-1 rounded-lg border border-slate-300 text-slate-700 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
+                  className="flex-1 rounded-lg border border-border text-foreground py-2.5 text-sm font-medium hover:bg-muted/30 transition-colors">
                   Back
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="flex-1 rounded-lg bg-slate-800 text-white py-2.5 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   {isSubmitting ? 'Setting up…' : 'Add my slip'}
                 </button>
               </div>
@@ -222,7 +222,7 @@ export function DockominionOnboardingPage() {
           )}
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-400">
+        <p className="mt-4 text-center text-xs text-muted-foreground/70">
           <a href="/marina/new" className="hover:underline">Back to options</a>
         </p>
       </div>
@@ -266,20 +266,20 @@ function MarinaSearchStep({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by marina name or city…"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
 
-      {loading && <p className="text-xs text-slate-400">Searching…</p>}
+      {loading && <p className="text-xs text-muted-foreground/70">Searching…</p>}
 
       {results.length > 0 && (
-        <ul className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-100">
+        <ul className="border border-border rounded-lg overflow-hidden divide-y divide-border/50">
           {results.map((m) => (
             <li key={m.id}>
               <button type="button" onClick={() => onSelect(m)}
-                className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors">
-                <p className="text-sm font-medium text-slate-800">{m.name}</p>
+                className="w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors">
+                <p className="text-sm font-medium text-foreground">{m.name}</p>
                 {(m.addressCity || m.addressState) && (
-                  <p className="text-xs text-slate-500">{[m.addressCity, m.addressState].filter(Boolean).join(', ')}</p>
+                  <p className="text-xs text-muted-foreground">{[m.addressCity, m.addressState].filter(Boolean).join(', ')}</p>
                 )}
               </button>
             </li>
@@ -288,16 +288,16 @@ function MarinaSearchStep({
       )}
 
       {query.trim().length >= 2 && !loading && results.length === 0 && (
-        <p className="text-xs text-slate-500">No marinas found. You can skip this step.</p>
+        <p className="text-xs text-muted-foreground">No marinas found. You can skip this step.</p>
       )}
 
       <div className="flex gap-2 pt-1">
         <button type="button" onClick={onBack}
-          className="flex-1 rounded-lg border border-slate-300 text-slate-700 py-2.5 text-sm font-medium hover:bg-slate-50 transition-colors">
+          className="flex-1 rounded-lg border border-border text-foreground py-2.5 text-sm font-medium hover:bg-muted/30 transition-colors">
           Back
         </button>
         <button type="button" onClick={onSkip}
-          className="flex-1 rounded-lg bg-slate-800 text-white py-2.5 text-sm font-medium hover:bg-slate-700 transition-colors">
+          className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors">
           Skip
         </button>
       </div>
