@@ -10,9 +10,9 @@ import { useAuthStore } from '@/store/authStore';
 
 type Tab = 'tenants' | 'users' | 'listings' | 'audit';
 
-const btn = 'rounded-lg bg-slate-800 text-white px-3 py-1.5 text-xs font-medium hover:bg-slate-700 disabled:opacity-50 transition-colors';
+const btn = 'rounded-lg bg-foreground text-white px-3 py-1.5 text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors';
 const btnSm = (color: string) => `rounded px-2 py-1 text-xs font-medium ${color} transition-colors`;
-const input = 'rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400';
+const input = 'rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 
 export function PlatformOperatorPage() {
   const { isPlatformOperator } = useAuthStore();
@@ -20,29 +20,29 @@ export function PlatformOperatorPage() {
 
   if (!isPlatformOperator) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-muted/30">
         <NavBar />
-        <div className="max-w-4xl mx-auto px-4 py-12 text-slate-500">Access denied.</div>
+        <div className="max-w-4xl mx-auto px-4 py-12 text-muted-foreground">Access denied.</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <h1 className="text-xl font-semibold text-slate-800">Platform Administration</h1>
+        <h1 className="text-xl font-semibold text-foreground">Platform Administration</h1>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-slate-200">
+        <div className="flex gap-2 border-b border-border">
           {(['tenants', 'users', 'listings', 'audit'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
                 tab === t
-                  ? 'border-slate-800 text-slate-900'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? 'border-foreground text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {t === 'audit' ? 'Audit Log' : t.charAt(0).toUpperCase() + t.slice(1)}
@@ -122,22 +122,22 @@ function TenantsPanel() {
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+        <form onSubmit={handleCreate} className="bg-card rounded-xl border border-border p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Name</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Name</label>
               <input value={newName} onChange={(e) => setNewName(e.target.value)} className={input} required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Slug</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Slug</label>
               <input value={newSlug} onChange={(e) => setNewSlug(e.target.value)} className={input} required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Billing Email</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Billing Email</label>
               <input type="email" value={newBillingEmail} onChange={(e) => setNewBillingEmail(e.target.value)} className={input} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Tier</label>
+              <label className="block text-xs font-medium text-foreground/80 mb-1">Tier</label>
               <select value={newTier} onChange={(e) => setNewTier(e.target.value)} className={input}>
                 {['Free', 'Pro', 'Premium'].map((t) => <option key={t}>{t}</option>)}
               </select>
@@ -150,31 +150,31 @@ function TenantsPanel() {
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-muted/30 border-b border-border">
             <tr>
               {['Name', 'Slug', 'Tier', 'Marinas', 'Status', 'Created', 'Actions'].map((h) => (
-                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-slate-500">{h}</th>
+                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border/50">
             {tenants.map((t) => (
-              <tr key={t.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2 font-medium text-slate-800">
+              <tr key={t.id} className="hover:bg-muted/30">
+                <td className="px-4 py-2 font-medium text-foreground">
                   {t.name}
                   {t.isDemo && <span className="ml-1 text-xs text-purple-500">(demo)</span>}
                 </td>
-                <td className="px-4 py-2 text-slate-500">{t.slug}</td>
-                <td className="px-4 py-2 text-slate-500">{t.subscriptionTier}</td>
-                <td className="px-4 py-2 text-slate-500">{t.marinaCount}</td>
+                <td className="px-4 py-2 text-muted-foreground">{t.slug}</td>
+                <td className="px-4 py-2 text-muted-foreground">{t.subscriptionTier}</td>
+                <td className="px-4 py-2 text-muted-foreground">{t.marinaCount}</td>
                 <td className="px-4 py-2">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${t.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {t.isActive ? 'Active' : 'Suspended'}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-slate-400 text-xs">{new Date(t.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{new Date(t.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
                   {!t.isDemo && (
                     t.isActive
@@ -185,7 +185,7 @@ function TenantsPanel() {
               </tr>
             ))}
             {tenants.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No tenants found.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground/70">No tenants found.</td></tr>
             )}
           </tbody>
         </table>
@@ -194,7 +194,7 @@ function TenantsPanel() {
       {totalPages > 1 && (
         <div className="flex justify-end gap-2">
           <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
-          <span className="text-sm text-slate-500 self-center">Page {page} / {totalPages}</span>
+          <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
         </div>
       )}
@@ -241,33 +241,33 @@ function UsersPanel() {
       <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
         className={`${input} max-w-xs`} placeholder="Search by email or name…" />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-muted/30 border-b border-border">
             <tr>
               {['Name', 'Email', 'Status', 'Confirmed', 'Joined', 'Actions'].map((h) => (
-                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-slate-500">{h}</th>
+                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border/50">
             {users.map((u) => (
-              <tr key={u.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2 font-medium text-slate-800">
+              <tr key={u.id} className="hover:bg-muted/30">
+                <td className="px-4 py-2 font-medium text-foreground">
                   {u.firstName} {u.lastName}
                   {u.isPlatformOperator && <span className="ml-1 text-xs text-indigo-500">(operator)</span>}
                 </td>
-                <td className="px-4 py-2 text-slate-500">{u.email}</td>
+                <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
                 <td className="px-4 py-2">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${u.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {u.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-slate-400 text-xs">{u.emailConfirmed ? 'Yes' : 'No'}</td>
-                <td className="px-4 py-2 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{u.emailConfirmed ? 'Yes' : 'No'}</td>
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
                   <div className="flex gap-1">
-                    <button onClick={() => handleForceSignOut(u.id)} className={btnSm('bg-slate-100 text-slate-600 hover:bg-slate-200')}>
+                    <button onClick={() => handleForceSignOut(u.id)} className={btnSm('bg-muted text-foreground/80 hover:bg-muted')}>
                       Sign out
                     </button>
                     {u.isActive
@@ -279,7 +279,7 @@ function UsersPanel() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">No users found.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground/70">No users found.</td></tr>
             )}
           </tbody>
         </table>
@@ -288,7 +288,7 @@ function UsersPanel() {
       {totalPages > 1 && (
         <div className="flex justify-end gap-2">
           <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
-          <span className="text-sm text-slate-500 self-center">Page {page} / {totalPages}</span>
+          <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
         </div>
       )}
@@ -319,28 +319,28 @@ function ListingsPanel() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">{total} active listing{total !== 1 ? 's' : ''}</p>
+      <p className="text-sm text-muted-foreground">{total} active listing{total !== 1 ? 's' : ''}</p>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-muted/30 border-b border-border">
             <tr>
               {['Slip', 'Marina', 'Tenant', 'Dates', 'Price/night', 'Kind', 'Status', 'Actions'].map((h) => (
-                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-slate-500">{h}</th>
+                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border/50">
             {listings.map((l) => (
-              <tr key={l.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2 font-medium text-slate-800">{l.slipName}</td>
-                <td className="px-4 py-2 text-slate-500">{l.marinaName}</td>
-                <td className="px-4 py-2 text-slate-500">{l.tenantName}</td>
-                <td className="px-4 py-2 text-slate-400 text-xs">
+              <tr key={l.id} className="hover:bg-muted/30">
+                <td className="px-4 py-2 font-medium text-foreground">{l.slipName}</td>
+                <td className="px-4 py-2 text-muted-foreground">{l.marinaName}</td>
+                <td className="px-4 py-2 text-muted-foreground">{l.tenantName}</td>
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">
                   {new Date(l.startsAt).toLocaleDateString()} – {new Date(l.endsAt).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-2 text-slate-500">${l.basePricePerNight.toFixed(2)}</td>
-                <td className="px-4 py-2 text-slate-400 text-xs">{l.listedByKind}</td>
+                <td className="px-4 py-2 text-muted-foreground">${l.basePricePerNight.toFixed(2)}</td>
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{l.listedByKind}</td>
                 <td className="px-4 py-2">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
                     l.status === 'Open' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'
@@ -354,7 +354,7 @@ function ListingsPanel() {
               </tr>
             ))}
             {listings.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">No active listings.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-muted-foreground/70">No active listings.</td></tr>
             )}
           </tbody>
         </table>
@@ -363,7 +363,7 @@ function ListingsPanel() {
       {totalPages > 1 && (
         <div className="flex justify-end gap-2">
           <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
-          <span className="text-sm text-slate-500 self-center">Page {page} / {totalPages}</span>
+          <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
         </div>
       )}
@@ -394,34 +394,34 @@ function AuditLogPanel() {
       <input value={tenantFilter} onChange={(e) => { setTenantFilter(e.target.value); setPage(1); }}
         className={`${input} max-w-xs`} placeholder="Filter by Tenant ID…" />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-muted/30 border-b border-border">
             <tr>
               {['When', 'Actor', 'Action', 'Target', 'Details'].map((h) => (
-                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-slate-500">{h}</th>
+                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border/50">
             {entries.map((e) => (
-              <tr key={e.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2 text-slate-400 text-xs whitespace-nowrap">
+              <tr key={e.id} className="hover:bg-muted/30">
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs whitespace-nowrap">
                   {new Date(e.occurredAt).toLocaleString()}
                 </td>
-                <td className="px-4 py-2 text-slate-600">{e.actorName || '—'}</td>
+                <td className="px-4 py-2 text-foreground/80">{e.actorName || '—'}</td>
                 <td className="px-4 py-2">
-                  <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">{e.action}</span>
+                  <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{e.action}</span>
                 </td>
-                <td className="px-4 py-2 text-slate-400 text-xs">
+                <td className="px-4 py-2 text-muted-foreground/70 text-xs">
                   {e.targetType && <span>{e.targetType}</span>}
                   {e.targetId && <span className="ml-1 font-mono">{e.targetId.slice(0, 8)}…</span>}
                 </td>
-                <td className="px-4 py-2 text-slate-500 text-xs">{e.details ?? '—'}</td>
+                <td className="px-4 py-2 text-muted-foreground text-xs">{e.details ?? '—'}</td>
               </tr>
             ))}
             {entries.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">No audit log entries.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground/70">No audit log entries.</td></tr>
             )}
           </tbody>
         </table>
@@ -430,7 +430,7 @@ function AuditLogPanel() {
       {totalPages > 1 && (
         <div className="flex justify-end gap-2">
           <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
-          <span className="text-sm text-slate-500 self-center">Page {page} / {totalPages}</span>
+          <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
         </div>
       )}

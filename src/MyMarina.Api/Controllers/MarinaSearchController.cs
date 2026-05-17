@@ -34,6 +34,9 @@ public class MarinaSearchController(
         [FromQuery] bool? hasWater = null,
         [FromQuery] decimal? priceMin = null,
         [FromQuery] decimal? priceMax = null,
+        [FromQuery] bool? instantBookOnly = null,
+        [FromQuery] bool? hasPumpOut = null,
+        [FromQuery] bool? isAnyCovered = null,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
@@ -67,25 +70,28 @@ public class MarinaSearchController(
         }
 
         var results = await rollupSearch.HandleAsync(new MarinaRollupSearchQuery(
-            North:        north,
-            South:        south,
-            East:         east,
-            West:         west,
-            ArrivesAt:    arrives,
-            DepartsAt:    departs,
-            VesselLength: vesselLength,
-            VesselBeam:   vesselBeam,
-            VesselDraft:  vesselDraft,
-            SlipType:     slipType,
-            HasElectric:  hasElectric,
-            HasWater:     hasWater,
-            ListingKind:  effectiveListingKind,
-            LeaseTerm:    leaseTerm,
-            PriceMin:     priceMin,
-            PriceMax:     priceMax,
-            Page:         page,
-            PageSize:     Math.Clamp(pageSize, 1, 50),
-            IncludeDemo:  userContext.IsDemo), ct);
+            North:           north,
+            South:           south,
+            East:            east,
+            West:            west,
+            ArrivesAt:       arrives,
+            DepartsAt:       departs,
+            VesselLength:    vesselLength,
+            VesselBeam:      vesselBeam,
+            VesselDraft:     vesselDraft,
+            SlipType:        slipType,
+            HasElectric:     hasElectric,
+            HasWater:        hasWater,
+            ListingKind:     effectiveListingKind,
+            LeaseTerm:       leaseTerm,
+            PriceMin:        priceMin,
+            PriceMax:        priceMax,
+            InstantBookOnly: instantBookOnly,
+            HasPumpOut:      hasPumpOut,
+            IsAnyCovered:    isAnyCovered,
+            Page:            page,
+            PageSize:        Math.Clamp(pageSize, 1, 50),
+            IncludeDemo:     userContext.IsDemo), ct);
 
         return Ok(results);
     }

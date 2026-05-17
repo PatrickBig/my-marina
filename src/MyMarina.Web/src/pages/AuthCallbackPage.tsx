@@ -49,8 +49,8 @@ export function AuthCallbackPage() {
   }, [setAuth]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <p className="text-slate-500">Signing in…</p>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <p className="text-muted-foreground">Signing in…</p>
     </div>
   );
 }

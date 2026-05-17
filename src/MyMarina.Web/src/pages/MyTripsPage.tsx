@@ -7,8 +7,8 @@ const STATUS_BADGE: Record<string, string> = {
   PendingHostMarinaApproval: 'bg-amber-50 text-amber-700',
   Confirmed:                 'bg-emerald-50 text-emerald-700',
   Declined:                  'bg-red-50 text-red-700',
-  Cancelled:                 'bg-slate-100 text-slate-500',
-  Completed:                 'bg-slate-100 text-slate-600',
+  Cancelled:                 'bg-muted text-muted-foreground',
+  Completed:                 'bg-muted text-foreground/80',
   NoShow:                    'bg-red-50 text-red-600',
 };
 
@@ -44,32 +44,32 @@ function TripCard({ r, onCancelled }: { r: ReservationDto; onCancelled: (id: str
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
+    <div className="bg-card rounded-xl border border-border p-5">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-semibold text-slate-800">{r.marinaName}</p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm font-semibold text-foreground">{r.marinaName}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {r.slipName} · {r.vesselName}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {fmt(r.arrivesAt)} – {fmt(r.departsAt)} · {r.nights} night{r.nights !== 1 ? 's' : ''}
           </p>
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[r.status] ?? 'bg-slate-100 text-slate-500'}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[r.status] ?? 'bg-muted text-muted-foreground'}`}>
           {STATUS_LABEL[r.status] ?? r.status}
         </span>
       </div>
 
       <div className="mt-3 flex justify-between items-center">
-        <div className="text-sm text-slate-700">
+        <div className="text-sm text-foreground">
           <span className="font-medium">${r.total.toFixed(2)}</span>
-          <span className="text-xs text-slate-400 ml-1">· {r.paymentStatus === 'OffPlatform' ? 'Pay at marina' : r.paymentStatus}</span>
+          <span className="text-xs text-muted-foreground/70 ml-1">· {r.paymentStatus === 'OffPlatform' ? 'Pay at marina' : r.paymentStatus}</span>
         </div>
         {canCancel && (
           <button
             onClick={handleCancel}
             disabled={cancelling}
-            className="text-xs text-slate-400 hover:text-red-500 disabled:opacity-50"
+            className="text-xs text-muted-foreground/70 hover:text-red-500 disabled:opacity-50"
           >
             {cancelling ? 'Cancelling…' : 'Cancel reservation'}
           </button>
@@ -77,7 +77,7 @@ function TripCard({ r, onCancelled }: { r: ReservationDto; onCancelled: (id: str
       </div>
 
       {r.notes && (
-        <p className="mt-2 text-xs text-slate-500 italic">"{r.notes}"</p>
+        <p className="mt-2 text-xs text-muted-foreground italic">"{r.notes}"</p>
       )}
     </div>
   );
@@ -105,27 +105,27 @@ export function MyTripsPage() {
   const other    = trips.filter((r) => r.status === 'Declined' || r.status === 'Cancelled');
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 text-sm">
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center text-muted-foreground/70 text-sm">
       Loading…
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
       <div className="max-w-3xl mx-auto py-10 px-4 space-y-8">
-        <h1 className="text-xl font-semibold text-slate-800">My Trips</h1>
+        <h1 className="text-xl font-semibold text-foreground">My Trips</h1>
 
         {trips.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-slate-400 text-sm">No reservations yet.</p>
-            <a href="/search" className="mt-3 inline-block text-sm text-slate-600 underline">Find a slip →</a>
+            <p className="text-muted-foreground/70 text-sm">No reservations yet.</p>
+            <a href="/search" className="mt-3 inline-block text-sm text-foreground/80 underline">Find a slip →</a>
           </div>
         )}
 
         {upcoming.length > 0 && (
           <section>
-            <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">Upcoming & Active</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">Upcoming & Active</h2>
             <div className="space-y-3">
               {upcoming.map((r) => (
                 <TripCard key={r.id} r={r} onCancelled={handleCancelled} />
@@ -136,7 +136,7 @@ export function MyTripsPage() {
 
         {past.length > 0 && (
           <section>
-            <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">Past</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">Past</h2>
             <div className="space-y-3">
               {past.map((r) => (
                 <TripCard key={r.id} r={r} onCancelled={handleCancelled} />
@@ -147,7 +147,7 @@ export function MyTripsPage() {
 
         {other.length > 0 && (
           <section>
-            <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">Declined & Cancelled</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">Declined & Cancelled</h2>
             <div className="space-y-3">
               {other.map((r) => (
                 <TripCard key={r.id} r={r} onCancelled={handleCancelled} />

@@ -72,25 +72,25 @@ function TransientWindowCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
+    <div className="bg-card rounded-xl border border-border p-5">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-slate-700">{fmtDate(w.startsAt)} – {fmtDate(w.endsAt)}</p>
+          <p className="text-sm font-medium text-foreground">{fmtDate(w.startsAt)} – {fmtDate(w.endsAt)}</p>
           <div className="flex gap-2 mt-1 flex-wrap">
             {w.instantBook && <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">Instant book</span>}
-            {w.minNights && <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Min {w.minNights}n</span>}
-            {w.maxNights && <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Max {w.maxNights}n</span>}
+            {w.minNights && <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-foreground/80">Min {w.minNights}n</span>}
+            {w.maxNights && <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-foreground/80">Max {w.maxNights}n</span>}
           </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-slate-800">{rateLabel(w.rateKind, w.basePricePerNight)}</p>
+          <p className="text-lg font-bold text-foreground">{rateLabel(w.rateKind, w.basePricePerNight)}</p>
           {nights > 1 && (
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {nights}n · ${total.toFixed(2)} est.
               {discount > 0 && <span className="ml-1 text-emerald-600">({(discount * 100).toFixed(0)}% off)</span>}
             </p>
           )}
-          {w.cleaningFee && <p className="text-xs text-slate-400">+${w.cleaningFee.toFixed(2)} cleaning</p>}
+          {w.cleaningFee && <p className="text-xs text-muted-foreground/70">+${w.cleaningFee.toFixed(2)} cleaning</p>}
         </div>
       </div>
 
@@ -101,23 +101,23 @@ function TransientWindowCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700">
+          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
           Sign in to {w.instantBook ? 'book' : 'request'}
         </a>
       ) : vessels.length === 0 ? (
-        <p className="mt-4 text-xs text-slate-500"><a href="/boats" className="underline">Add a vessel</a> to your profile first.</p>
+        <p className="mt-4 text-xs text-muted-foreground"><a href="/boats" className="underline">Add a vessel</a> to your profile first.</p>
       ) : (
         <div className="mt-4 space-y-2">
           <select value={selectedVesselId} onChange={(e) => setSelectedVesselId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm">
             {vessels.map((v) => <option key={v.id} value={v.id}>{v.name} ({v.length}′ {v.boatType})</option>)}
           </select>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes for the marina (optional)" rows={2}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-none" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button onClick={handleBook} disabled={booking}
-            className="w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50">
+            className="w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50">
             {booking ? 'Submitting…' : w.instantBook ? 'Book now' : 'Request to book'}
           </button>
         </div>
@@ -159,17 +159,17 @@ function DirectBookingCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-blue-200 p-5">
+    <div className="bg-card rounded-xl border border-blue-200 p-5">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-semibold text-slate-800">Direct booking</p>
-          <p className="text-xs text-slate-500 mt-0.5">Available anytime · Instant confirmation</p>
+          <p className="text-sm font-semibold text-foreground">Direct booking</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Available anytime · Instant confirmation</p>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-slate-800">{rateLabel(rateKind, baseRate)}</p>
-          {minCharge && <p className="text-xs text-slate-400">min ${minCharge.toFixed(2)}/night</p>}
+          <p className="text-lg font-bold text-foreground">{rateLabel(rateKind, baseRate)}</p>
+          {minCharge && <p className="text-xs text-muted-foreground/70">min ${minCharge.toFixed(2)}/night</p>}
           {nights > 1 && rateKind === 'Flat' && (
-            <p className="text-xs text-slate-500 mt-0.5">{nights}n · ${(baseRate * nights).toFixed(2)} est.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{nights}n · ${(baseRate * nights).toFixed(2)} est.</p>
           )}
         </div>
       </div>
@@ -180,23 +180,23 @@ function DirectBookingCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700">
+          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
           Sign in to book
         </a>
       ) : vessels.length === 0 ? (
-        <p className="mt-4 text-xs text-slate-500"><a href="/boats" className="underline">Add a vessel</a> to your profile first.</p>
+        <p className="mt-4 text-xs text-muted-foreground"><a href="/boats" className="underline">Add a vessel</a> to your profile first.</p>
       ) : (
         <div className="mt-4 space-y-2">
           <select value={selectedVesselId} onChange={(e) => setSelectedVesselId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm">
             {vessels.map((v) => <option key={v.id} value={v.id}>{v.name} ({v.length}′ {v.boatType})</option>)}
           </select>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes (optional)" rows={2}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-none" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button onClick={handleBook} disabled={booking}
-            className="w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50">
+            className="w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50">
             {booking ? 'Booking…' : 'Book now'}
           </button>
         </div>
@@ -240,14 +240,14 @@ function LeaseInquiryCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-purple-200 p-5">
+    <div className="bg-card rounded-xl border border-purple-200 p-5">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-semibold text-slate-800">Lease inquiry</p>
-          <p className="text-xs text-slate-500 mt-0.5">Submit your interest — marina will respond</p>
+          <p className="text-sm font-semibold text-foreground">Lease inquiry</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Submit your interest — marina will respond</p>
         </div>
         <div className="text-right">
-          <p className="text-base font-bold text-slate-800">{rateLabel(rateKind, baseRate, leaseTerm)}</p>
+          <p className="text-base font-bold text-foreground">{rateLabel(rateKind, baseRate, leaseTerm)}</p>
           <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700">
             {leaseTerm ?? 'Lease'}
           </span>
@@ -261,37 +261,37 @@ function LeaseInquiryCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-slate-800 text-white py-2 text-sm font-medium hover:bg-slate-700">
+          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
           Sign in to submit inquiry
         </a>
       ) : (
         <div className="mt-4 space-y-2">
           {vessels.length > 0 && (
             <select value={selectedVesselId} onChange={(e) => setSelectedVesselId(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm">
               <option value="">— No vessel yet —</option>
               {vessels.map((v) => <option key={v.id} value={v.id}>{v.name} ({v.length}′ {v.boatType})</option>)}
             </select>
           )}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Lease term</label>
+              <label className="block text-xs text-muted-foreground mb-1">Lease term</label>
               <select value={desiredTerm} onChange={(e) => setDesiredTerm(e.target.value as LeaseTerm)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm">
                 <option value="Monthly">Monthly</option>
                 <option value="Seasonal">Seasonal</option>
                 <option value="Annual">Annual</option>
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Desired start</label>
+              <label className="block text-xs text-muted-foreground mb-1">Desired start</label>
               <input type="date" value={desiredStart} onChange={(e) => setDesiredStart(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
             </div>
           </div>
           <textarea value={message} onChange={(e) => setMessage(e.target.value)}
             placeholder="Tell the marina about yourself and your boat (optional)" rows={3}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-none" />
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button onClick={handleSubmit} disabled={submitting}
             className="w-full rounded-lg bg-purple-700 text-white py-2 text-sm font-medium hover:bg-purple-600 disabled:opacity-50">
@@ -332,13 +332,13 @@ export function SlipDetailPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center text-muted-foreground/70 text-sm">Loading…</div>
   );
   if (notFound || !slip) return (
-    <div className="min-h-screen bg-slate-50"><NavBar />
+    <div className="min-h-screen bg-muted/30"><NavBar />
       <div className="max-w-4xl mx-auto py-16 px-4 text-center">
-        <p className="text-slate-500 text-sm">Slip not found or not available.</p>
-        <a href="/search" className="mt-3 inline-block text-sm text-slate-600 underline">← Back to search</a>
+        <p className="text-muted-foreground text-sm">Slip not found or not available.</p>
+        <a href="/search" className="mt-3 inline-block text-sm text-foreground/80 underline">← Back to search</a>
       </div>
     </div>
   );
@@ -348,48 +348,48 @@ export function SlipDetailPage() {
   const hasLocation      = slip.latitude != null && slip.longitude != null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
       <div className="max-w-5xl mx-auto py-8 px-4">
-        <a href="/search" className="text-sm text-slate-500 hover:text-slate-800 underline">← Back to search</a>
+        <a href="/search" className="text-sm text-muted-foreground hover:text-foreground underline">← Back to search</a>
 
         <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: slip info + map */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h1 className="text-xl font-bold text-slate-800">{slip.name}</h1>
-              <p className="text-sm text-slate-500 mt-0.5">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h1 className="text-xl font-bold text-foreground">{slip.name}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {slip.marinaName}
                 {slip.addressCity && ` · ${slip.addressCity}${slip.addressState ? `, ${slip.addressState}` : ''}`}
               </p>
 
               <dl className="mt-4 grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Type</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.slipType}</dd></div>
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Max LOA</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.maxLength}′</dd></div>
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Max Beam</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.maxBeam}′</dd></div>
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Max Draft</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.maxDraft}′</dd></div>
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Water</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.hasWater ? 'Yes' : 'No'}</dd></div>
-                <div><dt className="text-xs text-slate-400 font-medium uppercase tracking-wide">Electric</dt>
-                  <dd className="mt-0.5 text-slate-700">{slip.hasElectric ? `${slip.electric ?? ''}A` : 'No'}</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Type</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.slipType}</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Max LOA</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.maxLength}′</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Max Beam</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.maxBeam}′</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Max Draft</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.maxDraft}′</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Water</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.hasWater ? 'Yes' : 'No'}</dd></div>
+                <div><dt className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide">Electric</dt>
+                  <dd className="mt-0.5 text-foreground">{slip.hasElectric ? `${slip.electric ?? ''}A` : 'No'}</dd></div>
               </dl>
 
               {slip.marinaDescription && (
-                <p className="mt-4 text-sm text-slate-600 leading-relaxed">{slip.marinaDescription}</p>
+                <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{slip.marinaDescription}</p>
               )}
               {slip.marinaPhoneNumber && (
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-muted-foreground">
                   Phone: <a href={`tel:${slip.marinaPhoneNumber}`} className="underline">{slip.marinaPhoneNumber}</a>
                 </p>
               )}
             </div>
 
             {hasLocation && (
-              <div className="h-64 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <div className="h-64 rounded-xl overflow-hidden border border-border shadow-sm">
                 <MapContainer center={[slip.latitude!, slip.longitude!]} zoom={14}
                   style={{ height: '100%', width: '100%' }} zoomControl={false}>
                   <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -405,7 +405,7 @@ export function SlipDetailPage() {
             {/* Transient windows */}
             {transientWindows.length > 0 && (
               <>
-                <h2 className="text-base font-semibold text-slate-800">Available windows</h2>
+                <h2 className="text-base font-semibold text-foreground">Available windows</h2>
                 {transientWindows.map((w) => (
                   <TransientWindowCard key={w.id} w={w} nights={nights}
                     arrivesAt={arrivesAt} departsAt={departsAt}
@@ -418,7 +418,7 @@ export function SlipDetailPage() {
             {slip.transientBookingAvailable && (
               <>
                 {transientWindows.length === 0 && (
-                  <h2 className="text-base font-semibold text-slate-800">Book this slip</h2>
+                  <h2 className="text-base font-semibold text-foreground">Book this slip</h2>
                 )}
                 <DirectBookingCard
                   slipId={slip.id}
@@ -433,17 +433,17 @@ export function SlipDetailPage() {
             {/* Lease windows */}
             {leaseWindows.length > 0 && (
               <>
-                <h2 className="text-base font-semibold text-slate-800 pt-2">Lease listings</h2>
+                <h2 className="text-base font-semibold text-foreground pt-2">Lease listings</h2>
                 {leaseWindows.map((w) => (
-                  <div key={w.id} className="bg-white rounded-xl border border-purple-200 p-4">
+                  <div key={w.id} className="bg-card rounded-xl border border-purple-200 p-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-sm font-medium text-slate-700">{fmtDate(w.startsAt)} – {fmtDate(w.endsAt)}</p>
+                        <p className="text-sm font-medium text-foreground">{fmtDate(w.startsAt)} – {fmtDate(w.endsAt)}</p>
                         <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700">
                           {w.leaseTerm ?? 'Lease'}
                         </span>
                       </div>
-                      <p className="text-base font-bold text-slate-800">{rateLabel(w.rateKind, w.basePricePerNight, w.leaseTerm)}</p>
+                      <p className="text-base font-bold text-foreground">{rateLabel(w.rateKind, w.basePricePerNight, w.leaseTerm)}</p>
                     </div>
                     <a href={`/slips/${slip.id}?inquire=1`}
                       className="mt-3 block text-center w-full rounded-lg bg-purple-700 text-white py-2 text-sm font-medium hover:bg-purple-600">
@@ -457,7 +457,7 @@ export function SlipDetailPage() {
             {/* Default lease inquiry */}
             {slip.leaseInquiryAvailable && leaseWindows.length === 0 && (
               <>
-                <h2 className="text-base font-semibold text-slate-800 pt-2">Lease this slip</h2>
+                <h2 className="text-base font-semibold text-foreground pt-2">Lease this slip</h2>
                 <LeaseInquiryCard
                   slipId={slip.id}
                   rateKind={slip.defaultLeaseRateKind ?? 'Flat'}
@@ -470,7 +470,7 @@ export function SlipDetailPage() {
             {/* No availability at all */}
             {!slip.transientBookingAvailable && !slip.leaseInquiryAvailable
               && transientWindows.length === 0 && leaseWindows.length === 0 && (
-              <p className="text-sm text-slate-400 pt-2">No availability listed for this slip right now.</p>
+              <p className="text-sm text-muted-foreground/70 pt-2">No availability listed for this slip right now.</p>
             )}
           </div>
         </div>

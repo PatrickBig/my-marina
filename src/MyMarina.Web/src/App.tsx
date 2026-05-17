@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 import { DemoBanner } from '@/components/DemoBanner';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -21,6 +23,20 @@ import { HomePage } from '@/pages/HomePage';
 
 export function App() {
   const { isAuthenticated } = useAuthStore();
+  const { preference, resolvedTheme } = useThemeStore();
+
+  useEffect(() => {
+    const applyTheme = () => {
+      document.documentElement.classList.toggle('dark', resolvedTheme() === 'dark');
+    };
+    applyTheme();
+
+    if (preference === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      mq.addEventListener('change', applyTheme);
+      return () => mq.removeEventListener('change', applyTheme);
+    }
+  }, [preference, resolvedTheme]);
   const path = window.location.pathname;
 
   function renderPage() {

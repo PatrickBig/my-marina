@@ -149,10 +149,10 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/30">
       <NavBar />
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <h1 className="text-xl font-semibold text-slate-800 mb-6">Profile</h1>
+        <h1 className="text-xl font-semibold text-foreground mb-6">Profile</h1>
 
         <div className="flex flex-col gap-6 max-w-md">
           <Card>

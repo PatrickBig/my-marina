@@ -638,6 +638,10 @@ export interface MarinaRollupResultDto {
   availableCount: number;
   instantBookAvailable: boolean;
   distanceMilesFromCenter: number;
+  photoUrl?: string | null;
+  hasPumpOut: boolean;
+  hasElectric: boolean;
+  isAnyCovered: boolean;
 }
 
 export interface SlipSearchResultDto {
@@ -736,6 +740,9 @@ export interface MarinaRollupSearchParams extends BaseSearchParams {
   west: number;
   priceMin?: number;
   priceMax?: number;
+  instantBookOnly?: boolean;
+  hasPumpOut?: boolean;
+  isAnyCovered?: boolean;
 }
 
 export type SlipsAtMarinaParams = BaseSearchParams;
