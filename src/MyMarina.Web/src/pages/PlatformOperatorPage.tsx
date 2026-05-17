@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 
 type Tab = 'tenants' | 'users' | 'listings' | 'audit';
 
-const btn = 'rounded-lg bg-foreground text-white px-3 py-1.5 text-xs font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors';
+const btn = 'rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors';
 const btnSm = (color: string) => `rounded px-2 py-1 text-xs font-medium ${color} transition-colors`;
 const input = 'rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 

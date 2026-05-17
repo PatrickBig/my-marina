@@ -101,7 +101,7 @@ function TransientWindowCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
+          className="mt-4 block text-center w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90">
           Sign in to {w.instantBook ? 'book' : 'request'}
         </a>
       ) : vessels.length === 0 ? (
@@ -117,7 +117,7 @@ function TransientWindowCard({
             className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button onClick={handleBook} disabled={booking}
-            className="w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50">
+            className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
             {booking ? 'Submitting…' : w.instantBook ? 'Book now' : 'Request to book'}
           </button>
         </div>
@@ -180,7 +180,7 @@ function DirectBookingCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
+          className="mt-4 block text-center w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90">
           Sign in to book
         </a>
       ) : vessels.length === 0 ? (
@@ -196,7 +196,7 @@ function DirectBookingCard({
             className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button onClick={handleBook} disabled={booking}
-            className="w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50">
+            className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
             {booking ? 'Booking…' : 'Book now'}
           </button>
         </div>
@@ -261,7 +261,7 @@ function LeaseInquiryCard({
         </div>
       ) : !isAuthenticated ? (
         <a href={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`}
-          className="mt-4 block text-center w-full rounded-lg bg-foreground text-white py-2 text-sm font-medium hover:bg-foreground/90">
+          className="mt-4 block text-center w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90">
           Sign in to submit inquiry
         </a>
       ) : (

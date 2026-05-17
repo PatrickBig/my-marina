@@ -160,7 +160,7 @@ export function PrivateDockOnboardingPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-foreground text-white py-2.5 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
+            className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
           >
             {isSubmitting ? 'Setting up your dock…' : 'Add my dock'}
           </button>

@@ -18,7 +18,7 @@ import { useWizardDraft } from '@/hooks/useWizardDraft';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
-const btn = 'rounded-lg bg-foreground text-white px-5 py-2.5 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors';
+const btn = 'rounded-lg bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors';
 const btnSecondary = 'rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-medium hover:bg-muted/30 transition-colors';
 
 // ─── Wizard draft shape ───────────────────────────────────────────────────────
@@ -989,7 +989,7 @@ export function MarinaSetupWizardPage() {
               await updateMarina(marinaId, { setupStep: step - 1 });
               const toast = document.createElement('div');
               toast.textContent = 'Progress saved';
-              toast.className = 'fixed bottom-4 right-4 rounded-lg bg-foreground text-white text-sm px-4 py-2 shadow-lg z-50';
+              toast.className = 'fixed bottom-4 right-4 rounded-lg bg-primary text-primary-foreground text-sm px-4 py-2 shadow-lg z-50';
               document.body.appendChild(toast);
               setTimeout(() => toast.remove(), 2000);
             }}

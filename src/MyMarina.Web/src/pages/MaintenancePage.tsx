@@ -22,7 +22,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
-const btn   = 'rounded-lg bg-foreground text-white px-4 py-2 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 transition-colors';
+const btn   = 'rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors';
 
 export function MaintenancePage() {
   const { marinaMemberships } = useAuthStore();

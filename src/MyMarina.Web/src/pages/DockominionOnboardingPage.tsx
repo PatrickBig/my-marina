@@ -96,7 +96,7 @@ export function DockominionOnboardingPage() {
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
                   step === s
-                    ? 'bg-foreground text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : (step === 'marina' && s === 'slip') || step === 'policy'
                     ? 'bg-muted text-muted-foreground'
                     : 'bg-muted text-muted-foreground/70'
@@ -178,7 +178,7 @@ export function DockominionOnboardingPage() {
               </div>
 
               <button type="button" onClick={handleSlipNext}
-                className="w-full rounded-lg bg-foreground text-white py-2.5 text-sm font-medium hover:bg-foreground/90 transition-colors mt-2">
+                className="w-full rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors mt-2">
                 Continue
               </button>
             </div>
@@ -214,7 +214,7 @@ export function DockominionOnboardingPage() {
                   Back
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="flex-1 rounded-lg bg-foreground text-white py-2.5 text-sm font-medium hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   {isSubmitting ? 'Setting up…' : 'Add my slip'}
                 </button>
               </div>
@@ -297,7 +297,7 @@ function MarinaSearchStep({
           Back
         </button>
         <button type="button" onClick={onSkip}
-          className="flex-1 rounded-lg bg-foreground text-white py-2.5 text-sm font-medium hover:bg-foreground/90 transition-colors">
+          className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors">
           Skip
         </button>
       </div>

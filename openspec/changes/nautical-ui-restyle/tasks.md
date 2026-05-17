@@ -28,7 +28,7 @@
 - [x] 4.3 In `MarinaRollupSearchQueryHandler`: add `BOOL_OR(s.has_pump_out) AS has_pump_out`, `BOOL_OR(s.electric_amps_available > 0) AS has_electric`, `BOOL_OR(s.is_covered) AS is_any_covered` to the existing GROUP BY SELECT projection
 - [x] 4.4 In `MarinaRollupSearchQueryHandler`: wire `InstantBookOnly`, `HasPumpOut`, `HasElectric`, `IsAnyCovered` filter params as EXISTS predicates (NOT in-memory filtering, NOT price aggregation — pure predicate push-down). `PhotoUrl` always maps to `null` in the query result.
 - [x] 4.5 Update `MarinaSearchController.cs` to accept and pass through the four new filter query parameters to the query
-- [ ] 4.6 Run `npm run generate-api` (with the API running) to regenerate `src/MyMarina.Web/src/api/schema.d.ts`. Do NOT manually edit `schema.d.ts`.
+- [x] 4.6 Run `npm run generate-api` (with the API running) to regenerate `src/MyMarina.Web/src/api/schema.d.ts`. Do NOT manually edit `schema.d.ts`.
 - [x] 4.7 Update `src/MyMarina.Web/src/api/api.ts` to expose `instantBookOnly`, `hasPumpOut`, `hasElectric`, `isAnyCovered` parameters in the `searchMarinaRollup` function signature
 
 ## 5. Search Page IA Restructure (Step 1 — Marina Rollup)
@@ -44,11 +44,11 @@
 
 ## 6. Marina Slips Search Page Enhancement (Step 2)
 
-- [ ] 6.1 Add filter chips row to `MarinaSlipsPage.tsx`: "Electric" and "Water" chips (wired to existing `hasElectric` and `hasWater` params on `GET /marinas/{id}/slips/search`)
-- [ ] 6.2 After a search completes, derive chip counts from results (e.g. "Electric (3)") and display in chip label when chip is active
-- [ ] 6.3 Add photo placeholder slot to `SlipRow` component: same gradient placeholder pattern as step 1 cards (⚓ gradient, `object-cover` when real photo URL is available)
-- [ ] 6.4 Restyle `MarinaSlipsPage.tsx`: marina header bar, back button, slip cards, map panel — all migrated from `slate-*` to design tokens
-- [ ] 6.5 Add marina blurb panel on the map panel (positioned at map bottom): "About [Marina Name]" label + description text pulled from the marina response
+- [x] 6.1 Add filter chips row to `MarinaSlipsPage.tsx`: "Electric" and "Water" chips (wired to existing `hasElectric` and `hasWater` params on `GET /marinas/{id}/slips/search`)
+- [x] 6.2 After a search completes, derive chip counts from results (e.g. "Electric (3)") and display in chip label when chip is active
+- [x] 6.3 Add photo placeholder slot to `SlipRow` component: same gradient placeholder pattern as step 1 cards (⚓ gradient, `object-cover` when real photo URL is available)
+- [x] 6.4 Restyle `MarinaSlipsPage.tsx`: marina header bar, back button, slip cards, map panel — all migrated from `slate-*` to design tokens
+- [x] 6.5 Add marina blurb panel on the map panel (positioned at map bottom): "About [Marina Name]" label + description text pulled from the marina response
 
 ## 7. Home Page Polish
 
