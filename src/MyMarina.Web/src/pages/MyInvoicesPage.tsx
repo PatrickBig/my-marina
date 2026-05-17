@@ -71,7 +71,7 @@ export function MyInvoicesPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <NavBar />
-      <div className="max-w-3xl mx-auto py-10 px-4 space-y-8">
+      <div className="max-w-5xl mx-auto py-10 px-4 space-y-8">
         <h1 className="text-xl font-semibold text-foreground">My Invoices</h1>
 
         {invoices.length === 0 && (

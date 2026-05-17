@@ -245,7 +245,7 @@ export function MyBoatsPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <NavBar />
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-5xl mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-semibold text-foreground">My Boats</h1>
           {!showForm && !editingVessel && (

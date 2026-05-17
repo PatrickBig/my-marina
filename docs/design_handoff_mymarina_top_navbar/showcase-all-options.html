@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>MyMarina · Top Bar refinements</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy-900: #0a1422;
+    --navy-800: #0e1c2e;
+    --navy-700: #16263c;
+    --navy-600: #1f3149;
+    --ink-100: #ffffff;
+    --ink-300: #c6d2e0;
+    --ink-400: #94a3b8;
+    --ink-500: #64748b;
+    --accent: #5ab7ff;
+    --accent-soft: rgba(90,183,255,0.16);
+    --danger: #ef6b6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f4f5f7;
+    color: #111827;
+    -webkit-font-smoothing: antialiased;
+    padding: 48px 56px 96px;
+  }
+
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .lede { color: #4b5563; font-size: 15px; max-width: 760px; margin: 0 0 36px; line-height: 1.5; }
+
+  .opt { margin-bottom: 44px; }
+  .opt-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .opt-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: #111827;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .opt-tag.before { background: #b91c1c; }
+  .opt-title { font-size: 17px; font-weight: 600; color: #111827; }
+  .opt-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 14px;
+    max-width: 820px;
+    line-height: 1.55;
+  }
+  .frame {
+    background: #c8d4df;
+    border-radius: 10px;
+    padding: 28px 0 0;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 8px 24px -12px rgba(15,23,42,0.18);
+  }
+  .frame.has-menu {
+    /* Reserve a navy stage below the bar so the open dropdown shows in-frame. */
+  }
+  .menu-stage {
+    background: var(--navy-900);
+    position: relative;
+    height: 320px;
+  }
+  .menu-stage .stage-note {
+    position: absolute;
+    top: 16px;
+    left: 22px;
+    color: var(--ink-500);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .frame-stage {
+    background: var(--navy-900);
+    min-height: 140px;
+    position: relative;
+  }
+  .stage-content {
+    padding: 22px 28px;
+    color: var(--ink-300);
+    font-size: 13px;
+  }
+  .crumb {
+    color: var(--ink-400);
+    font-size: 12px;
+  }
+
+  /* ─── Generic top bar ─── */
+  .bar {
+    height: 56px;
+    background: var(--navy-800);
+    color: var(--ink-100);
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 14px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: #fff;
+    margin-right: 28px;
+  }
+  .brand svg { width: 16px; height: 16px; opacity: 0.95; }
+  .spacer { flex: 1; }
+
+  .nav { display: flex; align-items: center; gap: 4px; }
+  .nav a {
+    color: var(--ink-300);
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: 6px;
+    line-height: 1;
+    font-weight: 500;
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+  }
+  .nav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+  .nav a.active { color: #fff; font-weight: 600; }
+  .nav a.active.pill { background: var(--accent-soft); color: var(--accent); }
+  .nav a.active.underline {
+    color: #fff;
+    box-shadow: inset 0 -2px 0 var(--accent);
+    border-radius: 0;
+    padding-bottom: 9px;
+    padding-top: 9px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-300);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  .avatar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 999px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .avatar-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+  .avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #5ab7ff 0%, #2c6cb0 100%);
+    color: #062035;
+    font-weight: 700;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .avatar-name { color: var(--ink-100); font-weight: 500; }
+  .chev { width: 12px; height: 12px; opacity: 0.5; }
+
+  .right-cluster { display: inline-flex; align-items: center; gap: 6px; }
+  .vrule { width: 1px; height: 22px; background: rgba(255,255,255,0.08); margin: 0 8px; }
+
+  /* ─── BEFORE styles (mimics screenshot) ─── */
+  .bar.before {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 22px;
+  }
+  .bar.before::-webkit-scrollbar { height: 12px; }
+  .bar.before::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 0; }
+  .bar.before::-webkit-scrollbar-track { background: #ffffff; }
+  .bar.before .nav a {
+    border-radius: 0;
+    padding: 7px 14px;
+    color: var(--ink-300);
+  }
+  .bar.before .nav a.active { color: #fff; font-weight: 700; }
+  .bar.before .signout-link {
+    color: var(--ink-300);
+    text-decoration: none;
+    padding: 7px 12px;
+    font-size: 14px;
+  }
+  .bar.before .name-only {
+    color: var(--ink-100);
+    font-size: 14px;
+    padding: 0 10px;
+  }
+  .bar.before .theme-only {
+    color: var(--ink-300);
+    padding: 0 8px;
+    cursor: pointer;
+  }
+
+  /* ─── Option B: grouped via dropdown ─── */
+  .menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-300);
+    padding: 7px 12px;
+    font: inherit;
+    font-weight: 500;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+  .menu-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+  .menu-btn .chev { width: 11px; height: 11px; opacity: 0.55; }
+
+  .dropdown {
+    position: absolute;
+    top: 4px;
+    background: var(--navy-700);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 220px;
+    box-shadow: 0 14px 32px -8px rgba(0,0,0,0.5);
+    z-index: 5;
+  }
+  .dropdown a, .dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--ink-100);
+    text-decoration: none;
+    font-size: 13.5px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+  }
+  .dropdown a:hover, .dropdown button:hover { background: rgba(255,255,255,0.07); }
+  .dropdown .meta { color: var(--ink-400); font-size: 11px; margin-left: auto; }
+  .dropdown .sep { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 2px; }
+  .dropdown .danger { color: var(--danger); }
+  .dropdown .danger svg { color: var(--danger); }
+  .dropdown .section-label {
+    padding: 8px 12px 4px;
+    color: var(--ink-400);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .dropdown svg { width: 14px; height: 14px; color: var(--ink-300); flex: none; }
+
+  /* ─── Option C: rail aesthetic ─── */
+  .bar.rail { background: var(--navy-900); padding: 0 16px; }
+  .bar.rail .nav a {
+    color: var(--ink-300);
+    padding: 7px 11px;
+    font-size: 13.5px;
+  }
+  .bar.rail .nav a .ico { width: 14px; height: 14px; margin-right: 7px; opacity: 0.7; vertical-align: -2px; display: inline-block; }
+  .bar.rail .nav a.active .ico { opacity: 1; }
+  .bar.rail .group-gap { width: 18px; }
+  .bar.rail .group-gap::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,0.07);
+    margin: 0 auto;
+  }
+
+  /* ─── Option D: section nav split ─── */
+  .bar.split {
+    height: auto;
+    padding: 0;
+    display: block;
+    background: var(--navy-800);
+  }
+  .split-top {
+    display: flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .split-sub {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 22px;
+    gap: 2px;
+    background: var(--navy-900);
+  }
+  .split-sub a {
+    color: var(--ink-400);
+    text-decoration: none;
+    padding: 0 14px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    position: relative;
+    transition: color 0.12s;
+  }
+  .split-sub a:hover { color: #fff; }
+  .split-sub a.active {
+    color: #fff;
+    box-shadow: inset 0 -2px 0 var(--accent);
+    font-weight: 600;
+  }
+  .split-cta {
+    margin-left: auto;
+    white-space: nowrap;
+    background: var(--accent);
+    color: #062035;
+    border: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .split-cta:hover { background: #7ec5ff; }
+
+  /* Callout pills under each bar */
+  .callouts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 16px 14px;
+    background: rgba(255,255,255,0.6);
+  }
+  .pill {
+    font-size: 11.5px;
+    color: #334155;
+    background: #fff;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+  }
+  .pill.good::before { content: '✓ '; color: #15803d; font-weight: 700; }
+  .pill.bad::before { content: '✗ '; color: #b91c1c; font-weight: 700; }
+
+  /* Notification dot */
+  .dot {
+    position: relative;
+  }
+  .dot::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #ff7a5c;
+    box-shadow: 0 0 0 2px var(--navy-800);
+  }
+
+  /* Recap section */
+  .recap {
+    margin-top: 48px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px 28px;
+  }
+  .recap h2 { font-size: 16px; font-weight: 600; margin: 0 0 14px; }
+  .recap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .recap th, .recap td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+  .recap th { font-weight: 600; color: #475569; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .recap td.col-name { font-weight: 600; color: #0f172a; width: 180px; }
+  .recap td.col-fix { color: #15803d; width: 220px; }
+
+  /* ─── Option E: responsive A → D ─── */
+  .resp-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .resp-frame {
+    background: #c8d4df;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 6px 18px -10px rgba(15,23,42,0.18);
+    max-width: 100%;
+  }
+  .resp-frame.w-wide   { width: 1180px; }
+  .resp-frame.w-medium { width: 820px; }
+  .resp-frame.w-narrow { width: 480px; }
+  .resp-cap {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .resp-cap .label { font-size: 12.5px; font-weight: 600; color: #0f172a; }
+  .resp-cap .width { font-size: 11px; color: #6b7280; font-variant-numeric: tabular-nums; }
+  .resp-shell {
+    container-type: inline-size;
+    container-name: topbar;
+    position: relative;
+  }
+  .resp-shell .menu-stage { height: 280px; }
+  .resp-shell .bar { padding: 0 18px; }
+
+  /* Defaults (wide, Option A look) — must come BEFORE @container blocks */
+  .resp-shell .nav .collapsible { display: inline-flex; }
+  .resp-shell .nav .account-btn { display: none; }
+  .resp-shell .right-cluster .avatar-name { display: inline; }
+  .resp-shell .right-cluster .notif-btn { display: inline-flex; }
+
+  /* Single collapse breakpoint: bar shifts to Option-D structure */
+  @container topbar (max-width: 760px) {
+    .resp-shell .nav .collapsible { display: none; }
+    .resp-shell .nav .account-btn { display: inline-flex; }
+    .resp-shell .right-cluster .avatar-name { display: none; }
+  }
+  /* Very narrow: drop brand wordmark + notifications */
+  @container topbar (max-width: 500px) {
+    .resp-shell .brand .wordmark { display: none; }
+    .resp-shell .brand { margin-right: 12px; }
+    .resp-shell .right-cluster .notif-btn { display: none; }
+  }
+
+  .play-frame {
+    background: #c8d4df;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 8px 24px -12px rgba(15,23,42,0.18);
+    margin-top: 16px;
+  }
+  .play-resize {
+    resize: horizontal;
+    overflow: auto;
+    min-width: 320px;
+    max-width: 100%;
+    width: 1180px;
+    background: var(--navy-900);
+    border-right: 3px solid #94a3b8;
+  }
+  .play-resize .resp-shell { background: var(--navy-900); }
+  .play-hint {
+    padding: 10px 14px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 12.5px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .play-hint svg { width: 14px; height: 14px; color: #6b7280; }
+  .play-hint kbd {
+    font-family: 'SFMono-Regular', Menlo, monospace;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 11px;
+    color: #334155;
+  }
+</style>
+</head>
+<body>
+
+<h1>Top bar — refinement options</h1>
+<p class="lede">
+  Original is in the first row. The four options below fix the scrollbar overflow,
+  bring the destructive "Sign out" action into a proper profile menu, and reduce
+  the visual weight of the top-level nav so the active page reads more clearly.
+</p>
+
+<!-- ─────────────── BEFORE ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag before">Before</span>
+    <span class="opt-title">What we have today</span>
+  </div>
+  <p class="opt-desc">
+    Seven flat nav items plus name, theme toggle, and sign-out all compete on one row.
+    Overflow forces a horizontal scrollbar inside the nav, and Sign out is exposed as a casual link.
+  </p>
+  <div class="frame">
+    <div class="bar before">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+        <span>MyMarina</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active">Find a slip</a>
+        <a href="#">My Trips</a>
+        <a href="#">My Slips</a>
+        <a href="#">My Invoices</a>
+        <a href="#">Maintenance</a>
+        <a href="#">My Boats</a>
+        <a href="#">Profile</a>
+      </nav>
+      <div class="spacer"></div>
+      <span class="name-only">Patrick Bigler</span>
+      <span class="theme-only" title="Theme">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5.5 5.5 0 0 1 6 1.5Z"/></svg>
+      </span>
+      <a href="#" class="signout-link">Sign out</a>
+    </div>
+    <div class="callouts">
+      <span class="pill bad">Horizontal scrollbar in nav</span>
+      <span class="pill bad">Sign out exposed as casual link</span>
+      <span class="pill bad">Profile is both a nav item AND a name</span>
+      <span class="pill bad">Bare theme icon, no affordance</span>
+      <span class="pill bad">Active state easy to miss</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── OPTION A: Consolidated + profile menu ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag">Option A</span>
+    <span class="opt-title">Consolidated · profile menu</span>
+  </div>
+  <p class="opt-desc">
+    Smallest behavioural change. "Profile" disappears as a nav item — clicking the avatar
+    opens a menu that holds account, theme, and sign-out. Nav is reduced to the five
+    pages that are actually destinations. Active state moves to a subtle accent pill so
+    the eye lands on it immediately.
+  </p>
+  <div class="frame">
+    <div class="bar" style="position: relative;">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+        <span>MyMarina</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active pill">Find a slip</a>
+        <a href="#">My Trips</a>
+        <a href="#">My Slips</a>
+        <a href="#">My Boats</a>
+        <a href="#">Maintenance</a>
+        <a href="#">Invoices</a>
+      </nav>
+      <div class="spacer"></div>
+      <div class="right-cluster">
+        <button class="icon-btn dot" title="Notifications">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+        </button>
+        <button class="avatar-btn" id="pb-menu-btn">
+          <span class="avatar">PB</span>
+          <span class="avatar-name">Patrick</span>
+          <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="menu-stage">
+      <span class="stage-note">Avatar menu — open</span>
+      <div class="dropdown" style="right: 22px;">
+        <div style="padding: 10px 12px 8px;">
+          <div style="font-weight: 600; color: #fff; font-size: 13px;">Patrick Bigler</div>
+          <div style="color: var(--ink-400); font-size: 11.5px;">patrick@bigler.io</div>
+        </div>
+        <div class="sep"></div>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg>Account &amp; profile</a>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="11" height="9" rx="1.5"/><path d="M2.5 6h11"/></svg>Payment methods</a>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></svg>Notifications</a>
+        <div class="sep"></div>
+        <button><svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5.5 5.5 0 0 1 6 1.5Z"/></svg>Dark mode<span class="meta">On</span></button>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v3M8 10.5h.01"/></svg>Help &amp; support</a>
+        <div class="sep"></div>
+        <button class="danger"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2.5H3.5A1 1 0 0 0 2.5 3.5v9a1 1 0 0 0 1 1H6M10 5l3 3-3 3M13 8H6"/></svg>Sign out</button>
+      </div>
+    </div>
+    <div class="callouts">
+      <span class="pill good">No overflow</span>
+      <span class="pill good">Sign out lives in profile menu</span>
+      <span class="pill good">Theme is part of preferences</span>
+      <span class="pill good">Notifications dot earns its place</span>
+      <span class="pill good">Active state pops via accent pill</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── OPTION B: Section split (marketplace vs. account) ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag">Option B</span>
+    <span class="opt-title">Section split · marketplace vs. your stuff</span>
+  </div>
+  <p class="opt-desc">
+    Acknowledges that "Find a slip" is a different mode than the personal-data pages.
+    Top row is the global identity + the marketplace entry as a primary CTA;
+    the secondary row is your account scope. Active state uses a 2px underline against the brand accent.
+  </p>
+  <div class="frame">
+    <div class="bar split">
+      <div class="split-top">
+        <div class="brand">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+          <span>MyMarina</span>
+        </div>
+        <button class="split-cta">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" width="14" height="14"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 13.5 13.5"/></svg>
+          Find a slip
+        </button>
+        <div class="spacer"></div>
+        <div class="right-cluster">
+          <button class="icon-btn dot" title="Notifications">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+          </button>
+          <button class="avatar-btn">
+            <span class="avatar">PB</span>
+            <span class="avatar-name">Patrick</span>
+            <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="split-sub">
+        <a href="#" class="active">My trips</a>
+        <a href="#">My slips</a>
+        <a href="#">My boats</a>
+        <a href="#">Invoices</a>
+        <a href="#">Maintenance</a>
+        <a href="#">Messages</a>
+      </div>
+    </div>
+    <div class="callouts">
+      <span class="pill good">Find a slip earns CTA treatment</span>
+      <span class="pill good">"My ___" pages group on their own row</span>
+      <span class="pill good">Underline active state is unambiguous</span>
+      <span class="pill bad">Taller header (88px vs 56px)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── OPTION C: Icon + label, tighter rhythm ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag">Option C</span>
+    <span class="opt-title">Icon + label · denser single row</span>
+  </div>
+  <p class="opt-desc">
+    Same flat structure as today, but each item gets a small icon so the row scans
+    laterally as a set of objects instead of a wall of text. Tighter horizontal padding
+    fits all nav items at typical desktop widths without scroll.
+  </p>
+  <div class="frame">
+    <div class="bar rail">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+        <span>MyMarina</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active underline">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 13.5 13.5"/></svg>Find a slip
+        </a>
+        <span class="group-gap"></span>
+        <a href="#">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 11.5 5 9l2 2 4.5-4.5"/><path d="M11.5 6.5h2v2"/></svg>My trips
+        </a>
+        <a href="#">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="4.5" width="11" height="7" rx="1"/><path d="M5 4.5v-2M11 4.5v-2"/></svg>My slips
+        </a>
+        <a href="#">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c2 1.5 4 1.5 6 0s4-1.5 6 0M3.5 9V5l4.5-2 4.5 2v4"/></svg>My boats
+        </a>
+        <span class="group-gap"></span>
+        <a href="#">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h6L13 5.5v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"/><path d="M9.5 2.5V6h3.5M5.5 8.5h5M5.5 11h3"/></svg>Invoices
+        </a>
+        <a href="#">
+          <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m10.5 4 1.5 1.5L6 11.5 3 12l.5-3L9.5 3l1 1Z"/></svg>Maintenance
+        </a>
+      </nav>
+      <div class="spacer"></div>
+      <div class="right-cluster">
+        <button class="icon-btn dot" title="Notifications">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+        </button>
+        <button class="avatar-btn">
+          <span class="avatar">PB</span>
+          <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="callouts">
+      <span class="pill good">All six nav items fit, no overflow</span>
+      <span class="pill good">Subtle group separators chunk the row</span>
+      <span class="pill good">Icons + label, still readable</span>
+      <span class="pill good">Profile collapses to avatar at desktop width</span>
+      <span class="pill bad">Icons may need design work to feel cohesive</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── OPTION D: Compact + menu group ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag">Option D</span>
+    <span class="opt-title">Compact · "My account" menu group</span>
+  </div>
+  <p class="opt-desc">
+    Most aggressive consolidation. Only two primary destinations on the bar:
+    <em>Find a slip</em> (the marketplace) and <em>My account ▾</em> (everything else,
+    grouped as a structured menu). Best when you anticipate the nav growing further
+    — Messages, Wallet, Documents can all slot into the menu without forcing a redesign.
+  </p>
+  <div class="frame">
+    <div class="bar" style="position: relative;">
+      <div class="brand">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+        <span>MyMarina</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active pill">Find a slip</a>
+        <button class="menu-btn">
+          My account
+          <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        </button>
+        <a href="#">Inbox</a>
+      </nav>
+      <div class="spacer"></div>
+      <div class="right-cluster">
+        <button class="icon-btn dot" title="Notifications">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+        </button>
+        <button class="avatar-btn">
+          <span class="avatar">PB</span>
+          <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="menu-stage">
+      <span class="stage-note">"My account" menu — open</span>
+      <div class="dropdown" style="left: 218px;">
+        <div class="section-label">Reservations</div>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 11.5 5 9l2 2 4.5-4.5"/><path d="M11.5 6.5h2v2"/></svg>My trips<span class="meta">3 upcoming</span></a>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="4.5" width="11" height="7" rx="1"/><path d="M5 4.5v-2M11 4.5v-2"/></svg>My slips<span class="meta">2</span></a>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c2 1.5 4 1.5 6 0s4-1.5 6 0M3.5 9V5l4.5-2 4.5 2v4"/></svg>My boats<span class="meta">1</span></a>
+        <div class="sep"></div>
+        <div class="section-label">Billing &amp; service</div>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2.5h6L13 5.5v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"/><path d="M9.5 2.5V6h3.5M5.5 8.5h5M5.5 11h3"/></svg>Invoices<span class="meta" style="color: var(--danger);">1 due</span></a>
+        <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m10.5 4 1.5 1.5L6 11.5 3 12l.5-3L9.5 3l1 1Z"/></svg>Maintenance requests</a>
+      </div>
+    </div>
+    <div class="callouts">
+      <span class="pill good">Bar stays minimal as the app grows</span>
+      <span class="pill good">Menu can hold counts/badges per item</span>
+      <span class="pill good">Reads cleanly at any width</span>
+      <span class="pill bad">Adds a click to reach My trips / Invoices</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── OPTION E: Responsive A → D ─────────────── -->
+<section class="opt">
+  <div class="opt-head">
+    <span class="opt-tag">Option E</span>
+    <span class="opt-title">Responsive · A on desktop, D on small screens</span>
+  </div>
+  <p class="opt-desc">
+    Same bar markup at every width — a single container-query breakpoint at <strong>760px</strong>
+    swaps the visible nav items. Above the breakpoint you get Option A's six-item nav with avatar + name.
+    Below it, the secondary items hide into a "My&nbsp;account ▾" button and the avatar collapses
+    to a circle. A second tighten point at 500px drops the wordmark and the notifications icon.
+    This is not bad practice — it's the standard progressive-disclosure pattern. The two things
+    you must commit to are (1) the active page name surfaces somewhere when its nav item collapses
+    (the "My account" button can carry a tiny accent dot when a sub-page is current), and
+    (2) ordering inside the dropdown stays stable so muscle memory survives the breakpoint.
+  </p>
+
+  <div class="resp-grid">
+
+    <!-- ─── Wide (1180px) ─── -->
+    <div class="resp-frame w-wide">
+      <div class="resp-cap">
+        <span class="label">Desktop · ≥ 760px container</span>
+        <span class="width">1180px — Option A look</span>
+      </div>
+      <div class="resp-shell">
+        <div class="bar">
+          <div class="brand">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+            <span class="wordmark">MyMarina</span>
+          </div>
+          <nav class="nav">
+            <a href="#" class="active pill">Find a slip</a>
+            <a href="#" class="collapsible">My trips</a>
+            <a href="#" class="collapsible">My slips</a>
+            <a href="#" class="collapsible">My boats</a>
+            <a href="#" class="collapsible">Maintenance</a>
+            <a href="#" class="collapsible">Invoices</a>
+            <button class="menu-btn account-btn">My account
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </nav>
+          <div class="spacer"></div>
+          <div class="right-cluster">
+            <button class="icon-btn dot notif-btn" title="Notifications">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+            </button>
+            <button class="avatar-btn">
+              <span class="avatar">PB</span>
+              <span class="avatar-name">Patrick</span>
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Medium / breakpoint-crossed (700px) ─── -->
+    <div class="resp-frame" style="width: 700px;">
+      <div class="resp-cap">
+        <span class="label">Tablet · &lt; 760px container</span>
+        <span class="width">700px — collapses to Option D</span>
+      </div>
+      <div class="resp-shell">
+        <div class="bar">
+          <div class="brand">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+            <span class="wordmark">MyMarina</span>
+          </div>
+          <nav class="nav">
+            <a href="#" class="active pill">Find a slip</a>
+            <a href="#" class="collapsible">My trips</a>
+            <a href="#" class="collapsible">My slips</a>
+            <a href="#" class="collapsible">My boats</a>
+            <a href="#" class="collapsible">Maintenance</a>
+            <a href="#" class="collapsible">Invoices</a>
+            <button class="menu-btn account-btn">My account
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </nav>
+          <div class="spacer"></div>
+          <div class="right-cluster">
+            <button class="icon-btn dot notif-btn" title="Notifications">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+            </button>
+            <button class="avatar-btn">
+              <span class="avatar">PB</span>
+              <span class="avatar-name">Patrick</span>
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Narrow (460px) ─── -->
+    <div class="resp-frame w-narrow">
+      <div class="resp-cap">
+        <span class="label">Mobile · &lt; 500px container</span>
+        <span class="width">460px — wordmark + notifs drop</span>
+      </div>
+      <div class="resp-shell">
+        <div class="bar">
+          <div class="brand">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+            <span class="wordmark">MyMarina</span>
+          </div>
+          <nav class="nav">
+            <a href="#" class="active pill">Find a slip</a>
+            <a href="#" class="collapsible">My trips</a>
+            <a href="#" class="collapsible">My slips</a>
+            <a href="#" class="collapsible">My boats</a>
+            <a href="#" class="collapsible">Maintenance</a>
+            <a href="#" class="collapsible">Invoices</a>
+            <button class="menu-btn account-btn">My account
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </nav>
+          <div class="spacer"></div>
+          <div class="right-cluster">
+            <button class="icon-btn dot notif-btn" title="Notifications">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+            </button>
+            <button class="avatar-btn">
+              <span class="avatar">PB</span>
+              <span class="avatar-name">Patrick</span>
+              <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Resizable playground ─── -->
+    <div class="resp-frame" style="width: 100%; max-width: 1180px;">
+      <div class="play-hint">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3h4v4M7 13H3V9M13 3l-5 5M3 13l5-5"/></svg>
+        Drag the right edge to resize — bar restructures live at <kbd>760px</kbd> and <kbd>500px</kbd>.
+      </div>
+      <div class="play-resize">
+        <div class="resp-shell">
+          <div class="bar">
+            <div class="brand">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm.75 4.4V13a4 4 0 0 0 3.18-2.66l.95.32A5 5 0 0 1 8.75 14.03V15h-1.5v-.97A5 5 0 0 1 3.12 10.66l.95-.32A4 4 0 0 0 7.25 13V5.9H5.5v-1.5h5v1.5H8.75Z"/></svg>
+              <span class="wordmark">MyMarina</span>
+            </div>
+            <nav class="nav">
+              <a href="#" class="active pill">Find a slip</a>
+              <a href="#" class="collapsible">My trips</a>
+              <a href="#" class="collapsible">My slips</a>
+              <a href="#" class="collapsible">My boats</a>
+              <a href="#" class="collapsible">Maintenance</a>
+              <a href="#" class="collapsible">Invoices</a>
+              <button class="menu-btn account-btn">My account
+                <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+              </button>
+            </nav>
+            <div class="spacer"></div>
+            <div class="right-cluster">
+              <button class="icon-btn dot notif-btn" title="Notifications">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a4 4 0 0 0-4 4v2.2c0 .5-.2 1-.6 1.4l-.9.9c-.4.4-.1 1 .4 1h10.2c.5 0 .8-.6.4-1l-.9-.9c-.4-.4-.6-.9-.6-1.4V5.5a4 4 0 0 0-4-4Zm-1.7 11a1.7 1.7 0 0 0 3.4 0H6.3Z"/></svg>
+              </button>
+              <button class="avatar-btn">
+                <span class="avatar">PB</span>
+                <span class="avatar-name">Patrick</span>
+                <svg class="chev" viewBox="0 0 12 12" fill="currentColor"><path d="M3 4.5 6 7.5 9 4.5"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callouts" style="background: rgba(255,255,255,0.6); border-radius: 10px; margin-top: 14px;">
+    <span class="pill good">Single source of markup — no duplicate bars to maintain</span>
+    <span class="pill good">Container queries (not media) → embeds work too</span>
+    <span class="pill good">Active state survives the collapse via the account button</span>
+    <span class="pill bad">First-time mobile users may not discover items in the menu — surface labels there as section headers</span>
+  </div>
+</section>
+
+<!-- ─────────────── Recap ─────────────── -->
+<section class="recap">
+  <h2>How each option resolves the original issues</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Option A · Profile menu</th>
+        <th>Option B · Two-row split</th>
+        <th>Option C · Icon + label</th>
+        <th>Option D · Account dropdown</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-name">Horizontal scrollbar</td>
+        <td>Removed (6 items + tight padding)</td>
+        <td>Items distributed across 2 rows</td>
+        <td>Removed (icons let labels stay short)</td>
+        <td>Removed (only 3 items on bar)</td>
+      </tr>
+      <tr>
+        <td class="col-name">Sign out as casual link</td>
+        <td>Lives in profile menu, marked danger</td>
+        <td>Lives in profile menu</td>
+        <td>Lives in profile menu</td>
+        <td>Lives in profile menu</td>
+      </tr>
+      <tr>
+        <td class="col-name">"Profile" as nav item</td>
+        <td>Replaced by avatar menu</td>
+        <td>Replaced by avatar menu</td>
+        <td>Replaced by avatar menu</td>
+        <td>Replaced by avatar menu</td>
+      </tr>
+      <tr>
+        <td class="col-name">Theme toggle</td>
+        <td>Inside profile menu as preference</td>
+        <td>Inside profile menu</td>
+        <td>Inside profile menu</td>
+        <td>Inside profile menu</td>
+      </tr>
+      <tr>
+        <td class="col-name">Weak active state</td>
+        <td>Accent pill</td>
+        <td>2px underline</td>
+        <td>2px underline + icon emphasis</td>
+        <td>Accent pill</td>
+      </tr>
+      <tr>
+        <td class="col-name">Visual weight</td>
+        <td>Light — single row, 6 items</td>
+        <td>Heavier — 88px tall, two zones</td>
+        <td>Medium — denser but unified</td>
+        <td>Lightest — 3 items on bar</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

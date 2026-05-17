@@ -207,7 +207,7 @@ export function HomePage() {
       {/* Setup banner — shown when user has no active marinas */}
       {showSetupBanner && (
         <div className="bg-primary text-primary-foreground px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-xl">⚓</span>
               <div>
@@ -237,7 +237,7 @@ export function HomePage() {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-6xl mx-auto py-10 px-4">
         <h1 className="text-2xl font-semibold text-foreground">
           Welcome back{user ? `, ${user.firstName}` : ''}
         </h1>

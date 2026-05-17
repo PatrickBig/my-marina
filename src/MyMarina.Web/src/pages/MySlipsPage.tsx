@@ -245,7 +245,7 @@ export function MySlipsPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <NavBar />
-      <div className="max-w-3xl mx-auto py-10 px-4 space-y-6">
+      <div className="max-w-5xl mx-auto py-10 px-4 space-y-6">
         <h1 className="text-xl font-semibold text-foreground">My Slips</h1>
 
         {assignments.length === 0 && (
