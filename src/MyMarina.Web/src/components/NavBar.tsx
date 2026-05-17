@@ -25,7 +25,8 @@ type OpenMenu = 'avatar' | 'account' | null;
 
 export function NavBar() {
   const { user, refreshToken, clearAuth, marinaMemberships, isPlatformOperator } = useAuthStore();
-  const { preference, cyclePreference } = useThemeStore();
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
+  const cyclePreference = useThemeStore((s) => s.cyclePreference);
   const marinaMems = marinaMemberships();
 
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
@@ -47,8 +48,7 @@ export function NavBar() {
     label: m.marinaName ?? 'My Marina',
   }));
 
-  const isDark = preference === 'dark' ||
-    (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

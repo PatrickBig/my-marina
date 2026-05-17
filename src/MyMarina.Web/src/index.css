@@ -1,6 +1,44 @@
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * ── Design token quick-reference ──────────────────────────────────────────
+ *
+ * Tailwind utility → CSS custom property → semantic role
+ *
+ * SURFACES
+ *   bg-background       --background      Page/app background
+ *   bg-card             --card            Cards, panels, nav bar
+ *   bg-muted            --muted           Subtle fills, disabled states
+ *   bg-popover          --popover         Floating panels, tooltips
+ *
+ * TEXT
+ *   text-foreground           --foreground         Primary body text
+ *   text-card-foreground      --card-foreground     Text on cards
+ *   text-muted-foreground     --muted-foreground    Secondary / placeholder text
+ *   text-popover-foreground   --popover-foreground  Text on popovers
+ *
+ * BRAND
+ *   bg-primary / text-primary             --primary        Ocean blue CTA
+ *   text-primary-foreground               --primary-foreground  Text on primary bg
+ *   bg-secondary / text-secondary         --secondary      Muted brand tint
+ *   bg-accent / text-accent               --accent         Sea-foam teal highlight
+ *   text-accent-foreground                --accent-foreground   Text on accent bg
+ *
+ * STATE
+ *   text-destructive / border-destructive --destructive    Errors, warnings
+ *   text-destructive-foreground           --destructive-foreground
+ *
+ * CHROME
+ *   border-border       --border          Default border color
+ *   border-input        --input           Form field border
+ *   ring-ring           --ring            Focus ring color
+ *   rounded-sm/md/lg/xl --radius-*        Shared border-radius scale
+ *
+ * NOTE: The global NavBar (NavBar.css) uses hardcoded dark-navy values
+ *       intentionally — the bar is always dark regardless of page theme.
+ * ──────────────────────────────────────────────────────────────────────── */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

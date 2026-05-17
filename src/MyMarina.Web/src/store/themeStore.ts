@@ -3,31 +3,48 @@ import { persist } from 'zustand/middleware';
 
 type ThemePreference = 'light' | 'dark' | 'system';
 
+function compute(pref: ThemePreference): 'light' | 'dark' {
+  if (pref !== 'system') return pref;
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
+
 interface ThemeStore {
   preference: ThemePreference;
+  resolvedTheme: 'light' | 'dark';
   setPreference: (p: ThemePreference) => void;
   cyclePreference: () => void;
-  resolvedTheme: () => 'light' | 'dark';
+  applySystemPreference: (systemIsDark: boolean) => void;
 }
 
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
       preference: 'system',
-      setPreference: (preference) => set({ preference }),
+      resolvedTheme: compute('system'),
+
+      setPreference: (preference) =>
+        set({ preference, resolvedTheme: compute(preference) }),
+
       cyclePreference: () => {
         const order: ThemePreference[] = ['light', 'dark', 'system'];
-        const next = order[(order.indexOf(get().preference) + 1) % order.length];
-        set({ preference: next });
+        const preference = order[(order.indexOf(get().preference) + 1) % order.length];
+        set({ preference, resolvedTheme: compute(preference) });
       },
-      resolvedTheme: () => {
-        const { preference } = get();
-        if (preference === 'system') {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+      applySystemPreference: (systemIsDark) => {
+        if (get().preference === 'system') {
+          set({ resolvedTheme: systemIsDark ? 'dark' : 'light' });
         }
-        return preference;
       },
     }),
-    { name: 'mymarina:theme', partialize: (s) => ({ preference: s.preference }) }
+    {
+      name: 'mymarina:theme',
+      partialize: (s) => ({ preference: s.preference }),
+      onRehydrateStorage: () => (state) => {
+        if (state) state.resolvedTheme = compute(state.preference);
+      },
+    }
   )
 );
