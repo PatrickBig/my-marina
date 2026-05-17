@@ -40,5 +40,7 @@ public class MarinaConfiguration : IEntityTypeConfiguration<Marina>
         builder.HasIndex(m => m.Slug).IsUnique();
         builder.HasIndex(m => m.TenantId);
         builder.HasIndex(m => m.IsSetupComplete);
+        builder.HasIndex(m => new { m.Latitude, m.Longitude })
+               .HasFilter("\"Latitude\" IS NOT NULL AND \"Longitude\" IS NOT NULL");
     }
 }

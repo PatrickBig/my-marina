@@ -28,8 +28,8 @@ public class MarinasController(
     IUserContext userContext)
     : ControllerBase
 {
-    // GET /marinas/search?q=sunset&limit=10 — public, unauthenticated; used by the dockominium wizard
-    [HttpGet("marinas/search")]
+    // GET /marinas/lookup?q=sunset&limit=10 — public, unauthenticated; used by the dockominium wizard
+    [HttpGet("marinas/lookup")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<MarinaSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int limit = 10, CancellationToken ct = default)

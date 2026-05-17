@@ -22,10 +22,12 @@ public class DemoSeedScript(
     public static readonly Guid YachtClubId   = new("d0000000-0000-0000-0000-000000000011");
     public static readonly Guid DockoId       = new("d0000000-0000-0000-0000-000000000012");
     public static readonly Guid PrivateDockId = new("d0000000-0000-0000-0000-000000000013");
+    public static readonly Guid HarborViewId  = new("d0000000-0000-0000-0000-000000000014");
 
     static readonly Guid DockAId  = new("d0000000-0000-0000-0000-000000000020");
     static readonly Guid DockBId  = new("d0000000-0000-0000-0000-000000000021");
     static readonly Guid YCDockId = new("d0000000-0000-0000-0000-000000000022");
+    static readonly Guid DockHVId = new("d0000000-0000-0000-0000-000000000023");
 
     static readonly Guid SlipA1Id     = new("d0000000-0000-0000-0000-000000000030");
     static readonly Guid SlipA2Id     = new("d0000000-0000-0000-0000-000000000031");
@@ -38,8 +40,12 @@ public class DemoSeedScript(
     static readonly Guid SlipB3Id     = new("d0000000-0000-0000-0000-000000000038");
     static readonly Guid SlipB4Id     = new("d0000000-0000-0000-0000-000000000039");
     static readonly Guid SlipYC1Id    = new("d0000000-0000-0000-0000-000000000040");
-    static readonly Guid SlipDockoId  = new("d0000000-0000-0000-0000-000000000041");
+    static readonly Guid SlipDockoId   = new("d0000000-0000-0000-0000-000000000041");
     static readonly Guid SlipPrivateId = new("d0000000-0000-0000-0000-000000000042");
+    static readonly Guid SlipHV1Id     = new("d0000000-0000-0000-0000-000000000043");
+    static readonly Guid SlipHV2Id     = new("d0000000-0000-0000-0000-000000000044");
+    static readonly Guid SlipHV3Id     = new("d0000000-0000-0000-0000-000000000045");
+    static readonly Guid SlipHV4Id     = new("d0000000-0000-0000-0000-000000000046");
 
     static readonly Guid AccountJohnsonId  = new("d0000000-0000-0000-0000-000000000050");
     static readonly Guid AccountWilliamsId = new("d0000000-0000-0000-0000-000000000051");
@@ -86,7 +92,7 @@ public class DemoSeedScript(
 
     public async Task SeedAsync(CancellationToken ct = default)
     {
-        if (await db.Tenants.AnyAsync(t => t.IsDemo, ct))
+        if (await db.Tenants.AnyAsync(t => t.Id == TenantId, ct))
         {
             logger.LogInformation("Demo tenant already seeded — skipping");
             return;
@@ -205,6 +211,27 @@ public class DemoSeedScript(
                 TimeZoneId       = "America/New_York",
                 IsListed         = true,
                 IsSetupComplete  = true,
+            },
+            new Marina
+            {
+                Id               = HarborViewId,
+                TenantId         = TenantId,
+                Name             = "Harbor View Marina",
+                Slug             = "harbor-view",
+                MarinaType       = MarinaType.Commercial,
+                AddressStreet    = "22 Bannister's Wharf",
+                AddressCity      = "Newport",
+                AddressState     = "RI",
+                AddressZip       = "02840",
+                AddressCountry   = "US",
+                Latitude         = 41.4852m,
+                Longitude        = -71.3195m,
+                PhoneNumber      = "(401) 555-0300",
+                Email            = "dock@harborview.demo",
+                Description      = "Boutique Newport marina with premium transient dockage, a guest lounge, and easy walking distance to Thames Street.",
+                TimeZoneId       = "America/New_York",
+                IsListed         = true,
+                IsSetupComplete  = true,
             }
         );
 
@@ -236,7 +263,8 @@ public class DemoSeedScript(
         db.Docks.AddRange(
             new Dock { Id = DockAId,  MarinaId = SunsetBayId,  Name = "Dock A",        Description = "Main floating dock" },
             new Dock { Id = DockBId,  MarinaId = SunsetBayId,  Name = "Dock B",        Description = "Seasonal dock" },
-            new Dock { Id = YCDockId, MarinaId = YachtClubId,  Name = "Members' Dock" }
+            new Dock { Id = YCDockId, MarinaId = YachtClubId,  Name = "Members' Dock" },
+            new Dock { Id = DockHVId, MarinaId = HarborViewId, Name = "Transient Dock", Description = "Premium transient slips with mixed rate options" }
         );
 
         // ── Slips ──────────────────────────────────────────────────────────────
@@ -263,6 +291,31 @@ public class DemoSeedScript(
                 Status = SlipStatus.Active,
                 DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 95m,
                 Latitude = 41.4901m, Longitude = -71.3128m,
+            },
+            // Harbor View: PerFoot + Flat mix → RateKind = "Mixed" in rollup
+            Slip(SlipHV1Id, HarborViewId, DockHVId, "HV-1", 52, 18, 8, true,  ElectricAmperage.Amp50, true,  transientRate: 3.80m, lat: 41.4853m, lon: -71.3194m, amenities: ["Pump-out", "Laundry"]),
+            Slip(SlipHV2Id, HarborViewId, DockHVId, "HV-2", 45, 16, 7, true,  ElectricAmperage.Amp30, true,  transientRate: 3.60m, lat: 41.4853m, lon: -71.3193m),
+            new Slip
+            {
+                Id = SlipHV3Id, MarinaId = HarborViewId, DockId = DockHVId,
+                Name = "HV-G1", SlipType = SlipType.Floating,
+                MaxLength = 40m, MaxBeam = 14m, MaxDraft = 5m,
+                HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
+                HasPumpOut = false, IsCovered = false, IsIndoor = false, Amenities = ["Guest lounge access"],
+                Status = SlipStatus.Active,
+                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 120m,
+                Latitude = 41.4854m, Longitude = -71.3195m,
+            },
+            new Slip
+            {
+                Id = SlipHV4Id, MarinaId = HarborViewId, DockId = DockHVId,
+                Name = "HV-G2", SlipType = SlipType.Floating,
+                MaxLength = 35m, MaxBeam = 13m, MaxDraft = 4m,
+                HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
+                HasPumpOut = false, IsCovered = false, IsIndoor = false, Amenities = [],
+                Status = SlipStatus.Active,
+                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 95m,
+                Latitude = 41.4854m, Longitude = -71.3196m,
             },
             new Slip
             {

@@ -287,7 +287,7 @@ export const getMyMarinas = () =>
   apiClient.get<MyMarinaDto[]>('/marinas').then((r) => r.data);
 
 export const searchMarinas = (q: string, limit = 10) =>
-  apiClient.get<MarinaSummaryDto[]>('/marinas/search', { params: { q, limit } }).then((r) => r.data);
+  apiClient.get<MarinaSummaryDto[]>('/marinas/lookup', { params: { q, limit } }).then((r) => r.data);
 
 export interface MarinaSignupData {
   tenantName: string;
@@ -626,7 +626,22 @@ export const updateAvailabilityWindow = (marinaId: string, id: string, data: Par
 export const setAvailabilityWindowStatus = (marinaId: string, id: string, status: AvailabilityWindowStatus) =>
   apiClient.post<AvailabilityWindowDto>(`/marinas/${marinaId}/availability-windows/${id}/status`, { status }).then((r) => r.data);
 
-// ─── Slip Search (public) ─────────────────────────────────────────────────────
+// ─── Boater Search (public, two-step) ────────────────────────────────────────
+
+export interface MarinaRollupResultDto {
+  marinaId: string;
+  marinaName: string;
+  city?: string | null;
+  state?: string | null;
+  latitude: number;
+  longitude: number;
+  availableCount: number;
+  minPricePerNight: number;
+  maxPricePerNight: number;
+  rateKind: 'Flat' | 'PerFoot' | 'Mixed';
+  instantBookAvailable: boolean;
+  distanceMilesFromCenter: number;
+}
 
 export interface SlipSearchResultDto {
   slipId: string;
@@ -702,10 +717,7 @@ export interface SlipDetailDto {
   openWindows: PublicWindowSummaryDto[];
 }
 
-export interface SlipSearchParams {
-  lat: number;
-  lon: number;
-  radiusMiles?: number;
+interface BaseSearchParams {
   listingKind?: ListingKind;
   arrivesAt?: string;
   departsAt?: string;
@@ -720,8 +732,20 @@ export interface SlipSearchParams {
   pageSize?: number;
 }
 
-export const searchSlips = (params: SlipSearchParams) =>
-  apiClient.get<SlipSearchResultDto[]>('/slips/search', { params }).then((r) => r.data);
+export interface MarinaRollupSearchParams extends BaseSearchParams {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+export type SlipsAtMarinaParams = BaseSearchParams;
+
+export const searchMarinaRollup = (params: MarinaRollupSearchParams, signal?: AbortSignal) =>
+  apiClient.get<MarinaRollupResultDto[]>('/marinas/search', { params, signal }).then((r) => r.data);
+
+export const searchSlipsAtMarina = (marinaId: string, params: SlipsAtMarinaParams) =>
+  apiClient.get<SlipSearchResultDto[]>(`/marinas/${marinaId}/slips/search`, { params }).then((r) => r.data);
 
 export const getPublicSlipDetail = (slipId: string) =>
   apiClient.get<SlipDetailDto>(`/slips/${slipId}`).then((r) => r.data);

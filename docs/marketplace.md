@@ -71,36 +71,71 @@ If Big Bay is also on the platform, their staff are notified that a dockominium 
 
 ## Discovery & search
 
-### Search inputs
+Search is a two-step, marina-first flow. Step 1 surfaces a rollup of marinas; step 2 drills into slips at a chosen marina.
 
-A boater searching for a slip provides:
+### Step 1 — Marina rollup
 
-- **Where** — geographic point (latitude, longitude) plus a radius. Defaults to "near current location" using browser geolocation.
-- **When** — arrival and departure date/time.
-- **Boat fit** — length, beam, draft (auto-filled from the boater's selected `Vessel`).
-- **Filters (optional)** — slip type (Floating, Mooring, etc.), amenities (electric, water), maximum price.
+The boater sees a split map/list view. The map viewport *is* the search area — there is no radius input.
 
-### Search algorithm (MVP)
+**Inputs:**
 
-1. **Bounding-box query** against `Slip.Latitude` / `Slip.Longitude`. Pre-filter slips within an axis-aligned box that conservatively covers the requested radius.
-2. **Vessel-fit filter:** `Slip.MaxLength ≥ vessel.Length` AND `Slip.MaxBeam ≥ vessel.Beam` AND `Slip.MaxDraft ≥ vessel.Draft`.
+- **Where** — the current map viewport bounding box (north/south/east/west). Defaults to the geolocation position at page load (browser geolocation); otherwise the first geocode result auto-centers the map and runs the search.
+- **When** — arrival and departure dates (transient) or desired start date and lease term (lease).
+- **Boat fit** — authenticated boaters pick from a dropdown of their saved `Vessel` records; the selected vessel's length/beam/draft are submitted automatically. Anonymous boaters (or those who click "use different dimensions") enter LOA/beam/draft manually. The last-selected vessel is persisted in `localStorage` under `mymarina:lastSelectedVesselId` and pre-selected on the next visit; if not found, defaults to the most recently created vessel (`CreatedAt DESC`).
+- **Filters (optional)** — slip type, amenities (electric, water), listing kind (Transient/Lease).
+
+**"Search this area" button:** After the initial search, further map pans or zooms reveal a "Search this area" button overlay (Zillow pattern). Clicking it re-runs the search against the current viewport. The button does not appear after the initial programmatic re-center (geocode or geolocation).
+
+**Result shape (`MarinaSearchResultDto`):**
+
+| Field | Notes |
+| --- | --- |
+| `MarinaId`, `MarinaName`, `City`, `State` | |
+| `Latitude`, `Longitude` | Marina pin position |
+| `AvailableCount` | Slips that match all filters |
+| `MinPricePerNight`, `MaxPricePerNight` | Across matching slips |
+| `RateKind` | `"Flat"`, `"PerFoot"`, or `"Mixed"` — Mixed when the marina has slips of both kinds |
+| `InstantBookAvailable` | Any matching slip supports instant book |
+| `DistanceMilesFromCenter` | Haversine from viewport center; used for "Closest" sort |
+
+When `RateKind = "Mixed"`, the UI displays "from $X" rather than a range, because PerFoot and Flat prices are not directly comparable.
+
+**Sort options:** "Most options" (AvailableCount DESC, then distance ASC — default), "Closest" (distance ASC), "Lowest price" (MinPricePerNight ASC).
+
+### Step 2 — Slips at a marina
+
+Clicking a marina row navigates to `/search/marinas/{marinaId}` (all active filters carried in URL query params for shareability). The view shows:
+
+- Marina name, city/state, and a "Back to marinas" link.
+- A single marina pin on the map (per-slip visualization is deferred to the `marina-map-visualization` change).
+- A slip list using `SlipSearchResultDto`, filtered to that marina only. The bounding-box filter is not applied in step 2 — the marina is a single point.
+
+Clicking a slip navigates to `/slips/{slipId}` (the existing slip detail page; unchanged).
+
+### Search algorithm
+
+**Step 1 — Marina rollup (`GET /marinas/search`):**
+
+1. **Bounding-box query** — filter `Marina` records where `Latitude` / `Longitude` fall within `[south, north]` × `[west, east]`.
+2. **Vessel-fit filter** (if dimensions supplied): `Slip.MaxLength ≥ vessel.Length` AND `Slip.MaxBeam ≥ vessel.Beam` AND `Slip.MaxDraft ≥ vessel.Draft`.
 3. **Amenity & type filters** if specified.
-4. **Active listing filter:** at least one `AvailabilityWindow` (`Status = Open`) covers the requested arrival–departure range.
-5. **Conflict filter:** no overlapping `Reservation` (status in `Confirmed`, `PendingApproval`, `PendingHostMarinaApproval`) for the requested range.
-6. **Lease filter:** the slip is not blocked by an active `SlipAssignment` *unless* the assignment exposes a Holder or OwnerForHolder availability window covering the request.
-7. **Distance refinement:** apply Haversine distance against the search point to drop the bounding-box false positives.
-8. **Sort:** primary by distance, secondary by price.
-9. **Paginate:** return slips with photos, price, dimensions, distance, host name, and instant-book flag.
+4. **Active listing filter** — slip has an open `AvailabilityWindow` covering the requested range, OR has a non-null `DefaultTransientBaseRate` / `DefaultLeaseBaseRate`.
+5. **Conflict filter** — no overlapping confirmed/pending reservation.
+6. **Lease filter** — not blocked by an active `SlipAssignment` unless a holder or owner-for-holder window covers the request.
+7. **Demo filter** — demo-tenant marinas excluded unless `IUserContext.IsDemo = true`.
+8. **Group by `MarinaId`** — aggregate `AvailableCount`, `Min/Max` price, `RateKind` (Mixed detection), `InstantBookAvailable`.
+9. **Compute `DistanceMilesFromCenter`** per marina using Haversine from `((north+south)/2, (east+west)/2)`.
+10. **Sort and paginate** — default page size 20, max 50.
+
+**Step 2 — Slips at a marina (`GET /marinas/{id}/slips/search`):**
+
+Same availability filters as step 1, scoped to `Slip.MarinaId = {id}`. No bounding-box filter. Returns `IReadOnlyList<SlipSearchResultDto>`.
 
 ### Why bounding box, not PostGIS
 
-A bounding-box query is pure Postgres. PostGIS provides true geographic distance, polygon containment, and routing — all overkill for "find me a marina within 25 miles." We accept ~5–10% false positives at the edges and filter them with a Haversine calculation post-query. This keeps the dependency surface small and is fast enough at MVP scale.
+A bounding-box query is pure Postgres. PostGIS provides true geographic distance, polygon containment, and routing — all overkill for "find me a marina within my map viewport." Distance is computed once in application code (Haversine) for sorting and display. This keeps the dependency surface small and is fast enough at MVP scale.
 
 If/when search complexity grows (e.g., "within 10 nautical miles along navigable water"), PostGIS becomes an upgrade target.
-
-### Search result shape
-
-A search result is a list of `SlipSearchResultDto` records, each carrying a representative `AvailabilityWindow` (the cheapest one that fits the requested dates). Multi-window pricing details are loaded on the slip detail page.
 
 ---
 

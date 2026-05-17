@@ -11,6 +11,7 @@ import { DockominionOnboardingPage } from '@/pages/DockominionOnboardingPage';
 import { MarinaDashboardPage } from '@/pages/MarinaDashboardPage';
 import { MarinaSetupWizardPage } from '@/pages/MarinaSetupWizardPage';
 import { SearchPage } from '@/pages/SearchPage';
+import { MarinaSlipsPage } from '@/pages/MarinaSlipsPage';
 import { SlipDetailPage } from '@/pages/SlipDetailPage';
 import { MyTripsPage } from '@/pages/MyTripsPage';
 import { MySlipsPage } from '@/pages/MySlipsPage';
@@ -25,6 +26,7 @@ export function App() {
   function renderPage() {
     if (path === '/auth/callback') return <AuthCallbackPage />;
     if (path === '/search') return <SearchPage />;
+    if (path.startsWith('/search/marinas/')) return <MarinaSlipsPage />;
     if (path.startsWith('/slips/')) return <SlipDetailPage />;
 
     if (path === '/login') return <LoginPage />;
