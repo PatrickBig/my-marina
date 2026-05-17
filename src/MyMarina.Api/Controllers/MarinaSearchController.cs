@@ -22,7 +22,7 @@ public class MarinaSearchController(
         [FromQuery] decimal south,
         [FromQuery] decimal east,
         [FromQuery] decimal west,
-        [FromQuery] string listingKind = "Transient",
+        [FromQuery] string? listingKind = null,
         [FromQuery] DateOnly? arrivesAt = null,
         [FromQuery] DateOnly? departsAt = null,
         [FromQuery] string? leaseTerm = null,
@@ -32,6 +32,8 @@ public class MarinaSearchController(
         [FromQuery] string? slipType = null,
         [FromQuery] bool? hasElectric = null,
         [FromQuery] bool? hasWater = null,
+        [FromQuery] decimal? priceMin = null,
+        [FromQuery] decimal? priceMax = null,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
@@ -43,7 +45,15 @@ public class MarinaSearchController(
                     ["bounds"] = ["north must exceed south and east must exceed west."]
                 }));
 
-        bool isLease = string.Equals(listingKind, "Lease", StringComparison.OrdinalIgnoreCase);
+        if ((priceMin.HasValue || priceMax.HasValue) && listingKind is null)
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]>
+                {
+                    ["priceMin"] = ["priceMin and priceMax require listingKind to be specified."]
+                }));
+
+        string effectiveListingKind = listingKind ?? "Transient";
+        bool isLease = string.Equals(effectiveListingKind, "Lease", StringComparison.OrdinalIgnoreCase);
 
         DateOnly? arrives = arrivesAt;
         DateOnly? departs = departsAt;
@@ -69,8 +79,10 @@ public class MarinaSearchController(
             SlipType:     slipType,
             HasElectric:  hasElectric,
             HasWater:     hasWater,
-            ListingKind:  listingKind,
+            ListingKind:  effectiveListingKind,
             LeaseTerm:    leaseTerm,
+            PriceMin:     priceMin,
+            PriceMax:     priceMax,
             Page:         page,
             PageSize:     Math.Clamp(pageSize, 1, 50),
             IncludeDemo:  userContext.IsDemo), ct);
