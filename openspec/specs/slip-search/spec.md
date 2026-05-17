@@ -4,13 +4,15 @@
 
 The system SHALL provide a public endpoint that returns marinas matching the boater's filter criteria, aggregated as marina-level rollup rows. The geographic search area SHALL be defined by an axis-aligned bounding box (`north`, `south`, `east`, `west`) supplied by the caller. No radius parameter is accepted.
 
-The endpoint SHALL be `GET /marinas/search`, accessible anonymously, and SHALL return rows shaped as follows: `MarinaId`, `MarinaName`, `City`, `State`, `Latitude`, `Longitude`, `AvailableCount` (integer count of slips at that marina that match every filter), `InstantBookAvailable` (boolean), `DistanceMilesFromCenter` (double, computed from the bounding-box centroid).
+The endpoint SHALL be `GET /marinas/search`, accessible anonymously, and SHALL return rows shaped as follows: `MarinaId`, `MarinaName`, `City`, `State`, `Latitude`, `Longitude`, `AvailableCount` (integer count of slips at that marina that match every filter), `InstantBookAvailable` (boolean), `DistanceMilesFromCenter` (double, computed from the bounding-box centroid), `PhotoUrl` (string or null — null until the photo upload feature ships), `HasPumpOut` (boolean — true if any matching slip has `HasPumpOut = true`), `HasElectric` (boolean — true if any matching slip has `ElectricAmpsAvailable > 0`), `IsAnyCovered` (boolean — true if any matching slip has `IsCovered = true`).
 
-Filters supplied by the caller SHALL include: `listingKind`, `arrivesAt`/`departsAt` (transient) or `desiredStart`/`leaseTerm` (lease), `vesselLength`/`vesselBeam`/`vesselDraft`, `slipType`, `hasElectric`, `hasWater`, and optionally `priceMin`/`priceMax`. Filters SHALL be applied at the slip level before aggregation; only slips that match every filter SHALL contribute to a marina's `AvailableCount`.
+Filters supplied by the caller SHALL include: `listingKind`, `arrivesAt`/`departsAt` (transient) or `desiredStart`/`leaseTerm` (lease), `vesselLength`/`vesselBeam`/`vesselDraft`, `slipType`, `hasElectric`, `hasWater`, `instantBookOnly` (boolean — when true, only marinas with at least one instant-book slip are included), `hasPumpOut` (boolean — when true, only marinas with at least one pump-out slip are included), `isAnyCovered` (boolean — when true, only marinas with at least one covered slip are included), and optionally `priceMin`/`priceMax`. Filters SHALL be applied at the slip level before aggregation; only slips that match every filter SHALL contribute to a marina's `AvailableCount`.
 
 The `priceMin` and `priceMax` filters SHALL only be applied when `listingKind` is also provided. For `listingKind=Transient`, the price filter applies to per-night rates. For `listingKind=Lease`, the price filter applies to per-period rates. A slip passes the price filter if ANY of its matching availability windows OR its default rate falls within the specified range — an existence check, not an aggregation. If `priceMin` or `priceMax` is supplied without `listingKind`, the server SHALL return a `400 Bad Request`.
 
 Marinas with `AvailableCount = 0` SHALL be excluded from the response. Demo-tenant marinas SHALL be excluded unless `IUserContext.IsDemo` is `true`. Aggregation SHALL be expressed as a single grouped database query (no in-memory `GroupBy` over thousands of slip rows).
+
+The aggregate boolean fields (`HasPumpOut`, `HasElectric`, `IsAnyCovered`) SHALL be computed as `BOOL_OR` aggregate expressions in the same `GROUP BY` pass as `AvailableCount` — no additional query passes. The amenity filter parameters (`instantBookOnly`, `hasPumpOut`, `isAnyCovered`) SHALL be applied as `EXISTS` subquery predicates, not by loading all slip rows into memory.
 
 Price fields (`MinPricePerNight`, `MaxPricePerNight`, `RateKind`) SHALL NOT be returned in the marina rollup response. Prices are available in the per-marina slip list (`GET /marinas/{id}/slips/search`).
 
@@ -18,9 +20,28 @@ Price fields (`MinPricePerNight`, `MaxPricePerNight`, `RateKind`) SHALL NOT be r
 
 - **WHEN** a boater searches a bounding box covering Annapolis with `listingKind=Transient`, `arrivesAt=2026-07-04`, `departsAt=2026-07-08`, and a 45'×16'×6' boat
 - **AND** Sunset Point Marina has 24 active slips that fit the boat with open transient windows covering those dates
-- **AND** at least one of those slips has `InstantBook = true`
-- **THEN** the response includes a row for Sunset Point with `AvailableCount = 24`, `InstantBookAvailable = true`
+- **AND** at least one of those slips has `InstantBook = true`, `HasPumpOut = true`, and `ElectricAmpsAvailable > 0`
+- **THEN** the response includes a row for Sunset Point with `AvailableCount = 24`, `InstantBookAvailable = true`, `HasPumpOut = true`, `HasElectric = true`
 - **AND** the row does NOT contain `MinPricePerNight`, `MaxPricePerNight`, or `RateKind` fields
+- **AND** `PhotoUrl` is null (until photo upload feature ships)
+
+#### Scenario: Instant-book filter excludes marinas without instant-book slips
+
+- **WHEN** a boater searches with `instantBookOnly=true`
+- **AND** Harbor Cove has 5 available slips, none with `InstantBook = true`
+- **THEN** Harbor Cove is excluded from the response
+
+#### Scenario: Pump-out filter excludes marinas without pump-out
+
+- **WHEN** a boater searches with `hasPumpOut=true`
+- **AND** Eastport Yacht Club has 8 available slips, none with `HasPumpOut = true`
+- **THEN** Eastport Yacht Club is excluded from the response
+
+#### Scenario: Amenity aggregate fields computed in single pass
+
+- **WHEN** the marina rollup query executes
+- **THEN** `HasPumpOut`, `HasElectric`, and `IsAnyCovered` are computed as BOOL_OR aggregates in the same GROUP BY pass as `AvailableCount`
+- **AND** no separate aggregation query is issued to the database
 
 #### Scenario: Price range filter — matching slips included
 
@@ -39,12 +60,6 @@ Price fields (`MinPricePerNight`, `MaxPricePerNight`, `RateKind`) SHALL NOT be r
 
 - **WHEN** a caller supplies `priceMin=100` but omits `listingKind`
 - **THEN** the response is `400 Bad Request`
-
-#### Scenario: Price filter ignored when listing kind not set
-
-- **WHEN** a caller supplies only bounding box parameters with no `listingKind`
-- **THEN** all available slips are counted regardless of price
-- **AND** any `priceMin`/`priceMax` supplied are rejected per the scenario above
 
 #### Scenario: Marina excluded when no slips match
 
