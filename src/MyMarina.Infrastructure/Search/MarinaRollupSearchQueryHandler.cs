@@ -30,51 +30,163 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
 
         if (marinaIds.Count == 0) return [];
 
-        // Step 2: Get eligible slips within those marinas
-        var baseSlipQuery = db.Slips
-            .AsNoTracking()
-            .Where(s => marinaIds.Contains(s.MarinaId));
+        // Step 2: Build the slip filter predicate
+        SlipType slipTypeFilter = default;
+        bool hasSlipTypeFilter = !string.IsNullOrWhiteSpace(query.SlipType)
+            && Enum.TryParse(query.SlipType, ignoreCase: true, out slipTypeFilter);
 
-        var filters = new SlipAvailabilityFilter.Filters(
-            ArrivesAt:       query.ArrivesAt,
-            DepartsAt:       query.DepartsAt,
-            VesselLength:    query.VesselLength,
-            VesselBeam:      query.VesselBeam,
-            VesselDraft:     query.VesselDraft,
-            SlipType:        query.SlipType,
-            HasElectric:     query.HasElectric,
-            HasWater:        query.HasWater,
-            IsLease:         isLease,
-            LeaseTermFilter: leaseTermFilter,
-            IncludeDemo:     query.IncludeDemo
-        );
+        var today = DateOnly.FromDateTime(DateTime.Today);
 
-        // Lightweight projections only — avoids materializing full Slip entities for aggregation
-        var summaries = await SlipAvailabilityFilter.GetRollupSummariesAsync(db, baseSlipQuery, filters, ct);
+        var slipQ = db.Slips
+            .Where(s => s.Status == SlipStatus.Active
+                     && marinaIds.Contains(s.MarinaId)
+                     && (query.VesselLength == null || s.MaxLength >= query.VesselLength)
+                     && (query.VesselBeam   == null || s.MaxBeam   >= query.VesselBeam)
+                     && (query.VesselDraft  == null || s.MaxDraft  >= query.VesselDraft)
+                     && (!hasSlipTypeFilter || s.SlipType == slipTypeFilter)
+                     && (query.HasElectric == null || s.HasElectric == query.HasElectric)
+                     && (query.HasWater    == null || s.HasWater    == query.HasWater));
 
-        if (summaries.Count == 0) return [];
+        // Step 3: Apply availability EXISTS predicates
+        if (isLease)
+        {
+            DateTime? desiredStart = query.ArrivesAt.HasValue
+                ? query.ArrivesAt.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
+                : (DateTime?)null;
 
-        // Step 3: Project marina details (no full entity load)
-        var eligibleMarinaIds = summaries.Select(s => s.MarinaId).Distinct().ToList();
+            slipQ = slipQ.Where(s =>
+                // No active assignment
+                !db.SlipAssignments.Any(a => a.SlipId == s.Id
+                    && (a.EndDate == null || a.EndDate >= today))
+                &&
+                // Has a matching window OR a matching default rate
+                (db.AvailabilityWindows.Any(w => w.SlipId == s.Id
+                    && w.Status == AvailabilityWindowStatus.Open
+                    && w.ListingKind == ListingKind.Lease
+                    && (leaseTermFilter == null || w.LeaseTerm == leaseTermFilter)
+                    && (desiredStart == null || (w.StartsAt <= desiredStart && w.EndsAt >= desiredStart)))
+                 || (s.DefaultLeaseRateKind != null
+                    && (leaseTermFilter == null || s.DefaultLeaseTerm == leaseTermFilter))));
+        }
+        else
+        {
+            var arrivesAt = (query.ArrivesAt ?? today).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var departsAt = (query.DepartsAt ?? query.ArrivesAt?.AddDays(1) ?? today.AddDays(1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var arrivesDateOnly = DateOnly.FromDateTime(arrivesAt);
+            var departsDateOnly = DateOnly.FromDateTime(departsAt);
+
+            slipQ = slipQ.Where(s =>
+                // Path A: open transient window covering the stay
+                db.AvailabilityWindows.Any(w => w.SlipId == s.Id
+                    && w.Status == AvailabilityWindowStatus.Open
+                    && w.ListingKind == ListingKind.Transient
+                    && w.StartsAt <= arrivesAt
+                    && w.EndsAt   >= departsAt)
+                ||
+                // Path B: direct default rate with no conflicts
+                (s.DefaultTransientRateKind != null
+                 && !db.SlipAssignments.Any(a => a.SlipId == s.Id
+                        && a.StartDate <= departsDateOnly
+                        && (a.EndDate == null || a.EndDate >= arrivesDateOnly))
+                 && !db.Reservations.Any(r => r.SlipId == s.Id
+                        && r.ArrivesAt < departsAt
+                        && r.DepartsAt > arrivesAt
+                        && r.Status != ReservationStatus.Declined
+                        && r.Status != ReservationStatus.Cancelled)));
+
+            // Step 4: Apply price filter EXISTS predicate (transient)
+            if (query.PriceMin.HasValue || query.PriceMax.HasValue)
+            {
+                slipQ = slipQ.Where(s =>
+                    db.AvailabilityWindows.Any(w => w.SlipId == s.Id
+                        && w.Status == AvailabilityWindowStatus.Open
+                        && w.ListingKind == ListingKind.Transient
+                        && w.StartsAt <= arrivesAt
+                        && w.EndsAt   >= departsAt
+                        && (query.PriceMin == null || w.BasePricePerNight >= query.PriceMin)
+                        && (query.PriceMax == null || w.BasePricePerNight <= query.PriceMax))
+                    || (s.DefaultTransientRateKind != null
+                        && (query.PriceMin == null || s.DefaultTransientBaseRate >= query.PriceMin)
+                        && (query.PriceMax == null || s.DefaultTransientBaseRate <= query.PriceMax)));
+            }
+        }
+
+        // Apply lease price filter (after the lease availability block)
+        if (isLease && (query.PriceMin.HasValue || query.PriceMax.HasValue))
+        {
+            DateTime? desiredStart = query.ArrivesAt.HasValue
+                ? query.ArrivesAt.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
+                : (DateTime?)null;
+
+            slipQ = slipQ.Where(s =>
+                db.AvailabilityWindows.Any(w => w.SlipId == s.Id
+                    && w.Status == AvailabilityWindowStatus.Open
+                    && w.ListingKind == ListingKind.Lease
+                    && (leaseTermFilter == null || w.LeaseTerm == leaseTermFilter)
+                    && (desiredStart == null || (w.StartsAt <= desiredStart && w.EndsAt >= desiredStart))
+                    && (query.PriceMin == null || w.BasePricePerNight >= query.PriceMin)
+                    && (query.PriceMax == null || w.BasePricePerNight <= query.PriceMax))
+                || (s.DefaultLeaseRateKind != null
+                    && (leaseTermFilter == null || s.DefaultLeaseTerm == leaseTermFilter)
+                    && (query.PriceMin == null || s.DefaultLeaseBaseRate >= query.PriceMin)
+                    && (query.PriceMax == null || s.DefaultLeaseBaseRate <= query.PriceMax)));
+        }
+
+        // Step 5: Single DB-level GROUP BY — count + instant-book flag per marina
+        List<(Guid MarinaId, int Count, bool InstantBook)> rollupData;
+
+        if (isLease)
+        {
+            var rows = await slipQ
+                .GroupBy(s => s.MarinaId)
+                .Select(g => new { MarinaId = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+            rollupData = rows.Select(r => (r.MarinaId, r.Count, false)).ToList();
+        }
+        else
+        {
+            var arrivesAt = (query.ArrivesAt ?? today).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var departsAt = (query.DepartsAt ?? query.ArrivesAt?.AddDays(1) ?? today.AddDays(1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            var rows = await slipQ
+                .GroupBy(s => s.MarinaId)
+                .Select(g => new
+                {
+                    MarinaId    = g.Key,
+                    Count       = g.Count(),
+                    InstantBook = g.Any(s =>
+                        db.AvailabilityWindows.Any(w => w.SlipId == s.Id
+                            && w.Status == AvailabilityWindowStatus.Open
+                            && w.ListingKind == ListingKind.Transient
+                            && w.StartsAt <= arrivesAt
+                            && w.EndsAt   >= departsAt
+                            && w.InstantBook)
+                        || s.DefaultTransientRateKind != null)
+                })
+                .ToListAsync(ct);
+            rollupData = rows.Select(r => (r.MarinaId, r.Count, r.InstantBook)).ToList();
+        }
+
+        if (rollupData.Count == 0) return [];
+
+        // Step 6: Load marina details for matching marinas (bounded by result count, not slip count)
+        var eligibleMarinaIds = rollupData.Select(r => r.MarinaId).Distinct().ToList();
         var marinas = await db.Marinas
             .Where(m => eligibleMarinaIds.Contains(m.Id))
             .Select(m => new { m.Id, m.Name, m.AddressCity, m.AddressState, m.Latitude, m.Longitude })
             .ToDictionaryAsync(m => m.Id, ct);
 
-        // Step 4: Group summaries by marina — summaries are lightweight (MarinaId, Price, RateKind, InstantBook)
         var centerLat = ((double)query.North + (double)query.South) / 2.0;
         var centerLon = ((double)query.East  + (double)query.West)  / 2.0;
 
-        var rollups = summaries
-            .GroupBy(s => s.MarinaId)
-            .Where(g => marinas.ContainsKey(g.Key))
-            .Select(g =>
+        var rollups = rollupData
+            .Where(r => marinas.ContainsKey(r.MarinaId))
+            .Select(r =>
             {
-                var marina    = marinas[g.Key];
-                var prices    = g.Select(s => s.Price).ToList();
-                var rateKinds = g.Select(s => s.RateKind).Distinct().ToList();
-                var rateKind  = rateKinds.Count > 1 ? "Mixed" : rateKinds[0];
-                var distance  = GeoHelper.HaversineDistanceMiles(
+                var marina   = marinas[r.MarinaId];
+                var distance = GeoHelper.HaversineDistanceMiles(
                     centerLat, centerLon,
                     (double)marina.Latitude!.Value, (double)marina.Longitude!.Value);
 
@@ -85,11 +197,8 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     State:                   marina.AddressState,
                     Latitude:                marina.Latitude!.Value,
                     Longitude:               marina.Longitude!.Value,
-                    AvailableCount:          g.Count(),
-                    MinPricePerNight:        prices.Min(),
-                    MaxPricePerNight:        prices.Max(),
-                    RateKind:                rateKind,
-                    InstantBookAvailable:    g.Any(s => s.InstantBook),
+                    AvailableCount:          r.Count,
+                    InstantBookAvailable:    r.InstantBook,
                     DistanceMilesFromCenter: Math.Round(distance, 1)
                 );
             })

@@ -18,6 +18,8 @@ public sealed record MarinaRollupSearchQuery(
     bool? HasWater,
     string ListingKind,   // "Transient" (default) | "Lease"
     string? LeaseTerm,   // "Monthly" | "Seasonal" | "Annual" — only for Lease searches
+    decimal? PriceMin,
+    decimal? PriceMax,
     int Page,
     int PageSize,
     bool IncludeDemo

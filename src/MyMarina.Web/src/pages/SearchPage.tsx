@@ -56,14 +56,6 @@ function MapController({
   return null;
 }
 
-function formatPrice(r: MarinaRollupResultDto, listingKind: ListingKind): string {
-  if (r.rateKind === 'Mixed') return `from $${r.minPricePerNight.toLocaleString()}`;
-  const suffix = listingKind === 'Lease' ? '/mo' : '/night';
-  if (r.minPricePerNight === r.maxPricePerNight)
-    return `$${r.minPricePerNight.toLocaleString()}${suffix}`;
-  return `$${r.minPricePerNight.toLocaleString()} – $${r.maxPricePerNight.toLocaleString()}${suffix}`;
-}
-
 export function SearchPage() {
   const today    = new Date().toISOString().slice(0, 10);
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
@@ -76,6 +68,10 @@ export function SearchPage() {
   const [departsAt, setDepartsAt]     = useState(tomorrow);
   const [leaseTerm, setLeaseTerm]     = useState<LeaseTerm | ''>('');
   const [locationText, setLocationText] = useState('');
+
+  // Price range filter — only active when listingKind is selected
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
 
   // Vessel state — filled from VesselSelector or manual inputs
   const [vesselDims, setVesselDims]   = useState<VesselDimensions | null>(null);
@@ -151,6 +147,8 @@ export function SearchPage() {
         arrivesAt:  !isLease ? arrivesAt : undefined,
         departsAt:  !isLease ? departsAt : undefined,
         leaseTerm:  isLease && leaseTerm ? leaseTerm : undefined,
+        priceMin:   priceMin ? Number(priceMin) : undefined,
+        priceMax:   priceMax ? Number(priceMax) : undefined,
         ...vp,
       }, controller.signal);
       setResults(data);
@@ -207,6 +205,15 @@ export function SearchPage() {
     window.location.href = `/search/marinas/${marinaId}?${params.toString()}`;
   }
 
+  function handleListingKindChange(k: ListingKind) {
+    setListingKind(k);
+    // Clear price filter when listing kind changes so stale values don't linger
+    setPriceMin('');
+    setPriceMax('');
+    setResults([]);
+    setSearched(false);
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <NavBar />
@@ -217,7 +224,7 @@ export function SearchPage() {
           <div className="flex gap-1 mb-3 w-fit rounded-lg bg-slate-100 p-1">
             {(['Transient', 'Lease'] as ListingKind[]).map((k) => (
               <button key={k} type="button"
-                onClick={() => { setListingKind(k); setResults([]); setSearched(false); }}
+                onClick={() => handleListingKindChange(k)}
                 className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   listingKind === k ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>
                 {k === 'Transient' ? 'Transient dockage' : 'Seasonal / annual lease'}
@@ -273,6 +280,28 @@ export function SearchPage() {
                 </div>
               </>
             )}
+
+            {/* Price range — visible only when a listing kind is active */}
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Price min</label>
+              <input
+                type="number" min="0" step="1"
+                value={priceMin}
+                onChange={(e) => setPriceMin(e.target.value)}
+                placeholder="$"
+                className={`${input} w-24`}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Price max</label>
+              <input
+                type="number" min="0" step="1"
+                value={priceMax}
+                onChange={(e) => setPriceMax(e.target.value)}
+                placeholder="$"
+                className={`${input} w-24`}
+              />
+            </div>
 
             {/* Vessel picker or manual dimensions */}
             {!showManual ? (
@@ -337,7 +366,7 @@ export function SearchPage() {
                     <div className="text-sm">
                       <p className="font-semibold">{r.marinaName}</p>
                       <p className="text-slate-500">{r.city}{r.state ? `, ${r.state}` : ''}</p>
-                      <p className="mt-1">{r.availableCount} available · {formatPrice(r, listingKind)}</p>
+                      <p className="mt-1">{r.availableCount} available</p>
                       <button
                         type="button"
                         onClick={() => navigateToMarina(r.marinaId)}
@@ -393,7 +422,6 @@ export function SearchPage() {
                     </p>
                   </div>
                   <div className="text-right ml-4 shrink-0">
-                    <p className="text-base font-bold text-slate-800">{formatPrice(r, listingKind)}</p>
                     <p className="text-xs text-slate-500 mt-0.5">{r.availableCount} available</p>
                     {r.instantBookAvailable && (
                       <span className="inline-block mt-1 text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700">

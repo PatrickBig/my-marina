@@ -3860,6 +3860,8 @@ export interface paths {
                     slipType?: string;
                     hasElectric?: boolean;
                     hasWater?: boolean;
+                    priceMin?: number | string;
+                    priceMax?: number | string;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -7026,11 +7028,6 @@ export interface components {
             longitude: number | string;
             /** Format: int32 */
             availableCount: number | string;
-            /** Format: double */
-            minPricePerNight: number | string;
-            /** Format: double */
-            maxPricePerNight: number | string;
-            rateKind: string;
             instantBookAvailable: boolean;
             /** Format: double */
             distanceMilesFromCenter: number | string;

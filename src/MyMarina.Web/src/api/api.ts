@@ -636,9 +636,6 @@ export interface MarinaRollupResultDto {
   latitude: number;
   longitude: number;
   availableCount: number;
-  minPricePerNight: number;
-  maxPricePerNight: number;
-  rateKind: 'Flat' | 'PerFoot' | 'Mixed';
   instantBookAvailable: boolean;
   distanceMilesFromCenter: number;
 }
@@ -737,6 +734,8 @@ export interface MarinaRollupSearchParams extends BaseSearchParams {
   south: number;
   east: number;
   west: number;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export type SlipsAtMarinaParams = BaseSearchParams;

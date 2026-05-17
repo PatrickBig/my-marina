@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Search;
 using MyMarina.Domain.Enums;
@@ -116,19 +117,24 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
         var row = results.FirstOrDefault(r => r.MarinaName == "Sunset Point");
         Assert.NotNull(row);
         Assert.Equal(3, row.AvailableCount);
-        Assert.True(row.MinPricePerNight > 0);
-        Assert.True(row.MaxPricePerNight >= row.MinPricePerNight);
         Assert.True(row.InstantBookAvailable);
+
+        // Price fields must not be present in the response
+        var json = await client.GetStringAsync(BboxQuery());
+        using var doc = JsonDocument.Parse(json);
+        var rowEl = doc.RootElement.EnumerateArray()
+            .FirstOrDefault(e => e.GetProperty("marinaName").GetString() == "Sunset Point");
+        Assert.False(rowEl.TryGetProperty("minPricePerNight", out _), "minPricePerNight must not be in rollup response");
+        Assert.False(rowEl.TryGetProperty("maxPricePerNight", out _), "maxPricePerNight must not be in rollup response");
+        Assert.False(rowEl.TryGetProperty("rateKind", out _), "rateKind must not be in rollup response");
     }
 
     [Fact]
     public async Task Marina_With_No_Matching_Slips_Excluded()
     {
         var client = factory.CreateClient();
-        // Seed a marina inside the bbox but with a vessel too large for the slips
         await SeedMarinaAsync("TinySlip Marina", CenterLat, CenterLon, slipCount: 2, flatRate: 2500m);
 
-        // Query with vessel larger than max (50ft slips can't fit 100ft vessel)
         var response = await client.GetAsync(BboxQuery("&vesselLength=100"));
         response.EnsureSuccessStatusCode();
 
@@ -141,7 +147,6 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
     public async Task Marina_Outside_Bounding_Box_Excluded()
     {
         var client = factory.CreateClient();
-        // Seed a marina well outside the bbox (e.g., Florida)
         await SeedMarinaAsync("Florida Marina", 25.0m, -80.0m, slipCount: 2, flatRate: 2500m);
 
         var response = await client.GetAsync(BboxQuery());
@@ -155,7 +160,7 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
     [Fact]
     public async Task Demo_Marina_Excluded_For_Regular_Session()
     {
-        var client = factory.CreateClient(); // anonymous, no is_demo claim
+        var client = factory.CreateClient();
         await SeedMarinaAsync("Demo Marina", CenterLat, CenterLon, isDemo: true, slipCount: 2, flatRate: 3000m);
 
         var response = await client.GetAsync(BboxQuery());
@@ -182,22 +187,206 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task Marina_With_Mixed_Rate_Kinds_Reports_Mixed()
+    public async Task Price_Filter_Transient_Includes_Marina_With_InRange_Slip()
     {
         var client = factory.CreateClient();
+        // Two slips: one at $150/night (in range), one at $250/night (out of range)
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // slipCount=4: alternating Flat/PerFoot in seed (i%2 == 0 → Flat, else PerFoot)
-        // With rateKind="PerFoot" the seed code alternates kinds when i%2!=0
-        await SeedMarinaAsync("Mixed Rates Marina", CenterLat, CenterLon, rateKind: "PerFoot", slipCount: 4, flatRate: 3000m, perFootRate: 65m);
+        var tenant = new Domain.Entities.Tenant { Name = "Price Filter Marina", Slug = $"t-{Guid.NewGuid():N}" };
+        var marina = new Domain.Entities.Marina
+        {
+            TenantId = tenant.Id, Name = "Price Filter Marina", Slug = $"m-{Guid.NewGuid():N}",
+            MarinaType = MarinaType.Commercial, IsSetupComplete = true,
+            Latitude = CenterLat, Longitude = CenterLon,
+        };
+        db.Tenants.Add(tenant);
+        db.Marinas.Add(marina);
 
-        var response = await client.GetAsync(BboxQuery());
+        var windowStart = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var windowEnd   = new DateTimeOffset(2030, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+        foreach (var price in new[] { 150m, 250m })
+        {
+            var slip = new Domain.Entities.Slip
+            {
+                MarinaId = marina.Id, Name = $"Slip {price}", SlipType = SlipType.Floating,
+                Status = SlipStatus.Active, MaxLength = 50, MaxBeam = 16, MaxDraft = 6,
+            };
+            db.Slips.Add(slip);
+            db.AvailabilityWindows.Add(new Domain.Entities.AvailabilityWindow
+            {
+                SlipId = slip.Id, ListingKind = ListingKind.Transient, RateKind = RateKind.Flat,
+                BasePricePerNight = price, InstantBook = true,
+                StartsAt = windowStart, EndsAt = windowEnd,
+                Status = AvailabilityWindowStatus.Open, MinNights = 1,
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        var response = await client.GetAsync(BboxQuery("&listingKind=Transient&priceMin=100&priceMax=200"));
         response.EnsureSuccessStatusCode();
 
         var results = await response.Content.ReadFromJsonAsync<List<MarinaRollupResultDto>>();
         Assert.NotNull(results);
-        var row = results.FirstOrDefault(r => r.MarinaName == "Mixed Rates Marina");
+
+        var row = results.FirstOrDefault(r => r.MarinaName == "Price Filter Marina");
         Assert.NotNull(row);
-        Assert.Equal("Mixed", row.RateKind);
+        // Only the $150 slip qualifies — count should be 1
+        Assert.Equal(1, row.AvailableCount);
+    }
+
+    [Fact]
+    public async Task Price_Filter_Transient_Excludes_Marina_With_No_InRange_Slip()
+    {
+        var client = factory.CreateClient();
+        // All slips priced above the filter maximum
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var tenant = new Domain.Entities.Tenant { Name = "Expensive Marina", Slug = $"t-{Guid.NewGuid():N}" };
+        var marina = new Domain.Entities.Marina
+        {
+            TenantId = tenant.Id, Name = "Expensive Marina", Slug = $"m-{Guid.NewGuid():N}",
+            MarinaType = MarinaType.Commercial, IsSetupComplete = true,
+            Latitude = CenterLat, Longitude = CenterLon,
+        };
+        db.Tenants.Add(tenant);
+        db.Marinas.Add(marina);
+
+        var windowStart = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var windowEnd   = new DateTimeOffset(2030, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+        for (int i = 0; i < 3; i++)
+        {
+            var slip = new Domain.Entities.Slip
+            {
+                MarinaId = marina.Id, Name = $"Slip {i}", SlipType = SlipType.Floating,
+                Status = SlipStatus.Active, MaxLength = 50, MaxBeam = 16, MaxDraft = 6,
+            };
+            db.Slips.Add(slip);
+            db.AvailabilityWindows.Add(new Domain.Entities.AvailabilityWindow
+            {
+                SlipId = slip.Id, ListingKind = ListingKind.Transient, RateKind = RateKind.Flat,
+                BasePricePerNight = 500m, InstantBook = true,
+                StartsAt = windowStart, EndsAt = windowEnd,
+                Status = AvailabilityWindowStatus.Open, MinNights = 1,
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        // Price max of $50 — all slips at $500 are out of range
+        var response = await client.GetAsync(BboxQuery("&listingKind=Transient&priceMax=50"));
+        response.EnsureSuccessStatusCode();
+
+        var results = await response.Content.ReadFromJsonAsync<List<MarinaRollupResultDto>>();
+        Assert.NotNull(results);
+        Assert.DoesNotContain(results, r => r.MarinaName == "Expensive Marina");
+    }
+
+    [Fact]
+    public async Task Price_Filter_Lease_Includes_Marina_With_InRange_Slip()
+    {
+        var client = factory.CreateClient();
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var tenant = new Domain.Entities.Tenant { Name = "Lease Price Marina", Slug = $"t-{Guid.NewGuid():N}" };
+        var marina = new Domain.Entities.Marina
+        {
+            TenantId = tenant.Id, Name = "Lease Price Marina", Slug = $"m-{Guid.NewGuid():N}",
+            MarinaType = MarinaType.Commercial, IsSetupComplete = true,
+            Latitude = CenterLat, Longitude = CenterLon,
+        };
+        db.Tenants.Add(tenant);
+        db.Marinas.Add(marina);
+
+        var windowStart = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var windowEnd   = new DateTimeOffset(2030, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+        // Slip with $800/mo lease window (in range $500–$1000)
+        var slip = new Domain.Entities.Slip
+        {
+            MarinaId = marina.Id, Name = "Lease Slip", SlipType = SlipType.Floating,
+            Status = SlipStatus.Active, MaxLength = 50, MaxBeam = 16, MaxDraft = 6,
+        };
+        db.Slips.Add(slip);
+        db.AvailabilityWindows.Add(new Domain.Entities.AvailabilityWindow
+        {
+            SlipId = slip.Id, ListingKind = ListingKind.Lease, RateKind = RateKind.Flat,
+            LeaseTerm = LeaseTerm.Monthly,
+            BasePricePerNight = 800m, InstantBook = false,
+            StartsAt = windowStart, EndsAt = windowEnd,
+            Status = AvailabilityWindowStatus.Open,
+        });
+
+        await db.SaveChangesAsync();
+
+        var response = await client.GetAsync(
+            $"marinas/search?north={North}&south={South}&east={East}&west={West}&listingKind=Lease&priceMin=500&priceMax=1000");
+        response.EnsureSuccessStatusCode();
+
+        var results = await response.Content.ReadFromJsonAsync<List<MarinaRollupResultDto>>();
+        Assert.NotNull(results);
+        Assert.Contains(results, r => r.MarinaName == "Lease Price Marina");
+    }
+
+    [Fact]
+    public async Task Price_Filter_Lease_Excludes_Marina_With_No_InRange_Slip()
+    {
+        var client = factory.CreateClient();
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var tenant = new Domain.Entities.Tenant { Name = "Expensive Lease Marina", Slug = $"t-{Guid.NewGuid():N}" };
+        var marina = new Domain.Entities.Marina
+        {
+            TenantId = tenant.Id, Name = "Expensive Lease Marina", Slug = $"m-{Guid.NewGuid():N}",
+            MarinaType = MarinaType.Commercial, IsSetupComplete = true,
+            Latitude = CenterLat, Longitude = CenterLon,
+        };
+        db.Tenants.Add(tenant);
+        db.Marinas.Add(marina);
+
+        var windowStart = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var windowEnd   = new DateTimeOffset(2030, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+        var slip = new Domain.Entities.Slip
+        {
+            MarinaId = marina.Id, Name = "Expensive Lease Slip", SlipType = SlipType.Floating,
+            Status = SlipStatus.Active, MaxLength = 50, MaxBeam = 16, MaxDraft = 6,
+        };
+        db.Slips.Add(slip);
+        db.AvailabilityWindows.Add(new Domain.Entities.AvailabilityWindow
+        {
+            SlipId = slip.Id, ListingKind = ListingKind.Lease, RateKind = RateKind.Flat,
+            LeaseTerm = LeaseTerm.Monthly,
+            BasePricePerNight = 3000m, InstantBook = false,
+            StartsAt = windowStart, EndsAt = windowEnd,
+            Status = AvailabilityWindowStatus.Open,
+        });
+
+        await db.SaveChangesAsync();
+
+        var response = await client.GetAsync(
+            $"marinas/search?north={North}&south={South}&east={East}&west={West}&listingKind=Lease&priceMax=500");
+        response.EnsureSuccessStatusCode();
+
+        var results = await response.Content.ReadFromJsonAsync<List<MarinaRollupResultDto>>();
+        Assert.NotNull(results);
+        Assert.DoesNotContain(results, r => r.MarinaName == "Expensive Lease Marina");
+    }
+
+    [Fact]
+    public async Task Price_Filter_Without_ListingKind_Returns_400()
+    {
+        var client = factory.CreateClient();
+        var response = await client.GetAsync(
+            $"marinas/search?north={North}&south={South}&east={East}&west={West}&priceMin=100");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -223,7 +412,6 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
         var client = factory.CreateClient();
         var (_, marinaId) = await SeedMarinaAsync("Fit Filter Marina", CenterLat, CenterLon, slipCount: 3, flatRate: 3200m);
 
-        // vessel too long for any slip (MaxLength=50)
         var response = await client.GetAsync(
             $"marinas/{marinaId}/slips/search?arrivesAt=2030-07-04&departsAt=2030-07-08&vesselLength=100");
         response.EnsureSuccessStatusCode();
@@ -245,7 +433,7 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
     [Fact]
     public async Task Per_Marina_Demo_Marina_Returns_404_For_Regular_User()
     {
-        var client = factory.CreateClient(); // no is_demo claim
+        var client = factory.CreateClient();
         var (_, demoMarinaId) = await SeedMarinaAsync("Demo Only Marina", CenterLat, CenterLon,
             isDemo: true, slipCount: 2, flatRate: 2500m);
 
