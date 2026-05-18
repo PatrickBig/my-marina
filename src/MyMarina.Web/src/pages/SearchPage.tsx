@@ -410,13 +410,19 @@ export function SearchPage() {
                 onClick={() => navigateToMarina(r.marinaId)}
                 onMouseEnter={() => setHoveredId(r.marinaId)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`w-full text-left bg-card rounded-xl border p-3 hover:shadow-md transition-all ${
+                className={`w-full text-left bg-card rounded-xl border overflow-hidden hover:shadow-md transition-all ${
                   hoveredId === r.marinaId ? 'border-primary/50 shadow-sm' : 'border-border'}`}>
-                <div className="flex gap-3">
-                  {/* Photo slot */}
-                  {r.photoUrl
-                    ? <img src={r.photoUrl} alt={r.marinaName} className="w-20 h-20 rounded-lg object-cover shrink-0" />
-                    : <MarinaPhotoPlaceholder />}
+                {/* Banner hero (when available) */}
+                {r.bannerThumbnailUrl && (
+                  <img src={r.bannerThumbnailUrl} alt="" className="w-full h-24 object-cover" />
+                )}
+                <div className="flex gap-3 p-3">
+                  {/* Logo avatar or anchor placeholder */}
+                  {r.logoUrl
+                    ? <img src={r.logoUrl} alt={r.marinaName} className="w-12 h-12 rounded-full object-cover shrink-0 border border-border -mt-6 ring-2 ring-card" />
+                    : r.bannerThumbnailUrl
+                      ? <div className="w-12 h-12 rounded-full shrink-0 -mt-6 ring-2 ring-card flex items-center justify-center bg-primary/10 text-primary text-lg">⚓</div>
+                      : <MarinaPhotoPlaceholder />}
 
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2">

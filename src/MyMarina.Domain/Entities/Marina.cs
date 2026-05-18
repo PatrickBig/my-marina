@@ -36,4 +36,5 @@ public class Marina
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;
+    public List<MarinaPhoto> Photos { get; set; } = [];
 }

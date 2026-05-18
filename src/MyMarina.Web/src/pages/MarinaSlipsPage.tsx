@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { NavBar } from '@/components/NavBar';
 import { searchSlipsAtMarina, type SlipSearchResultDto, type ListingKind, type LeaseTerm, type RateKind } from '@/api/api';
+import { usePhotoUpload, type MarinaPhotoDto } from '@/hooks/usePhotoUpload';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -121,6 +122,9 @@ export function MarinaSlipsPage() {
   const [loading, setLoading]   = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError]       = useState<string | null>(null);
+  const [photos, setPhotos]     = useState<MarinaPhotoDto[]>([]);
+
+  const { getPhotos } = usePhotoUpload(marinaId ?? '');
 
   // Filter chips — wired to the existing API filter params
   const [chipElectric, setChipElectric] = useState(false);
@@ -134,6 +138,12 @@ export function MarinaSlipsPage() {
       hasWater: water || undefined,
     });
   }
+
+  useEffect(() => {
+    if (!marinaId) return;
+    getPhotos().then(setPhotos).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marinaId]);
 
   useEffect(() => {
     if (!marinaId) { setNotFound(true); setLoading(false); return; }
@@ -159,6 +169,10 @@ export function MarinaSlipsPage() {
   const marinaState = marina?.marinaState;
   const mapPos      = marina ? [marina.latitude, marina.longitude] as [number, number] : null;
   const backUrl     = buildBackUrl(params);
+
+  const bannerPhoto    = photos.find((p) => p.kind === 'Banner');
+  const logoPhoto      = photos.find((p) => p.kind === 'Logo');
+  const approachPhotos = photos.filter((p) => p.kind === 'Approach' && p.urlThumbnail);
 
   const electricCount = slips.filter(s => s.hasElectric).length;
   const waterCount    = slips.filter(s => s.hasWater).length;
@@ -190,17 +204,33 @@ export function MarinaSlipsPage() {
 
       {/* Header bar */}
       <div className="bg-card border-b border-border shadow-sm shrink-0">
+        {/* Banner */}
+        {bannerPhoto?.urlMedium && (
+          <div className="w-full h-32 overflow-hidden">
+            <img src={bannerPhoto.urlMedium} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
         <div className="max-w-6xl mx-auto px-4 py-3">
           <a href={backUrl} className="text-sm text-muted-foreground hover:text-foreground underline transition-colors">← Back to marinas</a>
-          <div className="flex items-baseline gap-3 mt-1">
-            <h1 className="text-xl font-bold text-foreground">{marinaName}</h1>
-            {(marinaCity || marinaState) && (
-              <span className="text-sm text-muted-foreground">
-                {marinaCity}{marinaState ? `, ${marinaState}` : ''}
-              </span>
+          <div className="flex items-center gap-3 mt-1">
+            {/* Logo avatar */}
+            {logoPhoto?.urlThumbnail && (
+              <img
+                src={logoPhoto.urlThumbnail}
+                alt={marinaName}
+                className={`shrink-0 rounded-full object-cover border border-border ${bannerPhoto ? 'w-12 h-12 -mt-8 ring-2 ring-card' : 'w-10 h-10'}`}
+              />
             )}
+            <div className="flex items-baseline gap-3 flex-1 min-w-0">
+              <h1 className="text-xl font-bold text-foreground truncate">{marinaName}</h1>
+              {(marinaCity || marinaState) && (
+                <span className="text-sm text-muted-foreground shrink-0">
+                  {marinaCity}{marinaState ? `, ${marinaState}` : ''}
+                </span>
+              )}
+            </div>
             {!loading && (
-              <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                 {slips.length} slip{slips.length !== 1 ? 's' : ''} fit
               </span>
             )}
@@ -234,22 +264,52 @@ export function MarinaSlipsPage() {
           ))}
         </div>
 
-        {/* Map + marina blurb */}
-        <div className="relative flex-1">
+        {/* Map + approach info panel */}
+        <div className="relative flex-1 flex flex-col overflow-hidden">
           {mapPos ? (
-            <MapContainer center={mapPos} zoom={14} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={mapPos} zoom={14} style={{ flex: 1, width: '100%', minHeight: '200px' }}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <Marker position={mapPos} />
+              {/* Approach photo pins */}
+              {approachPhotos.filter(p => p.latitude && p.longitude).map((p) => (
+                <Marker key={p.id} position={[p.latitude!, p.longitude!]}>
+                  <Popup>
+                    <div className="text-sm space-y-1">
+                      <img src={p.urlThumbnail!} alt="" className="w-32 h-20 object-cover rounded" />
+                      {p.caption && <p className="text-xs">{p.caption}</p>}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
             </MapContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground text-sm bg-muted/30">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm bg-muted/30">
               No location data
             </div>
           )}
 
+          {/* Getting Here section */}
+          {approachPhotos.length > 0 && (
+            <div className="border-t border-border bg-card p-4 shrink-0 overflow-y-auto max-h-56">
+              <h2 className="text-sm font-semibold text-foreground mb-3">Getting Here</h2>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {approachPhotos.map((p) => (
+                  <div key={p.id} className="shrink-0 w-40">
+                    <img src={p.urlThumbnail!} alt={p.caption ?? 'Approach photo'} className="w-40 h-28 object-cover rounded-lg" />
+                    {p.caption && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.caption}</p>}
+                    {p.latitude && p.longitude && (
+                      <p className="text-xs text-muted-foreground/70 font-mono mt-0.5">
+                        {p.latitude.toFixed(4)}, {p.longitude.toFixed(4)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

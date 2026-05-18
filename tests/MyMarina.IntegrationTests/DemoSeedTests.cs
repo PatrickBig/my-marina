@@ -42,6 +42,7 @@ public class DemoSeedTests(ApiWebApplicationFactory factory)
         Assert.True(await db.MaintenanceRequests.AnyAsync(r => r.MarinaId == DemoSeedScript.SunsetBayId),    "MaintenanceRequest");
         Assert.True(await db.WorkOrders.AnyAsync(w => w.MarinaId == DemoSeedScript.SunsetBayId),             "WorkOrder");
         Assert.True(await db.Announcements.AnyAsync(a => a.MarinaId == DemoSeedScript.SunsetBayId),          "Announcement");
+        Assert.True(await db.MarinaPhotos.AnyAsync(p => p.MarinaId == DemoSeedScript.SunsetBayId),            "MarinaPhoto");
     }
 
     [Fact]

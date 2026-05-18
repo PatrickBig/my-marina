@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\MyMarina.Domain\MyMarina.Domain.csproj" />
     <ProjectReference Include="..\..\src\MyMarina.Application\MyMarina.Application.csproj" />
+    <ProjectReference Include="..\..\src\MyMarina.Infrastructure\MyMarina.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -85,6 +85,22 @@ spec:
               value: {{ .Values.api.env.jwtExpiryMinutes | quote }}
             - name: Cors__AllowedOrigins__0
               value: {{ .Values.api.env.corsAllowedOrigin }}
+            - name: Storage__Provider
+              value: "S3"
+            - name: Storage__S3__Endpoint
+              value: {{ .Values.storage.s3.endpoint | quote }}
+            - name: Storage__S3__Region
+              value: {{ .Values.storage.s3.region | default "auto" | quote }}
+            - name: Storage__S3__Bucket
+              value: {{ .Values.storage.s3.bucket | quote }}
+            - name: Storage__S3__BucketPublicBaseUrl
+              value: {{ .Values.storage.s3.bucketPublicBaseUrl | quote }}
+            - name: Storage__S3__UploadTtlMinutes
+              value: {{ .Values.storage.s3.uploadTtlMinutes | quote }}
+            - name: Storage__S3__MaxFileSizeBytes
+              value: {{ .Values.storage.s3.maxFileSizeBytes | quote }}
+            # Storage__S3__AccessKey and Storage__S3__SecretKey are injected via
+            # the app-secrets envFrom (managed by HashiCorp Vault).
             - name: Setup__PlatformOperator__Email
               value: {{ .Values.setupJob.platformOperatorEmail | quote }}
             - name: Setup__PlatformOperator__Password

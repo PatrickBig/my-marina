@@ -198,6 +198,8 @@ export interface MarinaDto {
   isSetupComplete: boolean;
   setupStep: number;
   createdAt: string;
+  logoUrl?: string | null;
+  bannerThumbnailUrl?: string | null;
 }
 
 export interface DockDto {
@@ -639,6 +641,8 @@ export interface MarinaRollupResultDto {
   instantBookAvailable: boolean;
   distanceMilesFromCenter: number;
   photoUrl?: string | null;
+  logoUrl?: string | null;
+  bannerThumbnailUrl?: string | null;
   hasPumpOut: boolean;
   hasElectric: boolean;
   isAnyCovered: boolean;

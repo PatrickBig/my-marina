@@ -32,7 +32,9 @@ public sealed record MarinaDto(
     bool IsListed,
     bool IsSetupComplete,
     int SetupStep,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    string? LogoUrl = null,
+    string? BannerThumbnailUrl = null
 );
 
 public sealed record DockDto(
@@ -89,7 +91,9 @@ public sealed record MarinaSummaryDto(
     string Name,
     string? AddressCity,
     string? AddressState,
-    string MarinaType
+    string MarinaType,
+    string? LogoUrl = null,
+    string? BannerThumbnailUrl = null
 );
 
 // Returned from GetMyMarinasQuery — marina summary with the caller's relationship context.

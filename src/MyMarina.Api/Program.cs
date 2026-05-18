@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Infrastructure;
 using MyMarina.Infrastructure.Invoicing;
+using MyMarina.Infrastructure.Storage;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Setup;
 using Scalar.AspNetCore;
@@ -186,6 +187,12 @@ static void RegisterRecurringJobs(IRecurringJobManager jobs)
         "invoice-overdue-check",
         job => job.CheckOverdueAsync(),
         Cron.Daily(2));
+    jobs.AddOrUpdate<OrphanPhotoCleanupJob>(
+        "orphan-photo-cleanup",
+        "photos",
+        job => job.ExecuteAsync(),
+        Cron.Daily(3),
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 }
 
 public partial class Program;

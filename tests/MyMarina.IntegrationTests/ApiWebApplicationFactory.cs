@@ -9,6 +9,7 @@ using MyMarina.Application.Abstractions;
 using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Storage;
 using Testcontainers.PostgreSql;
 
 namespace MyMarina.IntegrationTests;
@@ -76,10 +77,18 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Hangfire:UseRedis"]          = "false",
-                ["ConnectionStrings:Postgres"] = _postgres.GetConnectionString(),
-                ["ConnectionStrings:Redis"]    = "localhost:6379,abortConnect=false",
-                ["Email:RequireConfirmedEmail"] = "false",
+                ["Hangfire:UseRedis"]           = "false",
+                ["ConnectionStrings:Postgres"]  = _postgres.GetConnectionString(),
+                ["ConnectionStrings:Redis"]     = "localhost:6379,abortConnect=false",
+                ["Email:RequireConfirmedEmail"]  = "false",
+                // Storage:Provider must be "S3" so InfrastructureServiceExtensions registers
+                // IStorageProvider, but we immediately replace it with InMemoryStorageProvider below.
+                ["Storage:Provider"]            = "S3",
+                ["Storage:S3:Endpoint"]         = "http://localhost:4566",
+                ["Storage:S3:Bucket"]           = "mymarina-test",
+                ["Storage:S3:AccessKey"]        = "test",
+                ["Storage:S3:SecretKey"]        = "test",
+                ["Storage:S3:BucketPublicBaseUrl"] = "http://localhost/test-storage",
             });
         });
 
@@ -87,6 +96,10 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             services.RemoveAll<IEmailService>();
             services.AddScoped<IEmailService, NullEmailService>();
+
+            // Replace S3StorageProvider with the in-memory test double.
+            services.RemoveAll<IStorageProvider>();
+            services.AddSingleton<IStorageProvider, InMemoryStorageProvider>();
 
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));

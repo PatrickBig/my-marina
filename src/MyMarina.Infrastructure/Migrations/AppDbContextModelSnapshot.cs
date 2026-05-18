@@ -708,6 +708,82 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("marinas", "mymarina");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.MarinaPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UrlFull")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("UrlMedium")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("UrlThumbnail")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarinaId");
+
+                    b.HasIndex("MarinaId", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marina_photos_marina_logo_banner_unique")
+                        .HasFilter("\"Kind\" IN (0, 1)");
+
+                    b.HasIndex("MarinaId", "Kind", "SortOrder");
+
+                    b.ToTable("marina_photos", "mymarina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.MarinaVesselRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1779,6 +1855,17 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.MarinaPhoto", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Marina", "Marina")
+                        .WithMany("Photos")
+                        .HasForeignKey("MarinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Marina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.MarinaVesselRecord", b =>
                 {
                     b.HasOne("MyMarina.Domain.Entities.BillingAccount", "BillingAccount")
@@ -1968,6 +2055,11 @@ namespace MyMarina.Infrastructure.Migrations
             modelBuilder.Entity("MyMarina.Domain.Entities.MaintenanceRequest", b =>
                 {
                     b.Navigation("WorkOrder");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Marina", b =>
+                {
+                    b.Navigation("Photos");
                 });
 #pragma warning restore 612, 618
         }

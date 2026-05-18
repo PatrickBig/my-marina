@@ -30,6 +30,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<MarinaPhoto> MarinaPhotos => Set<MarinaPhoto>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -24,6 +24,9 @@ import {
   type LeaseInquiryDto, type RateKind, type LeaseTerm,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
+import { usePhotoUpload, type MarinaPhotoDto } from '@/hooks/usePhotoUpload';
+import { CropUploadModal } from '@/components/CropUploadModal';
+import { PhotoCard } from '@/components/PhotoCard';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -2483,6 +2486,7 @@ export function MarinaDashboardPage() {
         <LeaseInquiriesPanel marinaId={marinaId} />
         <InvoicingPanel marinaId={marinaId} />
         <MaintenancePanel marinaId={marinaId} />
+        <PhotosPanel marinaId={marinaId} />
         <AnnouncementsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
       </div>
@@ -2745,6 +2749,265 @@ function MaintenancePanel({ marinaId }: { marinaId: string }) {
             ))
           }
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Photos panel ────────────────────────────────────────────────────────────
+
+type PhotoKindTab = 'Logo' | 'Banner' | 'Gallery' | 'Aerial' | 'Approach';
+
+function PhotosPanel({ marinaId }: { marinaId: string }) {
+  const { upload, getPhotos, reorder, deletePhoto } = usePhotoUpload(marinaId);
+  const [photos, setPhotos] = useState<MarinaPhotoDto[]>([]);
+  const [activeTab, setActiveTab] = useState<PhotoKindTab>('Logo');
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const TABS: PhotoKindTab[] = ['Logo', 'Banner', 'Gallery', 'Aerial', 'Approach'];
+
+  useEffect(() => {
+    getPhotos().then(setPhotos).catch(() => {});
+  }, [marinaId]);
+
+  // Poll once after 2s when any photo is still processing
+  useEffect(() => {
+    const processing = photos.some((p) => !p.urlThumbnail);
+    if (!processing) return;
+    const id = setTimeout(() => {
+      getPhotos().then(setPhotos).catch(() => {});
+    }, 2000);
+    return () => clearTimeout(id);
+  }, [photos]);
+
+  const kindPhotos = photos.filter((p) => p.kind === activeTab);
+  const logoPhoto = photos.find((p) => p.kind === 'Logo') ?? null;
+  const bannerPhoto = photos.find((p) => p.kind === 'Banner') ?? null;
+
+  async function handleCropComplete(blob: Blob, width: number, height: number) {
+    setUploading(true);
+    setError(null);
+    try {
+      // delete existing Logo/Banner first (only one allowed)
+      const existing = photos.find((p) => p.kind === activeTab);
+      if (existing && (activeTab === 'Logo' || activeTab === 'Banner')) {
+        await deletePhoto(existing.id);
+        setPhotos((prev) => prev.filter((p) => p.id !== existing.id));
+      }
+      const photo = await upload({
+        kind: activeTab,
+        file: blob,
+        contentType: 'image/jpeg',
+        imageWidth: width,
+        imageHeight: height,
+      });
+      setPhotos((prev) => [...prev, photo]);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      setShowCropModal(false);
+    }
+  }
+
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      const dims = await new Promise<{ w: number; h: number }>((res, rej) => {
+        img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = rej;
+        img.src = url;
+      });
+      URL.revokeObjectURL(url);
+      const photo = await upload({
+        kind: activeTab,
+        file,
+        contentType: file.type || 'image/jpeg',
+        imageWidth: dims.w,
+        imageHeight: dims.h,
+      });
+      setPhotos((prev) => [...prev, photo]);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  async function handleReorder(photo: MarinaPhotoDto, direction: 'up' | 'down') {
+    try {
+      await reorder(photo.id, direction);
+      const updated = await getPhotos();
+      setPhotos(updated);
+    } catch {}
+  }
+
+  async function handleDelete(photo: MarinaPhotoDto) {
+    try {
+      await deletePhoto(photo.id);
+      setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    } catch {}
+  }
+
+  const aspectRatio = activeTab === 'Logo' ? 1 : activeTab === 'Banner' ? 16 / 9 : undefined;
+  const isSingleSlot = activeTab === 'Logo' || activeTab === 'Banner';
+
+  return (
+    <div className="bg-card rounded-xl border border-border p-6">
+      <h2 className="text-base font-semibold text-foreground mb-4">Photos</h2>
+
+      {/* Tab bar */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
+            className={`text-sm px-3 py-1 rounded-lg ${activeTab === tab ? 'bg-foreground text-background' : 'border border-border text-muted-foreground hover:bg-muted/30'}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
+      {/* Logo tab */}
+      {activeTab === 'Logo' && (
+        <div className="flex flex-col items-start gap-4">
+          {logoPhoto ? (
+            <div className="relative group w-32 h-32">
+              <img
+                src={logoPhoto.urlThumbnail ?? undefined}
+                alt="Marina logo"
+                className="w-32 h-32 rounded-xl object-cover border border-border"
+              />
+              {!logoPhoto.urlThumbnail && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/80 rounded-xl">
+                  <span className="text-xs text-muted-foreground animate-pulse">Processing…</span>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => handleDelete(logoPhoto)}
+                className="absolute -top-2 -right-2 rounded-full bg-destructive text-destructive-foreground w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >✕</button>
+            </div>
+          ) : (
+            <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">
+              No logo
+            </div>
+          )}
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => setShowCropModal(true)}
+            className={`${btn} text-sm`}
+          >
+            {uploading ? 'Uploading…' : logoPhoto ? 'Replace logo' : 'Upload logo'}
+          </button>
+          <p className="text-xs text-muted-foreground">Square image, 1:1 ratio (±10%). Recommended: 512×512px or larger.</p>
+        </div>
+      )}
+
+      {/* Banner tab */}
+      {activeTab === 'Banner' && (
+        <div className="flex flex-col gap-4">
+          {bannerPhoto ? (
+            <div className="relative group rounded-xl overflow-hidden border border-border aspect-video max-w-xl">
+              <img
+                src={bannerPhoto.urlMedium ?? bannerPhoto.urlFull ?? undefined}
+                alt="Marina banner"
+                className="w-full h-full object-cover"
+              />
+              {!bannerPhoto.urlThumbnail && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/80">
+                  <span className="text-xs text-muted-foreground animate-pulse">Processing…</span>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => handleDelete(bannerPhoto)}
+                className="absolute top-2 right-2 rounded-full bg-destructive text-destructive-foreground w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >✕</button>
+            </div>
+          ) : (
+            <div className="rounded-xl border-2 border-dashed border-border aspect-video max-w-xl flex items-center justify-center text-muted-foreground text-xs">
+              No banner
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => setShowCropModal(true)}
+              className={`${btn} text-sm`}
+            >
+              {uploading ? 'Uploading…' : bannerPhoto ? 'Replace banner' : 'Upload banner'}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">Wide banner, 16:9 ratio (±15%). Recommended: 1600×900px or larger.</p>
+        </div>
+      )}
+
+      {/* Gallery / Aerial / Approach tabs */}
+      {!isSingleSlot && (
+        <div className="space-y-4">
+          <div>
+            <label className="cursor-pointer">
+              <span className={`${btn} text-sm ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                {uploading ? 'Uploading…' : 'Add photo'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploading}
+                onChange={handleGalleryUpload}
+              />
+            </label>
+            {activeTab === 'Approach' && (
+              <p className="mt-1 text-xs text-muted-foreground">Min 800px wide. Add captions and optional GPS coordinates to help boaters navigate.</p>
+            )}
+          </div>
+
+          {kindPhotos.length === 0 ? (
+            <p className="text-sm text-muted-foreground/70">No {activeTab.toLowerCase()} photos yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {kindPhotos.map((photo, idx) => (
+                <PhotoCard
+                  key={photo.id}
+                  photo={photo}
+                  isFirst={idx === 0}
+                  isLast={idx === kindPhotos.length - 1}
+                  onMoveUp={() => handleReorder(photo, 'up')}
+                  onMoveDown={() => handleReorder(photo, 'down')}
+                  onDelete={() => handleDelete(photo)}
+                  showCaption={activeTab === 'Approach'}
+                  showLatLng={activeTab === 'Approach'}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Crop modal for Logo/Banner */}
+      {showCropModal && (
+        <CropUploadModal
+          aspectRatio={aspectRatio}
+          onComplete={handleCropComplete}
+          onCancel={() => setShowCropModal(false)}
+        />
       )}
     </div>
   );

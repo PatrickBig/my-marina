@@ -15,6 +15,8 @@ import {
   type DockConvention, type SlipConvention,
 } from '@/utils/namingConventions';
 import { useWizardDraft } from '@/hooks/useWizardDraft';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
+import { CropUploadModal } from '@/components/CropUploadModal';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
@@ -824,8 +826,120 @@ function Step4({
   );
 }
 
-// ─── Step 5 — Review & publish ────────────────────────────────────────────────
-function Step5({
+// ─── Step 5 — Photos ──────────────────────────────────────────────────────────
+function Step5Photos({
+  marinaId, onBack, onNext, onSkip,
+}: { marinaId: string; onBack: () => void; onNext: () => void; onSkip: () => void }) {
+  const { upload } = usePhotoUpload(marinaId);
+  const [logoUploaded, setLogoUploaded] = useState(false);
+  const [bannerUploaded, setBannerUploaded] = useState(false);
+  const [showLogoCrop, setShowLogoCrop] = useState(false);
+  const [showBannerCrop, setShowBannerCrop] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleLogoComplete(blob: Blob, width: number, height: number) {
+    setUploading(true);
+    setError(null);
+    try {
+      await upload({ kind: 'Logo', file: blob, contentType: 'image/jpeg', imageWidth: width, imageHeight: height });
+      setLogoUploaded(true);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      setShowLogoCrop(false);
+    }
+  }
+
+  async function handleBannerComplete(blob: Blob, width: number, height: number) {
+    setUploading(true);
+    setError(null);
+    try {
+      await upload({ kind: 'Banner', file: blob, contentType: 'image/jpeg', imageWidth: width, imageHeight: height });
+      setBannerUploaded(true);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      setShowBannerCrop(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Encouragement */}
+      <div className="rounded-xl bg-primary/5 border border-primary/20 px-5 py-4">
+        <p className="text-sm font-medium text-foreground">Marinas with photos receive significantly more inquiries</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          A logo and banner help your marina stand out on the marketplace. You can add more photos from your dashboard anytime.
+        </p>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {/* Logo slot */}
+      <div className="rounded-xl border border-border p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Logo</p>
+            <p className="text-xs text-muted-foreground">Square image, 1:1 ratio. Appears as your marina's avatar.</p>
+          </div>
+          {logoUploaded && <span className="text-xs text-emerald-600 font-medium">✓ Uploaded</span>}
+        </div>
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => setShowLogoCrop(true)}
+          className={btnSecondary}
+        >
+          {logoUploaded ? 'Replace logo' : 'Upload logo'}
+        </button>
+      </div>
+
+      {/* Banner slot */}
+      <div className="rounded-xl border border-border p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Banner</p>
+            <p className="text-xs text-muted-foreground">Wide 16:9 image. Displayed at the top of your marina page.</p>
+          </div>
+          {bannerUploaded && <span className="text-xs text-emerald-600 font-medium">✓ Uploaded</span>}
+        </div>
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => setShowBannerCrop(true)}
+          className={btnSecondary}
+        >
+          {bannerUploaded ? 'Replace banner' : 'Upload banner'}
+        </button>
+      </div>
+
+      <div className="flex justify-between pt-2 items-center">
+        <button type="button" onClick={onBack} className={btnSecondary}>← Back</button>
+        <div className="flex flex-col items-end gap-2">
+          <button type="button" onClick={onNext} disabled={uploading} className={btn}>
+            Next →
+          </button>
+          <button type="button" onClick={onSkip} className="text-xs text-muted-foreground/70 hover:text-foreground/80 underline">
+            Skip for now — add photos later from your marina settings
+          </button>
+        </div>
+      </div>
+
+      {showLogoCrop && (
+        <CropUploadModal aspectRatio={1} onComplete={handleLogoComplete} onCancel={() => setShowLogoCrop(false)} />
+      )}
+      {showBannerCrop && (
+        <CropUploadModal aspectRatio={16 / 9} onComplete={handleBannerComplete} onCancel={() => setShowBannerCrop(false)} />
+      )}
+    </div>
+  );
+}
+
+// ─── Step 6 — Review & publish ────────────────────────────────────────────────
+function Step6({
   marina, onBack, onFinish,
 }: { marina: MarinaDto; onBack: () => void; onFinish: (isListed: boolean) => Promise<void> }) {
   const [isListed, setIsListed] = useState(false);
@@ -887,7 +1001,7 @@ function Step5({
 }
 
 // ─── Wizard shell ─────────────────────────────────────────────────────────────
-const STEPS = ['Marina profile', 'GPS location', 'Dock structure', 'Preview', 'Publish'];
+const STEPS = ['Marina profile', 'GPS location', 'Dock structure', 'Preview', 'Photos', 'Publish'];
 
 export function MarinaSetupWizardPage() {
   const marinaId = window.location.pathname.split('/')[2];
@@ -930,7 +1044,7 @@ export function MarinaSetupWizardPage() {
   }
 
   async function handleFinish(isListed: boolean) {
-    await updateMarina(marinaId, { isSetupComplete: true, isListed, setupStep: 5 });
+    await updateMarina(marinaId, { isSetupComplete: true, isListed, setupStep: 6 });
     clearDraft();
     window.location.href = `/marina/${marinaId}`;
   }
@@ -1005,7 +1119,15 @@ export function MarinaSetupWizardPage() {
           {step === 2 && <Step2 marina={marina} onBack={() => setStep(1)} onNext={handleStep2} />}
           {step === 3 && <Step3 onBack={() => setStep(2)} onNext={handleStep3} />}
           {step === 4 && <Step4 marinaId={marinaId} onBack={() => setStep(3)} onNext={() => setStep(5)} />}
-          {step === 5 && <Step5 marina={marina} onBack={() => setStep(4)} onFinish={handleFinish} />}
+          {step === 5 && (
+            <Step5Photos
+              marinaId={marinaId}
+              onBack={() => setStep(4)}
+              onNext={async () => { await updateMarina(marinaId, { setupStep: 5 }); setStep(6); }}
+              onSkip={async () => { await updateMarina(marinaId, { setupStep: 5 }); setStep(6); }}
+            />
+          )}
+          {step === 6 && <Step6 marina={marina} onBack={() => setStep(5)} onFinish={handleFinish} />}
         </div>
       </div>
     </div>
