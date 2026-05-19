@@ -2,21 +2,15 @@ using MyMarina.Domain.Enums;
 
 namespace MyMarina.Application.Photos;
 
-public sealed record CreateUploadTicketCommand(
+public sealed record UploadMarinaPhotoCommand(
     Guid MarinaId,
     Guid RequestingUserId,
     MarinaPhotoKind Kind,
+    Stream Content,
     string ContentType,
     long FileSizeBytes,
-    int? ImageWidth,
-    int? ImageHeight
-);
-
-public sealed record ConfirmPhotoUploadCommand(
-    Guid MarinaId,
-    Guid RequestingUserId,
-    string Key,
-    MarinaPhotoKind Kind,
+    int Width,
+    int Height,
     string? Caption,
     decimal? Latitude,
     decimal? Longitude

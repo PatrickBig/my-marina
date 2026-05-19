@@ -125,7 +125,7 @@
 ## 17. Testing
 
 - [x] 17.1 Add unit tests for `AspectRatioValidator` — all five kinds, boundary values, valid and invalid inputs
-- [ ] 17.2 Add unit test for `ImageVariantGenerationJob` — mock `IStorageProvider`; assert correct variant keys written for Square vs Landscape sets
+- [x] 17.2 Add unit test for `ImageVariantGenerationJob` — mock `IStorageProvider`; assert correct variant keys written for Square vs Landscape sets
 - [x] 17.3 Add integration test: `POST /ticket` — valid request returns ticket; non-member returns 403; oversized file returns 422; bad aspect ratio returns 422; duplicate logo returns 409
 - [x] 17.4 Add integration test: `POST /confirm` — object exists → photo created and job enqueued; object missing → 404
 - [x] 17.5 Add integration test: `PATCH /{photoId}/reorder` — up/down swaps correctly; boundary returns 400

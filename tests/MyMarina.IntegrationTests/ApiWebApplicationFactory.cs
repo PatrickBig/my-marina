@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -89,6 +90,9 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
                 ["Storage:S3:AccessKey"]        = "test",
                 ["Storage:S3:SecretKey"]        = "test",
                 ["Storage:S3:BucketPublicBaseUrl"] = "http://localhost/test-storage",
+                // 100 KB — large enough for solid-color test JPEGs, small enough
+                // that the 200 KB oversized test triggers the controller's 413 check.
+                ["Storage:S3:MaxFileSizeBytes"] = "102400",
             });
         });
 
@@ -96,6 +100,11 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             services.RemoveAll<IEmailService>();
             services.AddScoped<IEmailService, NullEmailService>();
+
+            // Program.cs sets MultipartBodyLengthLimit = MaxFileSizeBytes (100 KB).
+            // Raise it here so oversized bodies reach the controller and get 413,
+            // rather than being rejected by the middleware with 400.
+            services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 10_485_760L);
 
             // Replace S3StorageProvider with the in-memory test double.
             services.RemoveAll<IStorageProvider>();

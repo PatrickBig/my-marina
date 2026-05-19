@@ -2786,7 +2786,7 @@ function PhotosPanel({ marinaId }: { marinaId: string }) {
   const logoPhoto = photos.find((p) => p.kind === 'Logo') ?? null;
   const bannerPhoto = photos.find((p) => p.kind === 'Banner') ?? null;
 
-  async function handleCropComplete(blob: Blob, width: number, height: number) {
+  async function handleCropComplete(blob: Blob, _width: number, _height: number) {
     setUploading(true);
     setError(null);
     try {
@@ -2800,8 +2800,6 @@ function PhotosPanel({ marinaId }: { marinaId: string }) {
         kind: activeTab,
         file: blob,
         contentType: 'image/jpeg',
-        imageWidth: width,
-        imageHeight: height,
       });
       setPhotos((prev) => [...prev, photo]);
     } catch (e: unknown) {
@@ -2818,20 +2816,10 @@ function PhotosPanel({ marinaId }: { marinaId: string }) {
     setUploading(true);
     setError(null);
     try {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      const dims = await new Promise<{ w: number; h: number }>((res, rej) => {
-        img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
-        img.onerror = rej;
-        img.src = url;
-      });
-      URL.revokeObjectURL(url);
       const photo = await upload({
         kind: activeTab,
         file,
         contentType: file.type || 'image/jpeg',
-        imageWidth: dims.w,
-        imageHeight: dims.h,
       });
       setPhotos((prev) => [...prev, photo]);
     } catch (e: unknown) {

@@ -10,7 +10,8 @@ public sealed record MarinaRollupResultDto(
     int AvailableCount,
     bool InstantBookAvailable,
     double DistanceMilesFromCenter,
-    string? PhotoUrl,
+    string? LogoUrl,
+    string? BannerThumbnailUrl,
     bool HasPumpOut,
     bool HasElectric,
     bool IsAnyCovered

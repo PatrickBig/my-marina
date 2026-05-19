@@ -16,26 +16,44 @@ services:
       timeout: 5s
       retries: 5
 
-  localstack:
-    image: localstack/localstack:3.8.0
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs-server
     ports:
-      - "4566:4566"
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Console
     environment:
-      SERVICES: s3
-      DEFAULT_REGION: us-east-1
-      AWS_DEFAULT_REGION: us-east-1
-      # Force plain HTTP — no TLS on port 4566
-      GATEWAY_LISTEN: "0.0.0.0:4566"
-      LOCALSTACK_HOST: "localstack:4566"
-      DISABLE_CORS_CHECKS: "1"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_VOLUMES: "/data/rustfs"
+      RUSTFS_ACCESS_KEY: "rustfsadmin"
+      RUSTFS_SECRET_KEY: "rustfsadmin"
+      RUSTFS_ADDRESS: "0.0.0.0:9000"
     volumes:
-      - localstack_data:/var/lib/localstack
-      - ./docker/localstack/init.d:/etc/localstack/init/ready.d
+      - rustfs_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+
+#  rustfs-init:
+#    image: amazon/aws-cli:latest
+#    environment:
+#      AWS_ACCESS_KEY_ID: rustfsadmin
+#      AWS_SECRET_ACCESS_KEY: rustfsadmin
+#      AWS_DEFAULT_REGION: us-east-1
+#    command: >
+#      aws s3api create-bucket --bucket mymarina-local
+#      --endpoint-url http://rustfs:9000
+#    depends_on:
+#      rustfs:
+#        condition: service_healthy
+#    deploy:
+#      restart_policy:
+#        condition: none
 
   redis:
     image: redis:7-alpine
@@ -65,13 +83,11 @@ services:
       Cors__AllowedOrigins__0: "http://localhost:5173"
       Cors__AllowedOrigins__1: "http://localhost:4321"
       Storage__Provider: "S3"
-      Storage__S3__Endpoint: "http://localstack:4566"
-      Storage__S3__PublicEndpoint: "http://localhost:4566"
+      Storage__S3__Endpoint: "http://rustfs:9000"
       Storage__S3__Bucket: "mymarina-local"
-      Storage__S3__AccessKey: "test"
-      Storage__S3__SecretKey: "test"
-      Storage__S3__BucketPublicBaseUrl: "http://localhost:4566/mymarina-local"
-      Storage__S3__UploadTtlMinutes: "15"
+      Storage__S3__AccessKey: "rustfsadmin"
+      Storage__S3__SecretKey: "rustfsadmin"
+      Storage__S3__BucketPublicBaseUrl: "http://localhost:9000/mymarina-local"
       Storage__S3__MaxFileSizeBytes: "20971520"
     env_file:
       - path: ./app-secrets.env
@@ -81,7 +97,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      localstack:
+      rustfs:
         condition: service_healthy
       api-setup:
         condition: service_completed_successfully
@@ -139,4 +155,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  localstack_data:
+  rustfs_data:

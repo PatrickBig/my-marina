@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Storage;
+using SkiaSharp;
 
 namespace MyMarina.IntegrationTests;
 
@@ -74,73 +77,96 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         return photo.Id;
     }
 
-    // ── POST /ticket — task 17.3 ─────────────────────────────────────────────
+    static byte[] CreateTestJpeg(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        bitmap.Erase(SKColors.SteelBlue);
+        using var ms = new MemoryStream();
+        bitmap.Encode(ms, SKEncodedImageFormat.Jpeg, 85);
+        return ms.ToArray();
+    }
+
+    static MultipartFormDataContent CreatePhotoMultipart(
+        byte[] imageBytes, string kind,
+        string? caption = null, decimal? latitude = null, decimal? longitude = null)
+    {
+        var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(imageBytes);
+        file.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        form.Add(file, "file", "photo.jpg");
+        form.Add(new StringContent(kind), "kind");
+        if (caption   is not null) form.Add(new StringContent(caption), "caption");
+        if (latitude  is not null) form.Add(new StringContent(latitude.Value.ToString(CultureInfo.InvariantCulture)), "latitude");
+        if (longitude is not null) form.Add(new StringContent(longitude.Value.ToString(CultureInfo.InvariantCulture)), "longitude");
+        return form;
+    }
+
+    // ── POST /photos ──────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task PostTicket_ValidGalleryRequest_Returns200WithTicket()
+    public async Task PostPhotos_ValidGalleryRequest_Returns201()
     {
         var (client, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
 
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/ticket", new
-        {
-            kind = "Gallery", contentType = "image/jpeg", fileSizeBytes = 1_000_000,
-            imageWidth = 1024, imageHeight = 768,
-        });
+        var resp = await client.PostAsync($"/marinas/{marinaId}/photos",
+            CreatePhotoMultipart(CreateTestJpeg(1024, 768), "Gallery"));
 
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
-        var body = await resp.Content.ReadFromJsonAsync<TicketBody>();
-        Assert.NotNull(body?.UploadUrl);
-        Assert.NotNull(body?.Key);
+        Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
+        var body = await resp.Content.ReadFromJsonAsync<PhotoBody>();
+        Assert.NotNull(body?.Id);
+        Assert.Equal("Gallery", body!.Kind);
     }
 
     [Fact]
-    public async Task PostTicket_NonMember_Returns403()
+    public async Task PostPhotos_NonMember_Returns403()
     {
         var (_, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
-        var nonMemberClient = factory.CreateClientWithToken(
+        var stranger = factory.CreateClientWithToken(
             TestJwtHelper.UserToken(Guid.CreateVersion7(), "stranger@example.com"));
 
-        var resp = await nonMemberClient.PostAsJsonAsync($"/marinas/{marinaId}/photos/ticket", new
-        {
-            kind = "Gallery", contentType = "image/jpeg", fileSizeBytes = 500_000,
-        });
+        var resp = await stranger.PostAsync($"/marinas/{marinaId}/photos",
+            CreatePhotoMultipart(CreateTestJpeg(1024, 768), "Gallery"));
 
         Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
     }
 
     [Fact]
-    public async Task PostTicket_OversizedFile_Returns422()
+    public async Task PostPhotos_OversizedFile_Returns413()
     {
         var (client, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
 
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/ticket", new
-        {
-            kind = "Gallery", contentType = "image/jpeg", fileSizeBytes = 25_000_000L, // > 20 MB
-        });
+        // 200 KB exceeds MaxFileSizeBytes (100 KB in test config).
+        // MultipartBodyLengthLimit = MaxFileSizeBytes * 5 = 500 KB, so the body reaches the
+        // controller (which returns 413) rather than being rejected by middleware (which returns 400).
+        var oversized = new byte[200_000];
+        var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(oversized);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        form.Add(fileContent, "file", "big.jpg");
+        form.Add(new StringContent("Gallery"), "kind");
+
+        var resp = await client.PostAsync($"/marinas/{marinaId}/photos", form);
+
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostPhotos_BadAspectRatioLogo_Returns422()
+    {
+        var (client, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
+
+        // 1600×900 is 16:9 — ratio 1.78, outside Logo's ±10% of 1:1
+        var resp = await client.PostAsync($"/marinas/{marinaId}/photos",
+            CreatePhotoMultipart(CreateTestJpeg(1600, 900), "Logo"));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }
 
     [Fact]
-    public async Task PostTicket_BadAspectRatioLogo_Returns422()
-    {
-        var (client, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
-
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/ticket", new
-        {
-            kind = "Logo", contentType = "image/jpeg", fileSizeBytes = 500_000,
-            imageWidth = 1600, imageHeight = 900, // 16:9 — not square
-        });
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
-    }
-
-    [Fact]
-    public async Task PostTicket_DuplicateLogo_Returns409()
+    public async Task PostPhotos_DuplicateLogo_Returns409()
     {
         var (client, _, tenantId, marinaId) = await CreateMarinaWithOwnerAsync();
 
-        // Seed an existing logo
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.MarinaPhotos.Add(new MarinaPhoto
@@ -151,56 +177,14 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         });
         await db.SaveChangesAsync();
 
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/ticket", new
-        {
-            kind = "Logo", contentType = "image/jpeg", fileSizeBytes = 500_000,
-            imageWidth = 512, imageHeight = 512,
-        });
+        // 512×512 is square — passes Logo aspect ratio; uniqueness check returns 409
+        var resp = await client.PostAsync($"/marinas/{marinaId}/photos",
+            CreatePhotoMultipart(CreateTestJpeg(512, 512), "Logo"));
 
         Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
     }
 
-    // ── POST /confirm — task 17.4 ─────────────────────────────────────────────
-
-    [Fact]
-    public async Task PostConfirm_MissingObject_Returns404()
-    {
-        var (client, _, _, marinaId) = await CreateMarinaWithOwnerAsync();
-
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/confirm", new
-        {
-            key = "nonexistent/key/that/does/not/exist.jpg",
-            kind = "Gallery",
-        });
-
-        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
-    }
-
-    [Fact]
-    public async Task PostConfirm_WithRealFile_Returns201()
-    {
-        var (client, _, tenantId, marinaId) = await CreateMarinaWithOwnerAsync();
-
-        // Pre-populate the in-memory store with a minimal 1×1 JPEG.
-        // Use Logo kind (1:1 aspect ratio) so validation passes.
-        var key = $"{tenantId}/{marinaId}/marina/logo/test-{Guid.CreateVersion7()}.jpg";
-        var jpegBytes = Convert.FromBase64String(
-            "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AJQAB/9k=");
-        InMemoryStorageProvider.Objects[key] = (jpegBytes, "image/jpeg");
-
-        var resp = await client.PostAsJsonAsync($"/marinas/{marinaId}/photos/confirm", new
-        {
-            key,
-            kind = "Logo",
-        });
-
-        Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
-        var body = await resp.Content.ReadFromJsonAsync<PhotoBody>();
-        Assert.NotNull(body?.Id);
-        Assert.Equal("Logo", body!.Kind);
-    }
-
-    // ── PATCH /{photoId}/reorder — task 17.5 ──────────────────────────────────
+    // ── PATCH /{photoId}/reorder ──────────────────────────────────────────────
 
     [Fact]
     public async Task ReorderPhoto_Up_SwapsWithPreviousPhoto()
@@ -234,7 +218,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
-    // ── DELETE /{photoId} — task 17.6 ─────────────────────────────────────────
+    // ── DELETE /{photoId} ─────────────────────────────────────────────────────
 
     [Fact]
     public async Task DeletePhoto_Owner_Returns204AndRecordRemoved()
@@ -258,10 +242,10 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         var (_, _, tenantId, marinaId) = await CreateMarinaWithOwnerAsync();
         var photoId = await SeedGalleryPhotoAsync(marinaId, tenantId);
 
-        var strangerClient = factory.CreateClientWithToken(
+        var stranger = factory.CreateClientWithToken(
             TestJwtHelper.UserToken(Guid.CreateVersion7(), "stranger@example.com"));
 
-        var resp = await strangerClient.DeleteAsync($"/marinas/{marinaId}/photos/{photoId}");
+        var resp = await stranger.DeleteAsync($"/marinas/{marinaId}/photos/{photoId}");
 
         Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
     }
@@ -283,7 +267,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         Assert.True(body!.Length >= 1);
     }
 
-    // ── OrphanPhotoCleanupJob — task 17.7 ─────────────────────────────────────
+    // ── OrphanPhotoCleanupJob ─────────────────────────────────────────────────
 
     [Fact]
     public async Task OrphanCleanup_OldOrphan_IsRemovedRecentIsKept()
@@ -291,7 +275,6 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // Find a demo marina or use a seeded marina for this test
         var tenant = new Domain.Entities.Tenant { Name = "Orphan Tenant", Slug = $"orphan-{Guid.CreateVersion7():N}" };
         var marina = new Domain.Entities.Marina
         {
@@ -310,7 +293,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
             UploadedAt = DateTimeOffset.UtcNow.AddHours(-2),
             SortOrder = 0, FileSizeBytes = 100,
         };
-        // Recent orphan (no UrlFull, < 1 hour old) — should be kept
+        // Recent orphan (no UrlFull, <1 hour old) — should be kept
         var recentOrphan = new MarinaPhoto
         {
             MarinaId = marina.Id, TenantId = tenant.Id,
@@ -322,7 +305,6 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         db.MarinaPhotos.AddRange(oldOrphan, recentOrphan);
         await db.SaveChangesAsync();
 
-        // Run the job directly
         var job = scope.ServiceProvider.GetRequiredService<OrphanPhotoCleanupJob>();
         await job.ExecuteAsync();
 
@@ -334,7 +316,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         Assert.Contains(remaining, p => p.Id == recentOrphan.Id);
     }
 
-    // ── Private DTO records for deserialization ───────────────────────────────
-    private sealed record TicketBody(string UploadUrl, string Method, string Key);
+    // ── Private DTO records ───────────────────────────────────────────────────
+
     private sealed record PhotoBody(string Id, string Kind);
 }

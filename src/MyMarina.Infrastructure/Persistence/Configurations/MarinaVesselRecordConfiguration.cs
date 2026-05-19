@@ -29,6 +29,8 @@ public class MarinaVesselRecordConfiguration : IEntityTypeConfiguration<MarinaVe
                .HasForeignKey(r => r.BillingAccountId)
                .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasQueryFilter(r => r.Marina.IsSetupComplete);
+
         // One record per (marina, vessel) pair
         builder.HasIndex(r => new { r.MarinaId, r.VesselId }).IsUnique();
         builder.HasIndex(r => r.BillingAccountId)

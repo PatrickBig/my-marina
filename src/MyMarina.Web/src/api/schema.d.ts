@@ -4416,6 +4416,257 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/marinas/{marinaId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaPhotoDto"][];
+                        "application/json": components["schemas"]["MarinaPhotoDto"][];
+                        "text/json": components["schemas"]["MarinaPhotoDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        File?: components["schemas"]["IFormFile"];
+                        Kind?: string;
+                        Caption?: string;
+                        /** Format: double */
+                        Latitude?: number | string;
+                        /** Format: double */
+                        Longitude?: number | string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MarinaPhotoDto"];
+                        "application/json": components["schemas"]["MarinaPhotoDto"];
+                        "text/json": components["schemas"]["MarinaPhotoDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Payload Too Large */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/photos/{photoId}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    photoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReorderPhotoRequest"];
+                    "text/json": components["schemas"]["ReorderPhotoRequest"];
+                    "application/*+json": components["schemas"]["ReorderPhotoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/marinas/{marinaId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    photoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/tenants": {
         parameters: {
             query?: never;
@@ -6826,6 +7077,8 @@ export interface components {
         ForgotPasswordRequest: {
             email: string;
         };
+        /** Format: binary */
+        IFormFile: string;
         InviteMemberRequest: {
             email: string;
             role: string;
@@ -7018,6 +7271,29 @@ export interface components {
             setupStep: number | string;
             /** Format: date-time */
             createdAt: string;
+            logoUrl?: null | string;
+            bannerThumbnailUrl?: null | string;
+        };
+        MarinaPhotoDto: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            urlFull: null | string;
+            urlMedium: null | string;
+            urlThumbnail: null | string;
+            /** Format: int32 */
+            sortOrder: number | string;
+            /** Format: int32 */
+            width: null | number | string;
+            /** Format: int32 */
+            height: null | number | string;
+            caption: null | string;
+            /** Format: double */
+            latitude: null | number | string;
+            /** Format: double */
+            longitude: null | number | string;
+            /** Format: date-time */
+            uploadedAt: string;
         };
         MarinaRollupResultDto: {
             /** Format: uuid */
@@ -7034,7 +7310,8 @@ export interface components {
             instantBookAvailable: boolean;
             /** Format: double */
             distanceMilesFromCenter: number | string;
-            photoUrl: null | string;
+            logoUrl: null | string;
+            bannerThumbnailUrl: null | string;
             hasPumpOut: boolean;
             hasElectric: boolean;
             isAnyCovered: boolean;
@@ -7071,6 +7348,8 @@ export interface components {
             addressCity: null | string;
             addressState: null | string;
             marinaType: string;
+            logoUrl?: null | string;
+            bannerThumbnailUrl?: null | string;
         };
         MarkAwayRequest: {
             /** Format: date */
@@ -7148,6 +7427,7 @@ export interface components {
             longitude: null | number | string;
             userRole: null | string;
             relationshipKind: string;
+            logoUrl?: null | string;
         };
         MySlipAssignmentDto: {
             /** Format: uuid */
@@ -7311,6 +7591,9 @@ export interface components {
             lastName: string;
             marketingOptIn: boolean;
             termsAccepted: boolean;
+        };
+        ReorderPhotoRequest: {
+            direction: string;
         };
         ResendConfirmationRequest: {
             email: string;

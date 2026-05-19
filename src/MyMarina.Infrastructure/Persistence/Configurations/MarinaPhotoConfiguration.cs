@@ -32,6 +32,8 @@ public class MarinaPhotoConfiguration : IEntityTypeConfiguration<MarinaPhoto>
                .HasFilter($"\"Kind\" IN ({(int)MarinaPhotoKind.Logo}, {(int)MarinaPhotoKind.Banner})")
                .HasDatabaseName("ix_marina_photos_marina_logo_banner_unique");
 
+        builder.HasQueryFilter(p => p.Marina.IsSetupComplete);
+
         builder.HasIndex(p => p.MarinaId);
         builder.HasIndex(p => new { p.MarinaId, p.Kind, p.SortOrder });
     }

@@ -2,11 +2,7 @@ using Hangfire;
 using Microsoft.Extensions.Logging;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 
 namespace MyMarina.Infrastructure.Storage;
 
@@ -34,7 +30,7 @@ public class ImageVariantGenerationJob(
         var originalKey = photo.StorageKey;
         var ext = Path.GetExtension(originalKey).TrimStart('.').ToLower();
         var keyWithoutExt = originalKey[..^(ext.Length + 1)];
-        IImageFormat format = ext is "jpg" or "jpeg" ? JpegFormat.Instance : PngFormat.Instance;
+        var format = ext is "jpg" or "jpeg" ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png;
         var contentType = ext is "jpg" or "jpeg" ? "image/jpeg" : "image/png";
 
         var originalStream = await storage.GetObjectStreamAsync(originalKey);
@@ -46,22 +42,23 @@ public class ImageVariantGenerationJob(
 
         await using (originalStream)
         {
-            using var image = await Image.LoadAsync(originalStream);
-            photo.Width = image.Width;
-            photo.Height = image.Height;
+            using var bitmap = SKBitmap.Decode(originalStream);
+            if (bitmap is null)
+            {
+                logger.LogWarning("ImageVariantGenerationJob: failed to decode image for photo {PhotoId}", photoId);
+                return;
+            }
+
+            photo.Width = bitmap.Width;
+            photo.Height = bitmap.Height;
 
             if (photo.Kind == MarinaPhotoKind.Logo)
             {
                 foreach (var (suffix, size) in SquareSizes)
                 {
                     var variantKey = $"{keyWithoutExt}{suffix}.{ext}";
-                    using var variant = image.Clone(ctx => ctx.Resize(new ResizeOptions
-                    {
-                        Size = new Size(size, size),
-                        Mode = ResizeMode.Crop,
-                        Position = AnchorPositionMode.Center,
-                    }));
-                    await SaveVariantAsync(variant, variantKey, contentType, format);
+                    var bytes = CropSquare(bitmap, size, format);
+                    await SaveVariantAsync(variantKey, bytes, contentType);
                     SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
                 }
             }
@@ -70,12 +67,8 @@ public class ImageVariantGenerationJob(
                 foreach (var (suffix, width) in LandscapeWidths)
                 {
                     var variantKey = $"{keyWithoutExt}{suffix}.{ext}";
-                    using var variant = image.Clone(ctx => ctx.Resize(new ResizeOptions
-                    {
-                        Size = new Size(width, 0),
-                        Mode = ResizeMode.Max,
-                    }));
-                    await SaveVariantAsync(variant, variantKey, contentType, format);
+                    var bytes = ResizeMaxWidth(bitmap, width, format);
+                    await SaveVariantAsync(variantKey, bytes, contentType);
                     SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
                 }
             }
@@ -85,11 +78,55 @@ public class ImageVariantGenerationJob(
         logger.LogInformation("ImageVariantGenerationJob: variants generated for photo {PhotoId}", photoId);
     }
 
-    private async Task SaveVariantAsync(Image variant, string key, string contentType, IImageFormat format)
+    private static byte[] CropSquare(SKBitmap source, int size, SKEncodedImageFormat format)
     {
-        using var ms = new MemoryStream();
-        await variant.SaveAsync(ms, format);
-        ms.Position = 0;
+        int dim = Math.Min(source.Width, source.Height);
+        int x = (source.Width - dim) / 2;
+        int y = (source.Height - dim) / 2;
+
+        // ExtractSubset creates a view sharing source memory — Resize immediately creates an independent copy
+        using var subset = new SKBitmap();
+        source.ExtractSubset(subset, new SKRectI(x, y, x + dim, y + dim));
+
+        using var resized = subset.Resize(new SKImageInfo(size, size), new SKSamplingOptions(SKCubicResampler.Mitchell))
+            ?? throw new InvalidOperationException($"Failed to resize image to {size}x{size}.");
+        using var image = SKImage.FromBitmap(resized);
+        using var data = image.Encode(format, 85);
+        return data.ToArray();
+    }
+
+    private static byte[] ResizeMaxWidth(SKBitmap source, int maxWidth, SKEncodedImageFormat format)
+    {
+        SKBitmap bitmap;
+        bool owned;
+        if (source.Width <= maxWidth)
+        {
+            bitmap = source;
+            owned = false;
+        }
+        else
+        {
+            int height = (int)Math.Round((double)source.Height * maxWidth / source.Width);
+            bitmap = source.Resize(new SKImageInfo(maxWidth, height), new SKSamplingOptions(SKCubicResampler.Mitchell))
+                ?? throw new InvalidOperationException($"Failed to resize image to {maxWidth}px wide.");
+            owned = true;
+        }
+
+        try
+        {
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(format, 85);
+            return data.ToArray();
+        }
+        finally
+        {
+            if (owned) bitmap.Dispose();
+        }
+    }
+
+    private async Task SaveVariantAsync(string key, byte[] bytes, string contentType)
+    {
+        using var ms = new MemoryStream(bytes);
         await storage.PutObjectStreamAsync(key, ms, contentType);
     }
 

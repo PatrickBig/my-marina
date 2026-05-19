@@ -6,39 +6,24 @@ using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Storage;
-using SixLabors.ImageSharp;
 
 namespace MyMarina.Infrastructure.Photos;
 
-public class ConfirmPhotoUploadCommandHandler(
+public class UploadMarinaPhotoCommandHandler(
     AppDbContext db,
     IStorageProvider storage,
-    IBackgroundJobClient jobClient) : ICommandHandler<ConfirmPhotoUploadCommand, MarinaPhotoDto>
+    IBackgroundJobClient jobClient) : ICommandHandler<UploadMarinaPhotoCommand, MarinaPhotoDto>
 {
-    public async Task<MarinaPhotoDto> HandleAsync(ConfirmPhotoUploadCommand command, CancellationToken ct = default)
+    public async Task<MarinaPhotoDto> HandleAsync(UploadMarinaPhotoCommand command, CancellationToken ct = default)
     {
-        var fileInfo = await storage.ConfirmUploadAsync(command.Key, ct); // throws StorageObjectNotFoundException if missing
-
-        // Read actual dimensions from the uploaded image for server-side validation
-        var stream = await storage.GetObjectStreamAsync(command.Key, ct);
-        int? width = null, height = null;
-        if (stream is not null)
+        // Enforce Logo/Banner uniqueness before writing anything to storage
+        if (command.Kind is MarinaPhotoKind.Logo or MarinaPhotoKind.Banner)
         {
-            await using (stream)
-            {
-                var info = await Image.IdentifyAsync(stream, ct);
-                if (info is not null)
-                {
-                    width = info.Width;
-                    height = info.Height;
-                }
-            }
-        }
-
-        if (width.HasValue && height.HasValue)
-        {
-            var (valid, error) = AspectRatioValidator.Validate(command.Kind, width.Value, height.Value);
-            if (!valid) throw new ArgumentException(error);
+            var exists = await db.MarinaPhotos
+                .AnyAsync(p => p.MarinaId == command.MarinaId && p.Kind == command.Kind, ct);
+            if (exists)
+                throw new InvalidOperationException(
+                    $"A {command.Kind} photo already exists for this marina. Delete it before uploading a new one.");
         }
 
         var marina = await db.Marinas
@@ -48,22 +33,28 @@ public class ConfirmPhotoUploadCommandHandler(
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException("Marina not found.");
 
+        var ext = command.ContentType.Split('/').Last().Replace("jpeg", "jpg");
+        var photoId = Guid.CreateVersion7();
+        var key = $"{marina.TenantId}/{command.MarinaId}/marina/{command.Kind.ToString().ToLower()}/{photoId}.{ext}";
+
+        await storage.PutObjectStreamAsync(key, command.Content, command.ContentType, ct);
+
         var photo = new MarinaPhoto
         {
+            Id = photoId,
             MarinaId = command.MarinaId,
             TenantId = marina.TenantId,
             Kind = command.Kind,
-            StorageKey = command.Key,
-            FileSizeBytes = fileInfo.FileSizeBytes,
-            Width = width,
-            Height = height,
+            StorageKey = key,
+            FileSizeBytes = command.FileSizeBytes,
+            Width = command.Width,
+            Height = command.Height,
             Caption = command.Kind == MarinaPhotoKind.Approach ? command.Caption : null,
             Latitude = command.Kind == MarinaPhotoKind.Approach ? command.Latitude : null,
             Longitude = command.Kind == MarinaPhotoKind.Approach ? command.Longitude : null,
-            UploadedByUserId = Guid.Empty, // set from controller via command extension if needed
+            UploadedByUserId = command.RequestingUserId,
         };
 
-        // Assign next sort order for this kind
         var maxSort = await db.MarinaPhotos
             .Where(p => p.MarinaId == command.MarinaId && p.Kind == command.Kind)
             .Select(p => (int?)p.SortOrder)

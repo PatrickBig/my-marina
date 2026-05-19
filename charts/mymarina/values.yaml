@@ -116,7 +116,6 @@ storage:
     region: "auto"          # "auto" for Cloudflare R2; specific region for AWS S3
     bucket: ""              # bucket name for this environment
     bucketPublicBaseUrl: "" # public base URL for served assets, e.g. https://storage.mymarina.org
-    uploadTtlMinutes: 15
     maxFileSizeBytes: 20971520  # 20 MB
 
 # --- Service Account ---

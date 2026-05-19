@@ -2,14 +2,14 @@
 
 Marina listings currently have no photo fields anywhere in the domain — `Marina`, `Dock`, and `Slip` entities carry only text and structured data. Boaters browsing the marketplace see name, location, and dimensions but no visual context, which undermines trust and conversion. This change introduces the foundational photo infrastructure: a pluggable storage abstraction, a `MarinaPhoto` entity covering marina-level photo kinds, and the operator UI to manage them. Slip and dock photos are deferred to a follow-on change (`slip-dock-photos-marketplace`).
 
-The system must work identically against Cloudflare R2 (production), MinIO (local docker-compose), and an NFS-mounted filesystem (optional on-prem path), without requiring the frontend or application layer to know which provider is active.
+The system must work identically against Cloudflare R2 (production) and RustFS (local docker-compose), without requiring the frontend or application layer to know which provider is active.
 
 ## Goals / Non-Goals
 
 **Goals:**
 - Pluggable `IStorageProvider` abstraction that hides storage vendor from application code
 - Presigned URL upload flow so large files never transit the API server
-- Server-side image processing (ImageSharp) via Hangfire to generate size variants
+- Server-side image processing (SkiaSharp) via Hangfire to generate size variants
 - `MarinaPhoto` entity supporting kinds: Logo, Banner, Gallery, Aerial, Approach
 - Approach photos support optional caption + lat/lng for navigation context
 - Marina operator UI: crop-on-upload, gallery management, up/down reordering
@@ -37,20 +37,16 @@ IStorageProvider
 └── DeleteByPrefixAsync(prefix)   ← for cascading marina/entity cleanup
 
 UploadTicket
-├── UploadUrl       ← S3: presigned PUT URL | Filesystem: /api/photos/local-upload/{token}
-├── Method          ← "PUT" (S3) | "POST" (filesystem proxy)
-├── RequiredHeaders ← S3 needs Content-Type; filesystem proxy needs Authorization
+├── UploadUrl       ← presigned PUT URL
+├── Method          ← "PUT"
+├── RequiredHeaders ← Content-Type required by S3
 ├── Key
 └── ExpiresAt
 ```
 
-**S3Provider**: Uses `AWSSDK.S3` with a configurable endpoint — same code for R2, MinIO, and AWS by changing `Endpoint` + credentials in config. Presigned PUT URLs are issued with `GetPreSignedUrlRequest`. On confirm, the provider calls `GetObjectMetadataRequest` to verify the object exists and retrieve content length.
+**S3Provider**: Uses `AWSSDK.S3` with a configurable endpoint — same code for R2, RustFS, and AWS by setting `Endpoint` + credentials in config. `ForcePathStyle = true` for non-AWS endpoints. Presigned PUT URLs are generated via `GetPreSignedUrlRequest`. The `PublicEndpoint` config value rewrites the presigned URL origin so the browser sees a host-accessible address (e.g., `localhost:9000`) while the API uses the internal Docker service name. On confirm, the provider calls `GetObjectMetadataRequest` to verify the object exists and retrieve content length.
 
-**FilesystemProvider**: `CreateUploadTicketAsync` returns a token-protected API proxy URL (`/api/photos/local-upload/{token}`). A `LocalUploadController` action streams the body to `BasePath/{key}`. `GetPublicUrl` returns `{BaseUrl}/{key}`. Serves as both local-no-docker fallback and k8s NFS path.
-
-**Why not a single code path?** Presigned PUT URLs require the storage service itself to verify the object on confirm — the filesystem has no such primitive, so a proxy endpoint is unavoidable for that path. The abstraction keeps this difference invisible to application handlers.
-
-**Registration**: Both providers registered as `IStorageProvider` via Scrutor based on `appsettings.json → Storage:Provider` (`"S3"` | `"Filesystem"`).
+**Registration**: `S3StorageProvider` registered as `IStorageProvider` via Scrutor when `appsettings.json → Storage:Provider` is `"S3"` (the only supported value).
 
 ### Decision 2 — Upload flow (presigned, not proxied)
 
@@ -64,11 +60,11 @@ UploadTicket
 5. Client polls or uses SignalR notification (v1: poll on page load is fine)
 ```
 
-The API never buffers the upload payload. For the filesystem path, the `LocalUploadController` streams body bytes directly to disk using a pipe — no `byte[]` allocation.
+The API never buffers the upload payload — the browser PUTs directly to the storage endpoint via the presigned URL.
 
-### Decision 3 — Image processing: Hangfire + ImageSharp
+### Decision 3 — Image processing: Hangfire + SkiaSharp
 
-ImageSharp (SixLabors) runs in-process in the Hangfire worker without native library dependencies (unlike libgips/Skia). The `ImageVariantGenerationJob` is enqueued immediately on confirm and is idempotent — safe to retry.
+SkiaSharp runs in-process in the Hangfire worker. The `ImageVariantGenerationJob` is enqueued immediately on confirm and is idempotent — safe to retry.
 
 **Two variant sets keyed by `MarinaPhotoKind`:**
 
@@ -77,7 +73,7 @@ ImageSharp (SixLabors) runs in-process in the Hangfire worker without native lib
 | Square | Logo | `_64` (64×64), `_256` (256×256), `_512` (512×512) |
 | Landscape | Banner, Gallery, Aerial, Approach | `_thumb` (400w), `_medium` (800w), `_full` (2000w) |
 
-Landscape variants use `ResizeMode.Max` — height is proportional to the cropped aspect ratio, not fixed. Original is retained under `{key}` as uploaded.
+Landscape variants preserve aspect ratio (width constrained, height proportional). Square variants center-crop then resize. Originals are retained under `{key}` as uploaded.
 
 **Variant storage keys**: `{original_key}_thumb`, `{original_key}_medium`, `{original_key}_full` (appended before extension stripped). E.g., `abc/def/marina/gallery/photo-id_medium.jpg`.
 
@@ -164,24 +160,22 @@ The Photos step UI:
 
 **[Risk] Presigned URL expiry if user takes too long to upload** → Mitigation: Ticket expiry set to 15 minutes (configurable). If the upload fails with 403, the client re-requests a ticket and retries automatically.
 
-**[Risk] FilesystemProvider token replay (local proxy endpoint)** → Mitigation: Upload tokens are one-time-use JWTs (signed with the app's signing key, 15-minute TTL). The `LocalUploadController` marks them consumed in a short-lived in-memory cache (acceptable for local/NFS scenarios where horizontal scaling is not a concern).
-
-**[Risk] Large files blocking the Hangfire worker thread** → Mitigation: ImageSharp processes synchronously on the Hangfire thread but the job is queued in a dedicated `"photos"` queue with its own worker count (configurable). Upstream file size is capped at 20 MB at the ticket-request layer.
+**[Risk] Large files blocking the Hangfire worker thread** → Mitigation: SkiaSharp processes synchronously on the Hangfire thread but the job is queued in a dedicated `"photos"` queue with its own worker count (configurable). Upstream file size is capped at 20 MB at the ticket-request layer.
 
 **[Risk] Orphaned storage objects if the confirm step is never called** → Mitigation: A nightly Hangfire recurring job scans for `MarinaPhoto` records with `UrlFull = null` older than 1 hour and deletes their storage key. Additionally, storage objects with no matching DB record older than 24 hours can be pruned by prefix scan.
 
 ## Migration Plan
 
 1. Add `MarinaPhoto` EF migration (no breaking changes to existing tables).
-2. Add `"Storage"` section to `appsettings.Development.json` pointing at MinIO.
-3. Add MinIO to `docker-compose.yml`; run `docker-compose up` to verify.
+2. Add `"Storage"` section to `appsettings.Development.json` pointing at RustFS.
+3. Add RustFS to `docker-compose.yml`; run `docker-compose up` to verify.
 4. Update `DemoSeedScript` with placeholder photos; run CI seed test.
 5. Deploy: no existing data migration needed (new table only).
-6. Rollback: drop `MarinaPhoto` table; remove MinIO from compose; no other state affected.
+6. Rollback: drop `MarinaPhoto` table; remove RustFS from compose; no other state affected.
 
 ## Open Questions
 
-- *(Resolved)* Storage backend → Cloudflare R2 for production, MinIO for local dev, FilesystemProvider as NFS option.
+- *(Resolved)* Storage backend → Cloudflare R2 for production, RustFS for local dev. FilesystemProvider dropped — S3-compatible object stores cover all environments.
 - *(Resolved)* Variant sets → two sets (Square / Landscape) keyed by kind.
 - *(Resolved)* Wizard step → optional with encouragement, logo/banner focused.
 - **Photo deletion cascade**: When a `Marina` is deleted (currently only allowed for draft marinas), should all `MarinaPhoto` storage objects be deleted synchronously or via a queued job? → Recommend queued job for consistency with the confirm/delete pattern.

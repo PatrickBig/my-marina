@@ -3,6 +3,7 @@ using MyMarina.Application.Abstractions;
 using MyMarina.Application.Search;
 using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
+using MarinaPhotoKind = MyMarina.Domain.Enums.MarinaPhotoKind;
 
 namespace MyMarina.Infrastructure.Search;
 
@@ -196,6 +197,18 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
             .Select(m => new { m.Id, m.Name, m.AddressCity, m.AddressState, m.Latitude, m.Longitude })
             .ToDictionaryAsync(m => m.Id, ct);
 
+        // Step 7: Load logo + banner thumbnails in one query (at most 2 rows per marina)
+        var photos = await db.MarinaPhotos
+            .Where(p => eligibleMarinaIds.Contains(p.MarinaId)
+                     && (p.Kind == MarinaPhotoKind.Logo || p.Kind == MarinaPhotoKind.Banner))
+            .Select(p => new { p.MarinaId, p.Kind, p.UrlThumbnail, p.UrlMedium })
+            .ToListAsync(ct);
+
+        var logoUrls   = photos.Where(p => p.Kind == MarinaPhotoKind.Logo)
+                               .ToDictionary(p => p.MarinaId, p => p.UrlThumbnail);
+        var bannerUrls = photos.Where(p => p.Kind == MarinaPhotoKind.Banner)
+                               .ToDictionary(p => p.MarinaId, p => p.UrlMedium);
+
         var centerLat = ((double)query.North + (double)query.South) / 2.0;
         var centerLon = ((double)query.East  + (double)query.West)  / 2.0;
 
@@ -218,7 +231,8 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     AvailableCount:          r.Count,
                     InstantBookAvailable:    r.InstantBook,
                     DistanceMilesFromCenter: Math.Round(distance, 1),
-                    PhotoUrl:                null,
+                    LogoUrl:                 logoUrls.GetValueOrDefault(marina.Id),
+                    BannerThumbnailUrl:      bannerUrls.GetValueOrDefault(marina.Id),
                     HasPumpOut:              r.HasPumpOut,
                     HasElectric:             r.HasElectric,
                     IsAnyCovered:            r.IsAnyCovered

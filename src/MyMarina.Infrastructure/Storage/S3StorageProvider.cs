@@ -1,4 +1,3 @@
-using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -26,56 +25,37 @@ public sealed class S3StorageProvider : IStorageProvider, IDisposable
             config);
     }
 
-    public async Task<UploadTicket> CreateUploadTicketAsync(
-        string key, string contentType, long maxBytes, TimeSpan ttl, CancellationToken ct = default)
+    public string GetPublicUrl(string key)
+        => $"{_opts.BucketPublicBaseUrl.TrimEnd('/')}/{key}";
+
+    public async Task PutObjectStreamAsync(string key, Stream content, string contentType, CancellationToken ct = default)
     {
-        var expiresAt = DateTimeOffset.UtcNow.Add(ttl);
-        var request = new GetPreSignedUrlRequest
+        var request = new PutObjectRequest
         {
             BucketName = _opts.Bucket,
             Key = key,
-            Verb = HttpVerb.PUT,
-            Expires = expiresAt.UtcDateTime,
+            InputStream = content,
             ContentType = contentType,
+            AutoCloseStream = false,
         };
-
-        var url = await _client.GetPreSignedURLAsync(request);
-
-        // When the API reaches S3 via an internal address (e.g. Docker service name) but browsers
-        // need a different address, rewrite the presigned URL's origin to the public endpoint.
-        // We derive the origin from the actual URL rather than from Endpoint because the AWS SDK
-        // generates presigned URLs with https:// even when ServiceURL uses http://, which would
-        // cause a scheme mismatch if we compared against the configured Endpoint string.
-        if (!string.IsNullOrEmpty(_opts.PublicEndpoint))
-        {
-            var actualOrigin = new Uri(url).GetLeftPart(UriPartial.Authority);
-            var publicOrigin = new Uri(_opts.PublicEndpoint).GetLeftPart(UriPartial.Authority);
-            url = url.Replace(actualOrigin, publicOrigin, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return new UploadTicket(
-            UploadUrl: url,
-            Method: "PUT",
-            RequiredHeaders: new Dictionary<string, string> { ["Content-Type"] = contentType },
-            Key: key,
-            ExpiresAt: expiresAt);
+        await _client.PutObjectAsync(request, ct);
     }
 
-    public async Task<StoredFileInfo> ConfirmUploadAsync(string key, CancellationToken ct = default)
+    public async Task<Stream?> GetObjectStreamAsync(string key, CancellationToken ct = default)
     {
         try
         {
-            var meta = await _client.GetObjectMetadataAsync(_opts.Bucket, key, ct);
-            return new StoredFileInfo(meta.ContentLength);
+            var response = await _client.GetObjectAsync(_opts.Bucket, key, ct);
+            var ms = new MemoryStream();
+            await response.ResponseStream.CopyToAsync(ms, ct);
+            ms.Position = 0;
+            return ms;
         }
         catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            throw new StorageObjectNotFoundException(key);
+            return null;
         }
     }
-
-    public string GetPublicUrl(string key)
-        => $"{_opts.BucketPublicBaseUrl.TrimEnd('/')}/{key}";
 
     public async Task DeleteAsync(string key, CancellationToken ct = default)
     {
@@ -116,35 +96,6 @@ public sealed class S3StorageProvider : IStorageProvider, IDisposable
             continuationToken = listResp.IsTruncated ? listResp.NextContinuationToken : null;
         }
         while (continuationToken is not null);
-    }
-
-    public async Task<Stream?> GetObjectStreamAsync(string key, CancellationToken ct = default)
-    {
-        try
-        {
-            var response = await _client.GetObjectAsync(_opts.Bucket, key, ct);
-            var ms = new MemoryStream();
-            await response.ResponseStream.CopyToAsync(ms, ct);
-            ms.Position = 0;
-            return ms;
-        }
-        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-    }
-
-    public async Task PutObjectStreamAsync(string key, Stream content, string contentType, CancellationToken ct = default)
-    {
-        var request = new PutObjectRequest
-        {
-            BucketName = _opts.Bucket,
-            Key = key,
-            InputStream = content,
-            ContentType = contentType,
-            AutoCloseStream = false,
-        };
-        await _client.PutObjectAsync(request, ct);
     }
 
     public void Dispose() => _client.Dispose();

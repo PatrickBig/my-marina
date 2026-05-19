@@ -20,6 +20,8 @@ public class AnnouncementConfiguration : IEntityTypeConfiguration<Announcement>
                .HasForeignKey(a => a.MarinaId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasQueryFilter(a => a.Marina.IsSetupComplete);
+
         builder.HasIndex(a => a.MarinaId);
         builder.HasIndex(a => new { a.MarinaId, a.PublishedAt });
     }

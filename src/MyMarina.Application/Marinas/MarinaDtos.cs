@@ -110,5 +110,6 @@ public sealed record MyMarinaDto(
     decimal? Latitude,
     decimal? Longitude,
     string? UserRole,           // membership role ("Owner"/"Manager"/"Staff") or billing account role
-    string RelationshipKind     // "Staff" | "BillingAccount"
+    string RelationshipKind,    // "Staff" | "BillingAccount"
+    string? LogoUrl = null
 );

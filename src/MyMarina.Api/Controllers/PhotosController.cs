@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Photos;
 using MyMarina.Domain.Enums;
+using MyMarina.Infrastructure.Photos;
 using MyMarina.Infrastructure.Storage;
+using SkiaSharp;
 
 namespace MyMarina.Api.Controllers;
 
@@ -11,80 +14,68 @@ namespace MyMarina.Api.Controllers;
 [Authorize]
 [Route("marinas/{marinaId:guid}/photos")]
 public class PhotosController(
-    ICommandHandler<CreateUploadTicketCommand, UploadTicket> createTicket,
-    ICommandHandler<ConfirmPhotoUploadCommand, MarinaPhotoDto> confirmUpload,
+    ICommandHandler<UploadMarinaPhotoCommand, MarinaPhotoDto> uploadPhoto,
     ICommandHandler<ReorderPhotoCommand> reorderPhoto,
     ICommandHandler<DeletePhotoCommand> deletePhoto,
     IQueryHandler<GetMarinaPhotosQuery, IReadOnlyList<MarinaPhotoDto>> getPhotos,
+    IOptions<StorageOptions> storageOptions,
     IUserContext userContext) : ControllerBase
 {
-    // POST /api/marinas/{marinaId}/photos/ticket
-    [HttpPost("ticket")]
-    [ProducesResponseType(typeof(UploadTicket), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> CreateTicket(Guid marinaId, [FromBody] CreateUploadTicketRequest request, CancellationToken ct)
-    {
-        if (!userContext.HasMarinaAccess(marinaId)) return Forbid();
-
-        if (!Enum.TryParse<MarinaPhotoKind>(request.Kind, ignoreCase: true, out var kind))
-            return UnprocessableEntity(Problem("Unknown photo kind.", statusCode: 422));
-
-        try
-        {
-            var ticket = await createTicket.HandleAsync(new CreateUploadTicketCommand(
-                MarinaId: marinaId,
-                RequestingUserId: userContext.UserId!.Value,
-                Kind: kind,
-                ContentType: request.ContentType,
-                FileSizeBytes: request.FileSizeBytes,
-                ImageWidth: request.ImageWidth,
-                ImageHeight: request.ImageHeight), ct);
-            return Ok(ticket);
-        }
-        catch (ArgumentException ex)
-        {
-            return UnprocessableEntity(Problem(ex.Message, statusCode: 422));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(Problem(ex.Message, statusCode: 409));
-        }
-    }
-
-    // POST /api/marinas/{marinaId}/photos/confirm
-    [HttpPost("confirm")]
+    // POST /api/marinas/{marinaId}/photos
+    [HttpPost]
     [ProducesResponseType(typeof(MarinaPhotoDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status413RequestEntityTooLarge)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Confirm(Guid marinaId, [FromBody] ConfirmUploadRequest request, CancellationToken ct)
+    public async Task<IActionResult> Upload(Guid marinaId, [FromForm] UploadPhotoRequest request, CancellationToken ct)
     {
         if (!userContext.HasMarinaAccess(marinaId)) return Forbid();
 
         if (!Enum.TryParse<MarinaPhotoKind>(request.Kind, ignoreCase: true, out var kind))
             return UnprocessableEntity(Problem("Unknown photo kind.", statusCode: 422));
 
+        var file = request.File;
+        var maxBytes = storageOptions.Value.S3.MaxFileSizeBytes;
+        if (file.Length > maxBytes)
+            return StatusCode(413, Problem($"File exceeds the {maxBytes / 1_048_576} MB limit.", statusCode: 413));
+
+        // Read image dimensions without loading the full file into memory
+        int width, height;
+        using (var dimStream = file.OpenReadStream())
+        {
+            using var skData = SKData.Create(dimStream);
+            using var codec = SKCodec.Create(skData);
+            if (codec is null)
+                return UnprocessableEntity(Problem("File could not be decoded as an image.", statusCode: 422));
+            width = codec.Info.Width;
+            height = codec.Info.Height;
+        }
+
+        var (valid, error) = AspectRatioValidator.Validate(kind, width, height);
+        if (!valid)
+            return UnprocessableEntity(Problem(error, statusCode: 422));
+
         try
         {
-            var photo = await confirmUpload.HandleAsync(new ConfirmPhotoUploadCommand(
+            using var uploadStream = file.OpenReadStream();
+            var photo = await uploadPhoto.HandleAsync(new UploadMarinaPhotoCommand(
                 MarinaId: marinaId,
                 RequestingUserId: userContext.UserId!.Value,
-                Key: request.Key,
                 Kind: kind,
+                Content: uploadStream,
+                ContentType: file.ContentType,
+                FileSizeBytes: file.Length,
+                Width: width,
+                Height: height,
                 Caption: request.Caption,
                 Latitude: request.Latitude,
                 Longitude: request.Longitude), ct);
             return StatusCode(201, photo);
         }
-        catch (StorageObjectNotFoundException)
+        catch (InvalidOperationException ex)
         {
-            return NotFound(Problem("The uploaded file was not found in storage.", statusCode: 404));
-        }
-        catch (ArgumentException ex)
-        {
-            return UnprocessableEntity(Problem(ex.Message, statusCode: 422));
+            return Conflict(Problem(ex.Message, statusCode: 409));
         }
     }
 
@@ -148,16 +139,8 @@ public class PhotosController(
 
 // ---------- request records ----------
 
-public sealed record CreateUploadTicketRequest(
-    string Kind,
-    string ContentType,
-    long FileSizeBytes,
-    int? ImageWidth = null,
-    int? ImageHeight = null
-);
-
-public sealed record ConfirmUploadRequest(
-    string Key,
+public sealed record UploadPhotoRequest(
+    IFormFile File,
     string Kind,
     string? Caption = null,
     decimal? Latitude = null,

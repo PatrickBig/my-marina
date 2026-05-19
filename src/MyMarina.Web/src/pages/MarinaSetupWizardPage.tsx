@@ -838,11 +838,11 @@ function Step5Photos({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleLogoComplete(blob: Blob, width: number, height: number) {
+  async function handleLogoComplete(blob: Blob, _width: number, _height: number) {
     setUploading(true);
     setError(null);
     try {
-      await upload({ kind: 'Logo', file: blob, contentType: 'image/jpeg', imageWidth: width, imageHeight: height });
+      await upload({ kind: 'Logo', file: blob, contentType: 'image/jpeg' });
       setLogoUploaded(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Upload failed');
@@ -852,11 +852,11 @@ function Step5Photos({
     }
   }
 
-  async function handleBannerComplete(blob: Blob, width: number, height: number) {
+  async function handleBannerComplete(blob: Blob, _width: number, _height: number) {
     setUploading(true);
     setError(null);
     try {
-      await upload({ kind: 'Banner', file: blob, contentType: 'image/jpeg', imageWidth: width, imageHeight: height });
+      await upload({ kind: 'Banner', file: blob, contentType: 'image/jpeg' });
       setBannerUploaded(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Upload failed');
