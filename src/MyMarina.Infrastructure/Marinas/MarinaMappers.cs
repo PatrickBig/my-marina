@@ -66,12 +66,9 @@ internal static class MarinaMappers
         IsIndoor: s.IsIndoor,
         Amenities: s.Amenities.AsReadOnly(),
         Status: s.Status.ToString(),
-        DefaultTransientRateKind: s.DefaultTransientRateKind?.ToString(),
-        DefaultTransientBaseRate: s.DefaultTransientBaseRate,
-        DefaultTransientMinCharge: s.DefaultTransientMinCharge,
-        DefaultLeaseRateKind: s.DefaultLeaseRateKind?.ToString(),
-        DefaultLeaseBaseRate: s.DefaultLeaseBaseRate,
-        DefaultLeaseTerm: s.DefaultLeaseTerm?.ToString(),
+        ResolvedTransientBaseRate: s.ResolvedTransientBaseRate,
+        ResolvedLeaseBaseRate: s.ResolvedLeaseBaseRate,
+        PricingPlanId: s.PricingPlanId,
         Notes: s.Notes,
         CreatedAt: s.CreatedAt
     );

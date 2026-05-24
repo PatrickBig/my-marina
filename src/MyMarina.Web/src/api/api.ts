@@ -1263,3 +1263,191 @@ export const getPlatformListings = (page = 1, pageSize = 50) =>
 
 export const removePlatformListing = (listingId: string, reason?: string) =>
   apiClient.delete(`/platform/listings/${listingId}`, { data: { reason } });
+
+// ─── Pricing Plans ───────────────────────────────────────────────────────────
+
+export interface AmenityAddOnDto {
+  amenity: 'Covered' | 'Electric30A' | 'Electric50A' | 'HasWater' | 'HasPumpOut';
+  transientAmount?: number | null;
+  leaseAmount?: number | null;
+}
+
+export interface PricingPlanDto {
+  id: string;
+  marinaId: string;
+  name: string;
+  isDefault: boolean;
+  transientRateKind?: 'Flat' | 'PerFoot' | 'PerArea' | null;
+  transientAmount?: number | null;
+  transientMinCharge?: number | null;
+  leaseRateKind?: 'Flat' | 'PerFoot' | 'PerArea' | null;
+  leaseAmount?: number | null;
+  leaseMinCharge?: number | null;
+  amenityAddOns: AmenityAddOnDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BulkAssignResultDto {
+  assignedCount: number;
+}
+
+export type PricingPlanUpsertData = {
+  name: string;
+  isDefault: boolean;
+  transientRateKind?: string | null;
+  transientAmount?: number | null;
+  transientMinCharge?: number | null;
+  leaseRateKind?: string | null;
+  leaseAmount?: number | null;
+  leaseMinCharge?: number | null;
+  amenityAddOns: AmenityAddOnDto[];
+};
+
+export const getPricingPlans = (marinaId: string) =>
+  apiClient.get<PricingPlanDto[]>(`/marinas/${marinaId}/pricing/plans`).then((r) => r.data);
+
+export const getPricingPlan = (marinaId: string, planId: string) =>
+  apiClient.get<PricingPlanDto>(`/marinas/${marinaId}/pricing/plans/${planId}`).then((r) => r.data);
+
+export const createPricingPlan = (marinaId: string, data: PricingPlanUpsertData) =>
+  apiClient.post<PricingPlanDto>(`/marinas/${marinaId}/pricing/plans`, data).then((r) => r.data);
+
+export const updatePricingPlan = (marinaId: string, planId: string, data: Partial<PricingPlanUpsertData>) =>
+  apiClient.put<PricingPlanDto>(`/marinas/${marinaId}/pricing/plans/${planId}`, data).then((r) => r.data);
+
+export const deletePricingPlan = (marinaId: string, planId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/pricing/plans/${planId}`);
+
+export const setDefaultPricingPlan = (marinaId: string, planId: string) =>
+  apiClient.post<PricingPlanDto>(`/marinas/${marinaId}/pricing/plans/${planId}/set-default`).then((r) => r.data);
+
+export const bulkAssignPricingPlan = (
+  marinaId: string,
+  data: {
+    pricingPlanId: string;
+    dockId?: string | null;
+    minLength?: number | null;
+    maxLength?: number | null;
+    minBeam?: number | null;
+    maxBeam?: number | null;
+    amenities?: string[] | null;
+    currentPlanId?: string | null;
+  }
+) => apiClient.post<BulkAssignResultDto>(`/marinas/${marinaId}/pricing/plans/bulk-assign`, data).then((r) => r.data);
+
+// ─── Pricing Rules (legacy — retained for schema.d.ts compatibility) ──────────
+
+export interface PricingRulePredicateDto {
+  listingKind: string;
+  leaseTerm?: string | null;
+  minLength?: number | null;
+  maxLength?: number | null;
+  minBeam?: number | null;
+  maxBeam?: number | null;
+  requiresElectric?: boolean | null;
+  requiresWater?: boolean | null;
+  requiresPumpOut?: boolean | null;
+  requiresCovered?: boolean | null;
+  requiresIndoor?: boolean | null;
+}
+
+export interface PricingRuleDto {
+  id: string;
+  marinaId: string;
+  name: string;
+  contributionKind: 'Base' | 'Surcharge';
+  priority: number;
+  predicate: PricingRulePredicateDto;
+  rateKind: 'Flat' | 'PerFoot';
+  amount: number;
+  minCharge?: number | null;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PriceBreakdownRuleDto {
+  ruleId: string;
+  name: string;
+  contributionKind: string;
+  contribution: number;
+}
+
+export interface PriceBreakdownAdjustmentDto {
+  adjustmentId: string;
+  label: string;
+  amount: number;
+}
+
+export interface PriceBreakdownDto {
+  base?: PriceBreakdownRuleDto | null;
+  surcharges: PriceBreakdownRuleDto[];
+  adjustments: PriceBreakdownAdjustmentDto[];
+  minChargeApplied: boolean;
+  total?: number | null;
+}
+
+export interface SlipPriceAdjustmentDto {
+  id: string;
+  slipId: string;
+  listingKind: string;
+  label: string;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getPricingRules = (marinaId: string) =>
+  apiClient.get<PricingRuleDto[]>(`/marinas/${marinaId}/pricing/rules`).then((r) => r.data);
+
+export const getPricingRule = (marinaId: string, ruleId: string) =>
+  apiClient.get<PricingRuleDto>(`/marinas/${marinaId}/pricing/rules/${ruleId}`).then((r) => r.data);
+
+export const previewPrice = (marinaId: string, slipId: string, listingKind: string, asOf?: string) =>
+  apiClient.get<PriceBreakdownDto>(`/marinas/${marinaId}/pricing/preview`, {
+    params: { slipId, listingKind, asOf },
+  }).then((r) => r.data);
+
+export const createPricingRule = (
+  marinaId: string,
+  data: {
+    name: string;
+    contributionKind: string;
+    priority: number;
+    predicate: PricingRulePredicateDto;
+    rateKind: string;
+    amount: number;
+    minCharge?: number | null;
+    effectiveFrom: string;
+    effectiveTo?: string | null;
+  }
+) => apiClient.post<PricingRuleDto>(`/marinas/${marinaId}/pricing/rules`, data).then((r) => r.data);
+
+export const updatePricingRule = (marinaId: string, ruleId: string, data: Partial<{
+  name: string;
+  contributionKind: string;
+  priority: number;
+  predicate: PricingRulePredicateDto;
+  rateKind: string;
+  amount: number;
+  minCharge: number | null;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+}>) => apiClient.patch<PricingRuleDto>(`/marinas/${marinaId}/pricing/rules/${ruleId}`, data).then((r) => r.data);
+
+export const deletePricingRule = (marinaId: string, ruleId: string) =>
+  apiClient.delete(`/marinas/${marinaId}/pricing/rules/${ruleId}`);
+
+export const getSlipPriceAdjustments = (slipId: string, marinaId: string) =>
+  apiClient.get<SlipPriceAdjustmentDto[]>(`/slips/${slipId}/price-adjustments`, { params: { marinaId } }).then((r) => r.data);
+
+export const createSlipPriceAdjustment = (slipId: string, marinaId: string, data: { listingKind: string; label: string; amount: number }) =>
+  apiClient.post<SlipPriceAdjustmentDto>(`/slips/${slipId}/price-adjustments`, data, { params: { marinaId } }).then((r) => r.data);
+
+export const updateSlipPriceAdjustment = (slipId: string, adjustmentId: string, marinaId: string, data: { label?: string; amount?: number }) =>
+  apiClient.patch<SlipPriceAdjustmentDto>(`/slips/${slipId}/price-adjustments/${adjustmentId}`, data, { params: { marinaId } }).then((r) => r.data);
+
+export const deleteSlipPriceAdjustment = (slipId: string, adjustmentId: string, marinaId: string) =>
+  apiClient.delete(`/slips/${slipId}/price-adjustments/${adjustmentId}`, { params: { marinaId } });

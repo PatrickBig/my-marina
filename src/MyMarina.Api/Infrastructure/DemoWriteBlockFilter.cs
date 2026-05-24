@@ -6,9 +6,11 @@ namespace MyMarina.Api.Infrastructure;
 
 // Registered as a global filter. Blocks all state-mutating requests when the
 // caller is in a demo session, while leaving reads and auth endpoints untouched.
-public class DemoWriteBlockFilter(IUserContext userContext) : IActionFilter
+// Uses IResourceFilter (runs before model binding) so that the 403 takes
+// precedence over model validation 400s on incomplete demo payloads.
+public class DemoWriteBlockFilter(IUserContext userContext) : IResourceFilter
 {
-    public void OnActionExecuting(ActionExecutingContext context)
+    public void OnResourceExecuting(ResourceExecutingContext context)
     {
         if (!userContext.IsDemo) return;
 
@@ -34,5 +36,5 @@ public class DemoWriteBlockFilter(IUserContext userContext) : IActionFilter
         { StatusCode = StatusCodes.Status403Forbidden };
     }
 
-    public void OnActionExecuted(ActionExecutedContext context) { }
+    public void OnResourceExecuted(ResourceExecutedContext context) { }
 }

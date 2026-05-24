@@ -40,6 +40,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         {
             TenantId = tenant.Id, Name = "Photo Marina",
             Slug = $"photo-marina-{userId:N}", MarinaType = MarinaType.Commercial,
+            IsSetupComplete = true,
         };
         db.Tenants.Add(tenant);
         db.Marinas.Add(marina);
@@ -280,6 +281,7 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         {
             TenantId = tenant.Id, Name = "Orphan Marina",
             Slug = $"orphan-marina-{Guid.CreateVersion7():N}", MarinaType = MarinaType.Commercial,
+            IsSetupComplete = true,
         };
         db.Tenants.Add(tenant);
         db.Marinas.Add(marina);

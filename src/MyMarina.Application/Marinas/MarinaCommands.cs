@@ -6,10 +6,10 @@ namespace MyMarina.Application.Marinas;
 // For PrivateDock/Dockominium types, also auto-creates the first Slip.
 public sealed record CreateMarinaAccountCommand(
     Guid UserId,
-    string TenantName,
     string MarinaName,
     MarinaType MarinaType,
     string? IpAddress,
+    string? TenantName      = null,
     // Slip fields — required when MarinaType is PrivateDock or Dockominium
     string? SlipName        = null,
     decimal? MaxLength      = null,
@@ -89,17 +89,9 @@ public sealed record UpdateSlipCommand(
     bool? IsIndoor,
     IReadOnlyList<string>? Amenities,
     SlipStatus? Status,
-    // Transient default rate (send null to clear)
-    string? DefaultTransientRateKind,
-    decimal? DefaultTransientBaseRate,
-    decimal? DefaultTransientMinCharge,
-    bool ClearTransientRate,
-    // Lease default rate (send null to clear)
-    string? DefaultLeaseRateKind,
-    decimal? DefaultLeaseBaseRate,
-    string? DefaultLeaseTerm,
-    bool ClearLeaseRate,
-    string? Notes
+    string? Notes,
+    Guid? PricingPlanId = null,
+    bool ClearPricingPlan = false
 );
 
 public sealed record DeleteSlipCommand(Guid SlipId, Guid MarinaId, Guid RequestingUserId);

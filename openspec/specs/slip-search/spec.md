@@ -1,3 +1,7 @@
+## Purpose
+
+Defines the public slip and marina search endpoints and the boater-facing discovery UI. Covers the two-step rollup→slip-list flow, bounding-box geographic filtering, vessel-driven dimension filters, price-range filtering against resolved pricing, and how demo-tenant marinas are exposed or excluded.
+
 ## Requirements
 
 ### Requirement: Marina rollup search by map viewport

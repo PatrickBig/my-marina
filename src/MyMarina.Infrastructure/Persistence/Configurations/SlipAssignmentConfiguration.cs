@@ -26,6 +26,8 @@ public class SlipAssignmentConfiguration : IEntityTypeConfiguration<SlipAssignme
                .HasForeignKey(a => a.BillingAccountId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasQueryFilter(a => a.BillingAccount.Marina.IsSetupComplete);
+
         builder.HasOne(a => a.Vessel)
                .WithMany()
                .HasForeignKey(a => a.VesselId)

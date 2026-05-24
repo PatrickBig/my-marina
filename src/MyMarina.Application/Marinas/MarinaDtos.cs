@@ -63,14 +63,10 @@ public sealed record SlipDto(
     bool IsIndoor,
     IReadOnlyList<string> Amenities,
     string Status,
-    // Transient default rate
-    string? DefaultTransientRateKind,
-    decimal? DefaultTransientBaseRate,
-    decimal? DefaultTransientMinCharge,
-    // Lease default rate
-    string? DefaultLeaseRateKind,
-    decimal? DefaultLeaseBaseRate,
-    string? DefaultLeaseTerm,
+    // Resolved rates — cached from the assigned pricing plan, null = listing kind not supported.
+    decimal? ResolvedTransientBaseRate,
+    decimal? ResolvedLeaseBaseRate,
+    Guid? PricingPlanId,
     string? Notes,
     DateTimeOffset CreatedAt
 );

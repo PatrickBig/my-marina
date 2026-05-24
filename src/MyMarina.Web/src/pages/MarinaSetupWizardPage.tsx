@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   getMarina, updateMarina, setupDocks, getDocks, getSlips,
   createSlip, updateSlip, deleteSlip,
+  createPricingPlan, getPricingPlans,
   type MarinaDto, type SetupDockData,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
@@ -17,6 +18,7 @@ import {
 import { useWizardDraft } from '@/hooks/useWizardDraft';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { CropUploadModal } from '@/components/CropUploadModal';
+import { PricingPreviewPanel } from '@/components/PricingPreviewPanel';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const input = 'w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
@@ -820,13 +822,246 @@ function Step4({
 
       <div className="flex justify-between pt-2">
         <button type="button" onClick={onBack} className={btnSecondary}>← Back</button>
-        <button type="button" onClick={onNext} className={btn}>Next: Publish →</button>
+        <button type="button" onClick={onNext} className={btn}>Next: Pricing →</button>
       </div>
     </div>
   );
 }
 
-// ─── Step 5 — Photos ──────────────────────────────────────────────────────────
+// ─── Step 5 — Default pricing plan ───────────────────────────────────────────
+const PLAN_AMENITIES = [
+  { value: 'Covered',     label: 'Covered slip' },
+  { value: 'Electric30A', label: '30A electric' },
+  { value: 'Electric50A', label: '50A electric' },
+  { value: 'HasWater',    label: 'Water' },
+  { value: 'HasPumpOut',  label: 'Pump-out' },
+];
+
+const RATE_KIND_OPTIONS = [
+  { value: '',        label: 'Not offered' },
+  { value: 'Flat',    label: 'Flat (fixed amount)' },
+  { value: 'PerFoot', label: 'Per foot of length' },
+  { value: 'PerArea', label: 'Per sq ft (length × beam)' },
+];
+
+interface AmenityRow { amenity: string; transientAmount: string; leaseAmount: string; }
+
+function Step5Pricing({
+  marinaId, onBack, onNext,
+}: { marinaId: string; onBack: () => void; onNext: () => Promise<void> }) {
+  const [name, setName] = useState('Standard');
+  const [transientRateKind, setTransientRateKind] = useState('Flat');
+  const [transientAmount, setTransientAmount] = useState('');
+  const [transientMinCharge, setTransientMinCharge] = useState('');
+  const [leaseRateKind, setLeaseRateKind] = useState('Flat');
+  const [leaseAmount, setLeaseAmount] = useState('');
+  const [leaseMinCharge, setLeaseMinCharge] = useState('');
+  const [amenityRows, setAmenityRows] = useState<AmenityRow[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function toggleAmenity(amenity: string) {
+    setAmenityRows((prev) =>
+      prev.some((r) => r.amenity === amenity)
+        ? prev.filter((r) => r.amenity !== amenity)
+        : [...prev, { amenity, transientAmount: '', leaseAmount: '' }]
+    );
+  }
+
+  function updateAmenityRow(amenity: string, field: 'transientAmount' | 'leaseAmount', value: string) {
+    setAmenityRows((prev) => prev.map((r) => r.amenity === amenity ? { ...r, [field]: value } : r));
+  }
+
+  async function handleSubmit() {
+    if (!name.trim()) { setError('Plan name is required'); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      await createPricingPlan(marinaId, {
+        name: name.trim(),
+        isDefault: true,
+        transientRateKind: transientRateKind || null,
+        transientAmount: transientAmount ? parseFloat(transientAmount) : null,
+        transientMinCharge: transientMinCharge ? parseFloat(transientMinCharge) : null,
+        leaseRateKind: leaseRateKind || null,
+        leaseAmount: leaseAmount ? parseFloat(leaseAmount) : null,
+        leaseMinCharge: leaseMinCharge ? parseFloat(leaseMinCharge) : null,
+        amenityAddOns: amenityRows
+          .filter((r) => r.transientAmount || r.leaseAmount)
+          .map((r) => ({
+            amenity: r.amenity as 'Covered' | 'Electric30A' | 'Electric50A' | 'HasWater' | 'HasPumpOut',
+            transientAmount: r.transientAmount ? parseFloat(r.transientAmount) : null,
+            leaseAmount: r.leaseAmount ? parseFloat(r.leaseAmount) : null,
+          })),
+      });
+      await onNext();
+    } catch {
+      setSaving(false);
+      setError('Failed to create pricing plan. Please try again.');
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Set up your marina's default pricing plan. Any slip without an explicit plan assigned will use these rates.
+        You can always refine rates and add more plans from your dashboard.
+      </p>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1">Plan name <span className="text-red-500">*</span></label>
+        <input
+          type="text" value={name} onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Standard"
+          className={input}
+        />
+      </div>
+
+      <div className="rounded-xl border border-border p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">Transient (nightly) rates</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-foreground/80 mb-1">Rate type</label>
+            <select value={transientRateKind} onChange={(e) => setTransientRateKind(e.target.value)} className={`${input} bg-card`}>
+              {RATE_KIND_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          {transientRateKind && (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">
+                  Amount ($){transientRateKind === 'PerFoot' ? '/ft' : transientRateKind === 'PerArea' ? '/sq ft' : '/night'}
+                </label>
+                <input type="number" step="0.01" min="0" value={transientAmount}
+                  onChange={(e) => setTransientAmount(e.target.value)} placeholder="0.00" className={input} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Min charge ($) <span className="text-muted-foreground/60">(optional)</span></label>
+                <input type="number" step="0.01" min="0" value={transientMinCharge}
+                  onChange={(e) => setTransientMinCharge(e.target.value)} placeholder="0.00" className={input} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">Lease (monthly) rates</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-foreground/80 mb-1">Rate type</label>
+            <select value={leaseRateKind} onChange={(e) => setLeaseRateKind(e.target.value)} className={`${input} bg-card`}>
+              {RATE_KIND_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          {leaseRateKind && (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">
+                  Amount ($){leaseRateKind === 'PerFoot' ? '/ft' : leaseRateKind === 'PerArea' ? '/sq ft' : '/month'}
+                </label>
+                <input type="number" step="0.01" min="0" value={leaseAmount}
+                  onChange={(e) => setLeaseAmount(e.target.value)} placeholder="0.00" className={input} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Min charge ($) <span className="text-muted-foreground/60">(optional)</span></label>
+                <input type="number" step="0.01" min="0" value={leaseMinCharge}
+                  onChange={(e) => setLeaseMinCharge(e.target.value)} placeholder="0.00" className={input} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border p-5 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Amenity add-ons</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Optional surcharges for slips with specific amenities.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {PLAN_AMENITIES.map((a) => {
+            const active = amenityRows.some((r) => r.amenity === a.value);
+            return (
+              <button
+                key={a.value} type="button"
+                onClick={() => toggleAmenity(a.value)}
+                className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                  active ? 'bg-foreground text-background border-foreground' : 'border-border text-foreground/80 hover:bg-muted/30'
+                }`}
+              >
+                {a.label}
+              </button>
+            );
+          })}
+        </div>
+        {amenityRows.length > 0 && (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 text-xs font-medium text-muted-foreground">Amenity</th>
+                <th className="text-right py-2 text-xs font-medium text-muted-foreground">Transient add-on ($)</th>
+                <th className="text-right py-2 text-xs font-medium text-muted-foreground">Lease add-on ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {amenityRows.map((row) => {
+                const label = PLAN_AMENITIES.find((a) => a.value === row.amenity)?.label ?? row.amenity;
+                return (
+                  <tr key={row.amenity} className="border-b border-border/50 last:border-0">
+                    <td className="py-2 text-sm text-foreground">{label}</td>
+                    <td className="py-2 text-right">
+                      <input
+                        type="number" step="0.01" min="0" placeholder="—"
+                        value={row.transientAmount}
+                        onChange={(e) => updateAmenityRow(row.amenity, 'transientAmount', e.target.value)}
+                        className="w-24 rounded border border-border px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                    </td>
+                    <td className="py-2 text-right">
+                      <input
+                        type="number" step="0.01" min="0" placeholder="—"
+                        value={row.leaseAmount}
+                        onChange={(e) => updateAmenityRow(row.amenity, 'leaseAmount', e.target.value)}
+                        className="w-24 rounded border border-border px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-ring ml-auto"
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <PricingPreviewPanel
+        transientRateKind={transientRateKind}
+        transientAmount={transientAmount}
+        transientMinCharge={transientMinCharge}
+        leaseRateKind={leaseRateKind}
+        leaseAmount={leaseAmount}
+        leaseMinCharge={leaseMinCharge}
+        amenityAddOns={amenityRows}
+        defaultExpanded={false}
+      />
+
+      <div className="flex justify-between pt-2 items-center">
+        <button type="button" onClick={onBack} className={btnSecondary}>← Back</button>
+        <div className="flex flex-col items-end gap-2">
+          <button type="button" onClick={handleSubmit} disabled={saving} className={btn}>
+            {saving ? 'Creating plan…' : 'Create plan & continue →'}
+          </button>
+          <button type="button" onClick={() => onNext()} className="text-xs text-muted-foreground/70 hover:text-foreground/80 underline">
+            Skip for now — set up pricing later from your dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 6 — Photos ──────────────────────────────────────────────────────────
 function Step5Photos({
   marinaId, onBack, onNext, onSkip,
 }: { marinaId: string; onBack: () => void; onNext: () => void; onSkip: () => void }) {
@@ -938,18 +1173,27 @@ function Step5Photos({
   );
 }
 
-// ─── Step 6 — Review & publish ────────────────────────────────────────────────
-function Step6({
-  marina, onBack, onFinish,
-}: { marina: MarinaDto; onBack: () => void; onFinish: (isListed: boolean) => Promise<void> }) {
+// ─── Step 7 — Review & publish ────────────────────────────────────────────────
+function Step7({
+  marinaId, marina, onBack, onFinish,
+}: { marinaId: string; marina: MarinaDto; onBack: () => void; onFinish: (isListed: boolean) => Promise<void> }) {
   const [isListed, setIsListed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [hasDefaultPlan, setHasDefaultPlan] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    getPricingPlans(marinaId)
+      .then((plans) => setHasDefaultPlan(plans.some((p) => p.isDefault)))
+      .catch(() => setHasDefaultPlan(null));
+  }, [marinaId]);
 
   async function handleFinish() {
     setSaving(true);
     await onFinish(isListed);
     setSaving(false);
   }
+
+  const listingBlocked = hasDefaultPlan === false;
 
   return (
     <div className="space-y-6">
@@ -971,9 +1215,23 @@ function Step6({
 
       <div className="rounded-xl border border-border p-5 space-y-3">
         <h3 className="text-sm font-semibold text-foreground">Marketplace listing</h3>
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input type="checkbox" checked={isListed} onChange={(e) => setIsListed(e.target.checked)}
-            className="mt-0.5 rounded" />
+
+        {listingBlocked && (
+          <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+            <p className="font-medium">A default pricing plan is required to list on the marketplace.</p>
+            <p className="mt-1">
+              You skipped the pricing step. Go back to set up a plan, or add one from your dashboard after finishing setup.
+            </p>
+          </div>
+        )}
+
+        <label className={`flex items-start gap-3 ${listingBlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+          <input
+            type="checkbox" checked={isListed && !listingBlocked}
+            onChange={(e) => { if (!listingBlocked) setIsListed(e.target.checked); }}
+            disabled={listingBlocked}
+            className="mt-0.5 rounded"
+          />
           <div>
             <p className="text-sm font-medium text-foreground">List on marketplace immediately</p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -982,10 +1240,10 @@ function Step6({
             </p>
           </div>
         </label>
-        {isListed && (
+
+        {isListed && !listingBlocked && (
           <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
             Your marina will be publicly visible as soon as you click "Finish setup."
-            Make sure your slip rates are configured before accepting bookings.
           </div>
         )}
       </div>
@@ -1001,7 +1259,7 @@ function Step6({
 }
 
 // ─── Wizard shell ─────────────────────────────────────────────────────────────
-const STEPS = ['Marina profile', 'GPS location', 'Dock structure', 'Preview', 'Photos', 'Publish'];
+const STEPS = ['Marina profile', 'GPS location', 'Dock structure', 'Preview', 'Pricing', 'Photos', 'Publish'];
 
 export function MarinaSetupWizardPage() {
   const marinaId = window.location.pathname.split('/')[2];
@@ -1044,7 +1302,7 @@ export function MarinaSetupWizardPage() {
   }
 
   async function handleFinish(isListed: boolean) {
-    await updateMarina(marinaId, { isSetupComplete: true, isListed, setupStep: 6 });
+    await updateMarina(marinaId, { isSetupComplete: true, isListed, setupStep: 7 });
     clearDraft();
     window.location.href = `/marina/${marinaId}`;
   }
@@ -1120,14 +1378,21 @@ export function MarinaSetupWizardPage() {
           {step === 3 && <Step3 onBack={() => setStep(2)} onNext={handleStep3} />}
           {step === 4 && <Step4 marinaId={marinaId} onBack={() => setStep(3)} onNext={() => setStep(5)} />}
           {step === 5 && (
-            <Step5Photos
+            <Step5Pricing
               marinaId={marinaId}
               onBack={() => setStep(4)}
               onNext={async () => { await updateMarina(marinaId, { setupStep: 5 }); setStep(6); }}
-              onSkip={async () => { await updateMarina(marinaId, { setupStep: 5 }); setStep(6); }}
             />
           )}
-          {step === 6 && <Step6 marina={marina} onBack={() => setStep(5)} onFinish={handleFinish} />}
+          {step === 6 && (
+            <Step5Photos
+              marinaId={marinaId}
+              onBack={() => setStep(5)}
+              onNext={async () => { await updateMarina(marinaId, { setupStep: 6 }); setStep(7); }}
+              onSkip={async () => { await updateMarina(marinaId, { setupStep: 6 }); setStep(7); }}
+            />
+          )}
+          {step === 7 && <Step7 marinaId={marinaId} marina={marina} onBack={() => setStep(6)} onFinish={handleFinish} />}
         </div>
       </div>
     </div>

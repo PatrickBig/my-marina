@@ -9,7 +9,9 @@
       "Bash(xargs grep *)",
       "Bash(openspec list *)",
       "Bash(helm template *)",
-      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")"
+      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")",
+      "Bash(dotnet build)",
+      "Bash(dotnet test)"
     ]
   }
 }

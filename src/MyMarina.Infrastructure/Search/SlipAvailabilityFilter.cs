@@ -116,11 +116,11 @@ internal static class SlipAvailabilityFilter
             }
         }
 
-        // Path B: direct default transient rate (no window needed)
+        // Path B: direct resolved transient rate (no window needed)
         var pathAIds = results.Select(r => r.Slip.Id).ToList();
 
         var directSlips = await slipQ
-            .Where(s => s.DefaultTransientRateKind != null
+            .Where(s => s.ResolvedTransientBaseRate != null
                      && !pathAIds.Contains(s.Id)
                      && !db.SlipAssignments.Any(a =>
                             a.SlipId == s.Id &&
@@ -140,9 +140,9 @@ internal static class SlipAvailabilityFilter
                 Slip: s,
                 BestWindowId: null,
                 ListingKind: "Transient",
-                RateKind: s.DefaultTransientRateKind!.Value.ToString(),
-                Price: s.DefaultTransientBaseRate!.Value,
-                MinCharge: s.DefaultTransientMinCharge,
+                RateKind: RateKind.Flat.ToString(),
+                Price: s.ResolvedTransientBaseRate!.Value,
+                MinCharge: null,
                 LeaseTerm: null,
                 InstantBook: true,
                 CleaningFee: null,
@@ -221,14 +221,13 @@ internal static class SlipAvailabilityFilter
             }
         }
 
-        // Path B: direct default lease rate
+        // Path B: direct resolved lease rate
         var pathAIds = results.Select(r => r.Slip.Id).ToList();
 
         var directSlips = await slipQ
-            .Where(s => s.DefaultLeaseRateKind != null
+            .Where(s => s.ResolvedLeaseBaseRate != null
                      && !pathAIds.Contains(s.Id)
-                     && !db.SlipAssignments.Any(a => a.SlipId == s.Id && (a.EndDate == null || a.EndDate >= today))
-                     && (f.LeaseTermFilter == null || s.DefaultLeaseTerm == f.LeaseTermFilter))
+                     && !db.SlipAssignments.Any(a => a.SlipId == s.Id && (a.EndDate == null || a.EndDate >= today)))
             .ToListAsync(ct);
 
         foreach (var s in directSlips)
@@ -237,10 +236,10 @@ internal static class SlipAvailabilityFilter
                 Slip: s,
                 BestWindowId: null,
                 ListingKind: "Lease",
-                RateKind: s.DefaultLeaseRateKind!.Value.ToString(),
-                Price: s.DefaultLeaseBaseRate!.Value,
+                RateKind: RateKind.Flat.ToString(),
+                Price: s.ResolvedLeaseBaseRate!.Value,
                 MinCharge: null,
-                LeaseTerm: s.DefaultLeaseTerm?.ToString(),
+                LeaseTerm: null,
                 InstantBook: false,
                 CleaningFee: null,
                 MinNights: null,

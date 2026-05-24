@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyMarina.Application.Abstractions;
@@ -140,6 +142,7 @@ public class MarinasController(
             return Ok(marina);
         }
         catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return UnprocessableEntity(new { error = ex.Message }); }
     }
 
     // DELETE /marinas/{marinaId} — draft marinas only; cascade-deletes docks, slips, memberships
@@ -322,6 +325,16 @@ public class MarinasController(
     {
         if (!userContext.HasMarinaAccess(marinaId, MembershipRole.Manager)) return Forbid();
 
+        // Detect attempts to write legacy price fields — pricing is now rule-based
+        if (request.HasLegacyPriceFields(out var legacyFields))
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]>
+                {
+                    [legacyFields] = ["Slip prices are no longer set directly. Use marina pricing rules at " +
+                                      "GET /marinas/{marinaId}/pricing/rules to configure pricing."],
+                }));
+
+
         SlipType? slipType = null;
         if (request.SlipType is not null)
         {
@@ -364,14 +377,6 @@ public class MarinasController(
                 IsIndoor: request.IsIndoor,
                 Amenities: request.Amenities,
                 Status: status,
-                DefaultTransientRateKind:  request.DefaultTransientRateKind,
-                DefaultTransientBaseRate:  request.DefaultTransientBaseRate,
-                DefaultTransientMinCharge: request.DefaultTransientMinCharge,
-                ClearTransientRate:        request.ClearTransientRate,
-                DefaultLeaseRateKind:      request.DefaultLeaseRateKind,
-                DefaultLeaseBaseRate:      request.DefaultLeaseBaseRate,
-                DefaultLeaseTerm:          request.DefaultLeaseTerm,
-                ClearLeaseRate:            request.ClearLeaseRate,
                 Notes: request.Notes), ct);
             return Ok(slip);
         }
@@ -397,9 +402,9 @@ public class MarinasController(
 // ---------- request records ----------
 
 public sealed record MarinaSignupRequest(
-    string TenantName,
     string MarinaName,
     string MarinaType,
+    string? TenantName     = null,
     // Required for PrivateDock / Dockominium
     string? SlipName       = null,
     decimal? MaxLength     = null,
@@ -448,30 +453,37 @@ public sealed record CreateSlipRequest(
     IReadOnlyList<string>? Amenities = null,
     string? Notes = null
 );
-public sealed record UpdateSlipRequest(
-    Guid? DockId,
-    string? Name,
-    string? SlipType,
-    decimal? MaxLength,
-    decimal? MaxBeam,
-    decimal? MaxDraft,
-    bool? HasElectric,
-    int? Electric,
-    bool? HasWater,
-    bool? HasPumpOut,
-    bool? IsCovered,
-    bool? IsIndoor,
-    IReadOnlyList<string>? Amenities,
-    string? Status,
-    // Transient default rate (set ClearTransientRate=true to remove)
-    string? DefaultTransientRateKind,
-    decimal? DefaultTransientBaseRate,
-    decimal? DefaultTransientMinCharge,
-    bool ClearTransientRate,
-    // Lease default rate (set ClearLeaseRate=true to remove)
-    string? DefaultLeaseRateKind,
-    decimal? DefaultLeaseBaseRate,
-    string? DefaultLeaseTerm,
-    bool ClearLeaseRate,
-    string? Notes
-);
+public sealed class UpdateSlipRequest
+{
+    public Guid? DockId { get; init; }
+    public string? Name { get; init; }
+    public string? SlipType { get; init; }
+    public decimal? MaxLength { get; init; }
+    public decimal? MaxBeam { get; init; }
+    public decimal? MaxDraft { get; init; }
+    public bool? HasElectric { get; init; }
+    public int? Electric { get; init; }
+    public bool? HasWater { get; init; }
+    public bool? HasPumpOut { get; init; }
+    public bool? IsCovered { get; init; }
+    public bool? IsIndoor { get; init; }
+    public IReadOnlyList<string>? Amenities { get; init; }
+    public string? Status { get; init; }
+    public string? Notes { get; init; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? UnknownFields { get; init; }
+
+    private static readonly HashSet<string> LegacyPriceFields =
+    [
+        "defaultTransientRateKind", "defaultTransientBaseRate", "defaultTransientMinCharge",
+        "defaultLeaseRateKind", "defaultLeaseBaseRate", "defaultLeaseTerm",
+    ];
+
+    public bool HasLegacyPriceFields(out string fieldNames)
+    {
+        var found = UnknownFields?.Keys.Where(k => LegacyPriceFields.Contains(k)).ToList() ?? [];
+        fieldNames = string.Join(", ", found);
+        return found.Count > 0;
+    }
+}

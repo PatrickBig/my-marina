@@ -28,6 +28,12 @@ public static class TierCapabilityRegistry
 
         // Revenue split configuration for sublet windows
         public const string RevenueSplits        = nameof(RevenueSplits);
+
+        // Rule-based pricing engine (base rules, surcharges, slip adjustments)
+        public const string PricingRules         = nameof(PricingRules);
+
+        // Scheduled / future-dated pricing rules
+        public const string ScheduledPricing     = nameof(ScheduledPricing);
     }
 
     // Maps each capability to the minimum tier required.
@@ -41,5 +47,7 @@ public static class TierCapabilityRegistry
             [Tiers.StaffInvitations]    = SubscriptionTier.Pro,
             [Tiers.SubletFlows]         = SubscriptionTier.Pro,
             [Tiers.RevenueSplits]       = SubscriptionTier.Pro,
+            [Tiers.PricingRules]        = SubscriptionTier.Free,
+            [Tiers.ScheduledPricing]    = SubscriptionTier.Pro,
         };
 }

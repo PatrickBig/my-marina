@@ -1,8 +1,9 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Marinas;
-using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Pricing;
 
 namespace MyMarina.Infrastructure.Marinas;
 
@@ -31,36 +32,28 @@ public class UpdateSlipCommandHandler(AppDbContext db)
         if (command.Status.HasValue) slip.Status = command.Status.Value;
         if (command.Notes is not null) slip.Notes = command.Notes;
 
-        if (command.ClearTransientRate)
+        bool planChanged = false;
+        if (command.ClearPricingPlan && slip.PricingPlanId is not null)
         {
-            slip.DefaultTransientRateKind = null;
-            slip.DefaultTransientBaseRate = null;
-            slip.DefaultTransientMinCharge = null;
+            slip.PricingPlanId = null;
+            planChanged = true;
         }
-        else if (command.DefaultTransientBaseRate.HasValue
-              && Enum.TryParse<RateKind>(command.DefaultTransientRateKind, ignoreCase: true, out var transientKind))
+        else if (command.PricingPlanId.HasValue && command.PricingPlanId != slip.PricingPlanId)
         {
-            slip.DefaultTransientRateKind = transientKind;
-            slip.DefaultTransientBaseRate = command.DefaultTransientBaseRate.Value;
-            slip.DefaultTransientMinCharge = command.DefaultTransientMinCharge;
-        }
-
-        if (command.ClearLeaseRate)
-        {
-            slip.DefaultLeaseRateKind = null;
-            slip.DefaultLeaseBaseRate = null;
-            slip.DefaultLeaseTerm = null;
-        }
-        else if (command.DefaultLeaseBaseRate.HasValue
-              && Enum.TryParse<RateKind>(command.DefaultLeaseRateKind, ignoreCase: true, out var leaseKind)
-              && Enum.TryParse<LeaseTerm>(command.DefaultLeaseTerm, ignoreCase: true, out var leaseTerm))
-        {
-            slip.DefaultLeaseRateKind = leaseKind;
-            slip.DefaultLeaseBaseRate = command.DefaultLeaseBaseRate.Value;
-            slip.DefaultLeaseTerm = leaseTerm;
+            var planBelongsToMarina = await db.PricingPlans
+                .IgnoreQueryFilters()
+                .AnyAsync(p => p.Id == command.PricingPlanId && p.MarinaId == command.MarinaId, ct);
+            if (!planBelongsToMarina)
+                throw new InvalidOperationException("Pricing plan does not belong to this marina.");
+            slip.PricingPlanId = command.PricingPlanId;
+            planChanged = true;
         }
 
         await db.SaveChangesAsync(ct);
+
+        if (planChanged)
+            BackgroundJob.Enqueue<RecomputeSlipPriceJob>(j => j.ExecuteAsync(slip.Id));
+
         return MarinaMappers.ToSlipDto(slip);
     }
 }

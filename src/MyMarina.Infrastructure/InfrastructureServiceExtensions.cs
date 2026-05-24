@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Leases;
 using MyMarina.Infrastructure.Email;
+using MyMarina.Infrastructure.Pricing;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
 using MyMarina.Infrastructure.Persistence;
@@ -119,6 +120,9 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<Storage.ImageVariantGenerationJob>();
         services.AddScoped<Storage.StorageCleanupJob>();
         services.AddScoped<Storage.OrphanPhotoCleanupJob>();
+        services.AddScoped<Pricing.RecomputeSlipPriceJob>();
+        services.AddScoped<Pricing.RecomputePlanSlipPricesJob>();
+        services.AddScoped<Pricing.RecomputeDefaultPlanSlipPricesJob>();
 
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();

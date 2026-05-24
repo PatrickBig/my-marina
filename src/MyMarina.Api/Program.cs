@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Infrastructure;
 using MyMarina.Infrastructure.Invoicing;
+using MyMarina.Infrastructure.Pricing;
 using MyMarina.Infrastructure.Storage;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Setup;
@@ -39,7 +40,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Controllers + OpenAPI ---
 builder.Services.AddControllers(options =>
-    options.Filters.AddService<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>());
+    options.Filters.AddService<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>())
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddScoped<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>();
 // Set the multipart ceiling to 5× the configured app limit so the controller's
 // explicit 413 check fires before the middleware hard-rejects with 400.

@@ -18,6 +18,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.PaymentProviderId).HasMaxLength(200);
         builder.Property(p => p.PaymentProviderReference).HasMaxLength(200);
 
+        builder.HasQueryFilter(p => p.Invoice.Marina.IsSetupComplete);
+
         builder.HasIndex(p => p.InvoiceId);
     }
 }

@@ -5085,6 +5085,392 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/marinas/{marinaId}/pricing/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PricingPlanDto"][];
+                        "application/json": components["schemas"]["PricingPlanDto"][];
+                        "text/json": components["schemas"]["PricingPlanDto"][];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreatePlanRequest"];
+                    "text/json": components["schemas"]["CreatePlanRequest"];
+                    "application/*+json": components["schemas"]["CreatePlanRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PricingPlanDto"];
+                        "application/json": components["schemas"]["PricingPlanDto"];
+                        "text/json": components["schemas"]["PricingPlanDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/pricing/plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    planId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PricingPlanDto"];
+                        "application/json": components["schemas"]["PricingPlanDto"];
+                        "text/json": components["schemas"]["PricingPlanDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    planId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdatePlanRequest"];
+                    "text/json": components["schemas"]["UpdatePlanRequest"];
+                    "application/*+json": components["schemas"]["UpdatePlanRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PricingPlanDto"];
+                        "application/json": components["schemas"]["PricingPlanDto"];
+                        "text/json": components["schemas"]["PricingPlanDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    planId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/pricing/plans/{planId}/set-default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    planId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PricingPlanDto"];
+                        "application/json": components["schemas"]["PricingPlanDto"];
+                        "text/json": components["schemas"]["PricingPlanDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/pricing/plans/bulk-assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BulkAssignRequest"];
+                    "text/json": components["schemas"]["BulkAssignRequest"];
+                    "application/*+json": components["schemas"]["BulkAssignRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BulkAssignResultDto"];
+                        "application/json": components["schemas"]["BulkAssignResultDto"];
+                        "text/json": components["schemas"]["BulkAssignResultDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reservations": {
         parameters: {
             query?: never;
@@ -5808,6 +6194,85 @@ export interface paths {
             responses: {
                 /** @description OK */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SlipAssignmentDto"];
+                        "application/json": components["schemas"]["SlipAssignmentDto"];
+                        "text/json": components["schemas"]["SlipAssignmentDto"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marinas/{marinaId}/slip-assignments/{id}/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    marinaId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RenewSlipAssignmentRequest"];
+                    "text/json": components["schemas"]["RenewSlipAssignmentRequest"];
+                    "application/*+json": components["schemas"]["RenewSlipAssignmentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6713,6 +7178,13 @@ export interface components {
             /** Format: uuid */
             reservationId: null | string;
         };
+        AmenityAddOnDto: {
+            amenity: components["schemas"]["PlanAmenity"];
+            /** Format: double */
+            transientAmount: null | number | string;
+            /** Format: double */
+            leaseAmount: null | number | string;
+        };
         AnnouncementBody: {
             title: string;
             body: string;
@@ -6822,6 +7294,29 @@ export interface components {
             acceptedAt: null | string;
         };
         BillingAccountRole: number;
+        BulkAssignRequest: {
+            /** Format: uuid */
+            targetPlanId: string;
+            /** Format: uuid */
+            dockId: null | string;
+            /** Format: double */
+            minLength: null | number | string;
+            /** Format: double */
+            maxLength: null | number | string;
+            /** Format: double */
+            minBeam: null | number | string;
+            /** Format: double */
+            maxBeam: null | number | string;
+            amenities: null | components["schemas"]["PlanAmenity"][];
+            /** Format: uuid */
+            currentPlanId: null | string;
+            /** @default false */
+            filterUnassigned: boolean;
+        };
+        BulkAssignResultDto: {
+            /** Format: int32 */
+            assignedCount: number | string;
+        };
         ChangePasswordRequest: {
             currentPassword: string;
             newPassword: string;
@@ -6903,6 +7398,21 @@ export interface components {
             /** Format: date */
             desiredStartDate: null | string;
             message: null | string;
+        };
+        CreatePlanRequest: {
+            name: string;
+            isDefault: boolean;
+            transientRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            transientAmount: null | number | string;
+            /** Format: double */
+            transientMinCharge: null | number | string;
+            leaseRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            leaseAmount: null | number | string;
+            /** Format: double */
+            leaseMinCharge: null | number | string;
+            amenityAddOns: null | components["schemas"]["AmenityAddOnDto"][];
         };
         CreateReservationRequest: {
             /** Format: uuid */
@@ -7317,9 +7827,9 @@ export interface components {
             isAnyCovered: boolean;
         };
         MarinaSignupRequest: {
-            tenantName: string;
             marinaName: string;
             marinaType: string;
+            tenantName?: null | string;
             slipName?: null | string;
             /** Format: double */
             maxLength?: null | number | string;
@@ -7535,6 +8045,30 @@ export interface components {
             marinaId: string;
             marinaName: string;
         };
+        PlanAmenity: number;
+        PricingPlanDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            marinaId: string;
+            name: string;
+            isDefault: boolean;
+            transientRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            transientAmount: null | number | string;
+            /** Format: double */
+            transientMinCharge: null | number | string;
+            leaseRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            leaseAmount: null | number | string;
+            /** Format: double */
+            leaseMinCharge: null | number | string;
+            amenityAddOns: components["schemas"]["AmenityAddOnDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         ProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -7569,6 +8103,7 @@ export interface components {
             /** Format: double */
             cleaningFee: null | number | string;
         };
+        RateKind: number;
         ReasonBody: {
             reason: null | string;
         };
@@ -7591,6 +8126,12 @@ export interface components {
             lastName: string;
             marketingOptIn: boolean;
             termsAccepted: boolean;
+        };
+        RenewSlipAssignmentRequest: {
+            /** Format: date */
+            newStartDate: string;
+            /** Format: date */
+            newEndDate: null | string;
         };
         ReorderPhotoRequest: {
             direction: string;
@@ -7754,16 +8295,11 @@ export interface components {
             marinaName: string;
             marinaDescription: null | string;
             marinaPhoneNumber: null | string;
-            defaultTransientRateKind: null | string;
             /** Format: double */
-            defaultTransientBaseRate: null | number | string;
-            /** Format: double */
-            defaultTransientMinCharge: null | number | string;
+            resolvedTransientBaseRate: null | number | string;
             transientBookingAvailable: boolean;
-            defaultLeaseRateKind: null | string;
             /** Format: double */
-            defaultLeaseBaseRate: null | number | string;
-            defaultLeaseTerm: null | string;
+            resolvedLeaseBaseRate: null | number | string;
             leaseInquiryAvailable: boolean;
             openWindows: components["schemas"]["PublicWindowSummaryDto"][];
         };
@@ -7791,15 +8327,12 @@ export interface components {
             isIndoor: boolean;
             amenities: string[];
             status: string;
-            defaultTransientRateKind: null | string;
             /** Format: double */
-            defaultTransientBaseRate: null | number | string;
+            resolvedTransientBaseRate: null | number | string;
             /** Format: double */
-            defaultTransientMinCharge: null | number | string;
-            defaultLeaseRateKind: null | string;
-            /** Format: double */
-            defaultLeaseBaseRate: null | number | string;
-            defaultLeaseTerm: null | string;
+            resolvedLeaseBaseRate: null | number | string;
+            /** Format: uuid */
+            pricingPlanId: null | string;
             notes: null | string;
             /** Format: date-time */
             createdAt: string;
@@ -7955,6 +8488,22 @@ export interface components {
             isSetupComplete?: null | boolean;
             isListed?: null | boolean;
         };
+        UpdatePlanRequest: {
+            name: null | string;
+            transientRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            transientAmount: null | number | string;
+            /** Format: double */
+            transientMinCharge: null | number | string;
+            clearTransientRate: boolean;
+            leaseRateKind: null | components["schemas"]["RateKind"];
+            /** Format: double */
+            leaseAmount: null | number | string;
+            /** Format: double */
+            leaseMinCharge: null | number | string;
+            clearLeaseRate: boolean;
+            amenityAddOns: null | components["schemas"]["AmenityAddOnDto"][];
+        };
         UpdateProfileRequest: {
             firstName: null | string;
             lastName: null | string;
@@ -7986,36 +8535,25 @@ export interface components {
         };
         UpdateSlipRequest: {
             /** Format: uuid */
-            dockId: null | string;
-            name: null | string;
-            slipType: null | string;
+            dockId?: null | string;
+            name?: null | string;
+            slipType?: null | string;
             /** Format: double */
-            maxLength: null | number | string;
+            maxLength?: null | number | string;
             /** Format: double */
-            maxBeam: null | number | string;
+            maxBeam?: null | number | string;
             /** Format: double */
-            maxDraft: null | number | string;
-            hasElectric: null | boolean;
+            maxDraft?: null | number | string;
+            hasElectric?: null | boolean;
             /** Format: int32 */
-            electric: null | number | string;
-            hasWater: null | boolean;
-            hasPumpOut: null | boolean;
-            isCovered: null | boolean;
-            isIndoor: null | boolean;
-            amenities: null | string[];
-            status: null | string;
-            defaultTransientRateKind: null | string;
-            /** Format: double */
-            defaultTransientBaseRate: null | number | string;
-            /** Format: double */
-            defaultTransientMinCharge: null | number | string;
-            clearTransientRate: boolean;
-            defaultLeaseRateKind: null | string;
-            /** Format: double */
-            defaultLeaseBaseRate: null | number | string;
-            defaultLeaseTerm: null | string;
-            clearLeaseRate: boolean;
-            notes: null | string;
+            electric?: null | number | string;
+            hasWater?: null | boolean;
+            hasPumpOut?: null | boolean;
+            isCovered?: null | boolean;
+            isIndoor?: null | boolean;
+            amenities?: null | string[];
+            status?: null | string;
+            notes?: null | string;
         };
         UpdateVesselRecordRequest: {
             /** Format: uuid */

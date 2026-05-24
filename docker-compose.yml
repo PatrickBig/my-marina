@@ -39,21 +39,23 @@ services:
       retries: 10
       start_period: 10s
 
-#  rustfs-init:
-#    image: amazon/aws-cli:latest
-#    environment:
-#      AWS_ACCESS_KEY_ID: rustfsadmin
-#      AWS_SECRET_ACCESS_KEY: rustfsadmin
-#      AWS_DEFAULT_REGION: us-east-1
-#    command: >
-#      aws s3api create-bucket --bucket mymarina-local
-#      --endpoint-url http://rustfs:9000
-#    depends_on:
-#      rustfs:
-#        condition: service_healthy
-#    deploy:
-#      restart_policy:
-#        condition: none
+  rustfs-init:
+    image: amazon/aws-cli:latest
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket mymarina-local --region us-east-1 2>/dev/null || true
+        aws --endpoint-url http://rustfs:9000 s3api put-bucket-policy --bucket mymarina-local --policy '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::mymarina-local/*"}]}'
+        aws --endpoint-url http://rustfs:9000 s3api put-bucket-cors --bucket mymarina-local --cors-configuration '{"CORSRules":[{"AllowedHeaders":["*"],"AllowedMethods":["GET","HEAD"],"AllowedOrigins":["*"],"MaxAgeSeconds":3600}]}'
+    environment:
+      AWS_ACCESS_KEY_ID: rustfsadmin
+      AWS_SECRET_ACCESS_KEY: rustfsadmin
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    restart: "no"
 
   redis:
     image: redis:7-alpine
@@ -151,6 +153,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rustfs-init:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:

@@ -68,8 +68,7 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     && w.ListingKind == ListingKind.Lease
                     && (leaseTermFilter == null || w.LeaseTerm == leaseTermFilter)
                     && (desiredStart == null || (w.StartsAt <= desiredStart && w.EndsAt >= desiredStart)))
-                 || (s.DefaultLeaseRateKind != null
-                    && (leaseTermFilter == null || s.DefaultLeaseTerm == leaseTermFilter))));
+                 || s.ResolvedLeaseBaseRate != null));
         }
         else
         {
@@ -87,8 +86,8 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     && w.StartsAt <= arrivesAt
                     && w.EndsAt   >= departsAt)
                 ||
-                // Path B: direct default rate with no conflicts
-                (s.DefaultTransientRateKind != null
+                // Path B: direct resolved transient rate with no conflicts
+                (s.ResolvedTransientBaseRate != null
                  && !db.SlipAssignments.Any(a => a.SlipId == s.Id
                         && a.StartDate <= departsDateOnly
                         && (a.EndDate == null || a.EndDate >= arrivesDateOnly))
@@ -109,9 +108,9 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                         && w.EndsAt   >= departsAt
                         && (query.PriceMin == null || w.BasePricePerNight >= query.PriceMin)
                         && (query.PriceMax == null || w.BasePricePerNight <= query.PriceMax))
-                    || (s.DefaultTransientRateKind != null
-                        && (query.PriceMin == null || s.DefaultTransientBaseRate >= query.PriceMin)
-                        && (query.PriceMax == null || s.DefaultTransientBaseRate <= query.PriceMax)));
+                    || (s.ResolvedTransientBaseRate != null
+                        && (query.PriceMin == null || s.ResolvedTransientBaseRate >= query.PriceMin)
+                        && (query.PriceMax == null || s.ResolvedTransientBaseRate <= query.PriceMax)));
             }
         }
 
@@ -130,10 +129,9 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                     && (desiredStart == null || (w.StartsAt <= desiredStart && w.EndsAt >= desiredStart))
                     && (query.PriceMin == null || w.BasePricePerNight >= query.PriceMin)
                     && (query.PriceMax == null || w.BasePricePerNight <= query.PriceMax))
-                || (s.DefaultLeaseRateKind != null
-                    && (leaseTermFilter == null || s.DefaultLeaseTerm == leaseTermFilter)
-                    && (query.PriceMin == null || s.DefaultLeaseBaseRate >= query.PriceMin)
-                    && (query.PriceMax == null || s.DefaultLeaseBaseRate <= query.PriceMax)));
+                || (s.ResolvedLeaseBaseRate != null
+                    && (query.PriceMin == null || s.ResolvedLeaseBaseRate >= query.PriceMin)
+                    && (query.PriceMax == null || s.ResolvedLeaseBaseRate <= query.PriceMax)));
         }
 
         // Step 5: Single DB-level GROUP BY — count + instant-book + amenity flags per marina
@@ -175,7 +173,7 @@ public class MarinaRollupSearchQueryHandler(AppDbContext db)
                             && w.StartsAt <= arrivesAt
                             && w.EndsAt   >= departsAt
                             && w.InstantBook)
-                        || s.DefaultTransientRateKind != null),
+                        || s.ResolvedTransientBaseRate != null),
                     HasPumpOut   = g.Any(s => s.HasPumpOut),
                     HasElectric  = g.Any(s => s.HasElectric),
                     IsAnyCovered = g.Any(s => s.IsCovered),

@@ -15,13 +15,13 @@ import {
   getMarinaMaintenanceRequests, updateMaintenanceRequestStatus, getMarinaWorkOrders, createWorkOrder, updateWorkOrder,
   getMarinaAnnouncements, createAnnouncement, publishAnnouncement, deleteAnnouncement,
   getMarinaLeaseInquiries, updateLeaseInquiry, approveLeaseInquiry, declineLeaseInquiry,
-  updateSlipAssignment,
+  updateSlipAssignment, getPricingPlans,
   type MarinaDto, type DockDto, type SlipDto, type MembershipDto, type SlipType,
   type BillingAccountDto, type BillingAccountMemberDto, type VesselRecordDto, type SlipAssignmentDto, type AssignmentType,
   type AvailabilityWindowDto, type AvailabilityWindowStatus, type ReservationDto,
   type OwnerAbsenceDto, type InvoiceSummaryDto,
   type MaintenanceRequestDto, type WorkOrderDto, type AnnouncementDto,
-  type LeaseInquiryDto, type RateKind, type LeaseTerm,
+  type LeaseInquiryDto,
 } from '@/api/api';
 import { NavBar } from '@/components/NavBar';
 import { usePhotoUpload, type MarinaPhotoDto } from '@/hooks/usePhotoUpload';
@@ -369,15 +369,6 @@ const slipSchema = z.object({
   electric: z.coerce.number().optional(),
   hasWater: z.boolean(),
   notes: z.string().optional(),
-  // Pricing defaults
-  defaultTransientRateKind: z.string().optional(),
-  defaultTransientBaseRate: z.preprocess((v) => v === '' || v == null ? undefined : Number(v), z.number().nonnegative().optional()),
-  defaultTransientMinCharge: z.preprocess((v) => v === '' || v == null ? undefined : Number(v), z.number().nonnegative().optional()),
-  clearTransientRate: z.boolean().optional(),
-  defaultLeaseRateKind: z.string().optional(),
-  defaultLeaseBaseRate: z.preprocess((v) => v === '' || v == null ? undefined : Number(v), z.number().nonnegative().optional()),
-  defaultLeaseTerm: z.string().optional(),
-  clearLeaseRate: z.boolean().optional(),
 });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SlipFormData = z.infer<typeof slipSchema>;
@@ -406,8 +397,6 @@ function SlipForm({
     defaultValues: { slipType: 'Floating', hasElectric: false, hasWater: true, status: 'Active', ...defaultValues },
   });
   const hasElectric = watch('hasElectric');
-  const clearTransient = watch('clearTransientRate');
-  const clearLease = watch('clearLeaseRate');
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
@@ -468,67 +457,6 @@ function SlipForm({
         <textarea {...register('notes')} rows={2} className={`${input} resize-none`} />
       </Field>
 
-      {/* Transient pricing */}
-      <div className="border border-border/50 rounded-lg p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-foreground/80">Transient default rate</p>
-          <label className="flex items-center gap-1 text-xs text-muted-foreground">
-            <input {...register('clearTransientRate')} type="checkbox" />
-            Clear rate
-          </label>
-        </div>
-        {!clearTransient && (
-          <div className="grid grid-cols-3 gap-2">
-            <Field label="Rate kind">
-              <select {...register('defaultTransientRateKind')} className={`${input} bg-card`}>
-                <option value="">— none —</option>
-                <option value="Flat">Flat ($/night)</option>
-                <option value="PerFoot">Per foot ($/ft/night)</option>
-              </select>
-            </Field>
-            <Field label="Base rate ($)">
-              <input {...register('defaultTransientBaseRate')} type="number" step="0.01" className={input} />
-            </Field>
-            <Field label="Min charge ($)">
-              <input {...register('defaultTransientMinCharge')} type="number" step="0.01" className={input} />
-            </Field>
-          </div>
-        )}
-      </div>
-
-      {/* Lease pricing */}
-      <div className="border border-border/50 rounded-lg p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-foreground/80">Lease default rate</p>
-          <label className="flex items-center gap-1 text-xs text-muted-foreground">
-            <input {...register('clearLeaseRate')} type="checkbox" />
-            Clear rate
-          </label>
-        </div>
-        {!clearLease && (
-          <div className="grid grid-cols-3 gap-2">
-            <Field label="Rate kind">
-              <select {...register('defaultLeaseRateKind')} className={`${input} bg-card`}>
-                <option value="">— none —</option>
-                <option value="Flat">Flat</option>
-                <option value="PerFoot">Per foot</option>
-              </select>
-            </Field>
-            <Field label="Base rate ($)">
-              <input {...register('defaultLeaseBaseRate')} type="number" step="0.01" className={input} />
-            </Field>
-            <Field label="Default term">
-              <select {...register('defaultLeaseTerm')} className={`${input} bg-card`}>
-                <option value="">— any —</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Seasonal">Seasonal</option>
-                <option value="Annual">Annual</option>
-              </select>
-            </Field>
-          </div>
-        )}
-      </div>
-
       <div className="flex gap-2">
         <button type="submit" disabled={isSubmitting} className={btn}>
           {isSubmitting ? '…' : submitLabel}
@@ -544,31 +472,18 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
   const [docks, setDocks] = useState<DockDto[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [editingSlipId, setEditingSlipId] = useState<string | null>(null);
-
   useEffect(() => {
     getSlips(marinaId).then(setSlips);
     getDocks(marinaId).then(setDocks);
   }, [marinaId]);
 
   async function handleCreate(data: SlipFormData) {
-    let slip = await createSlip(marinaId, {
+    const slip = await createSlip(marinaId, {
       name: data.name, dockId: data.dockId || null, slipType: data.slipType,
       maxLength: data.maxLength, maxBeam: data.maxBeam, maxDraft: data.maxDraft,
       hasElectric: data.hasElectric, electric: data.electric || null,
       hasWater: data.hasWater, notes: data.notes || null,
     });
-    if (data.defaultTransientRateKind || data.defaultLeaseRateKind) {
-      slip = await updateSlip(marinaId, slip.id, {
-        defaultTransientRateKind: (data.defaultTransientRateKind as RateKind) || null,
-        defaultTransientBaseRate: data.defaultTransientBaseRate ?? null,
-        defaultTransientMinCharge: data.defaultTransientMinCharge ?? null,
-        clearTransientRate: false,
-        defaultLeaseRateKind: (data.defaultLeaseRateKind as RateKind) || null,
-        defaultLeaseBaseRate: data.defaultLeaseBaseRate ?? null,
-        defaultLeaseTerm: (data.defaultLeaseTerm as LeaseTerm) || null,
-        clearLeaseRate: false,
-      });
-    }
     setSlips((s) => [...s, slip]);
     setShowCreate(false);
   }
@@ -580,14 +495,6 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
       maxLength: data.maxLength, maxBeam: data.maxBeam, maxDraft: data.maxDraft,
       hasElectric: data.hasElectric, electric: data.electric || null,
       hasWater: data.hasWater, notes: data.notes || null,
-      defaultTransientRateKind: (data.defaultTransientRateKind as RateKind) || null,
-      defaultTransientBaseRate: data.defaultTransientBaseRate ?? null,
-      defaultTransientMinCharge: data.defaultTransientMinCharge ?? null,
-      clearTransientRate: !!data.clearTransientRate,
-      defaultLeaseRateKind: (data.defaultLeaseRateKind as RateKind) || null,
-      defaultLeaseBaseRate: data.defaultLeaseBaseRate ?? null,
-      defaultLeaseTerm: (data.defaultLeaseTerm as LeaseTerm) || null,
-      clearLeaseRate: !!data.clearLeaseRate,
     });
     setSlips((s) => s.map((x) => x.id === slipId ? updated : x));
     setEditingSlipId(null);
@@ -603,9 +510,14 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
     <div className="bg-card rounded-xl border border-border p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-base font-semibold text-foreground">Slips</h2>
-        <button onClick={() => setShowCreate(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
-          + Add slip
-        </button>
+        <div className="flex items-center gap-4">
+          <a href={`/marina/${marinaId}/pricing`} className="text-sm text-muted-foreground hover:text-foreground underline">
+            Pricing plans →
+          </a>
+          <button onClick={() => setShowCreate(true)} className="text-sm text-muted-foreground hover:text-foreground underline">
+            + Add slip
+          </button>
+        </div>
       </div>
 
       {slips.length === 0 && !showCreate && (
@@ -633,14 +545,6 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
                     electric: slip.electric ?? undefined,
                     hasWater: slip.hasWater,
                     notes: slip.notes ?? '',
-                    defaultTransientRateKind: slip.defaultTransientRateKind ?? '',
-                    defaultTransientBaseRate: slip.defaultTransientBaseRate ?? undefined,
-                    defaultTransientMinCharge: slip.defaultTransientMinCharge ?? undefined,
-                    clearTransientRate: false,
-                    defaultLeaseRateKind: slip.defaultLeaseRateKind ?? '',
-                    defaultLeaseBaseRate: slip.defaultLeaseBaseRate ?? undefined,
-                    defaultLeaseTerm: slip.defaultLeaseTerm ?? '',
-                    clearLeaseRate: false,
                   }}
                   onSubmit={(data) => handleEdit(slip.id, data)}
                   onCancel={() => setEditingSlipId(null)}
@@ -648,35 +552,27 @@ function SlipsPanel({ marinaId }: { marinaId: string }) {
                 />
               </div>
             ) : (
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-sm font-medium text-foreground">{slip.name}</span>
-                  {slip.dockId && (
-                    <span className="ml-2 text-xs text-muted-foreground/70">
-                      {docks.find((d) => d.id === slip.dockId)?.name ?? 'Dock'}
-                    </span>
-                  )}
-                  <span className="ml-2 text-xs text-muted-foreground/70">{slip.slipType} · {slip.maxLength}′ L · {slip.maxBeam}′ B · {slip.maxDraft}′ D</span>
-                  {slip.hasWater && <span className="ml-1 text-xs text-muted-foreground/70">· Water</span>}
-                  {slip.hasElectric && <span className="ml-1 text-xs text-muted-foreground/70">· Electric {slip.electric}A</span>}
-                  {slip.defaultTransientBaseRate != null && (
-                    <span className="ml-1 text-xs text-blue-500">
-                      · T: ${slip.defaultTransientBaseRate}{slip.defaultTransientRateKind === 'PerFoot' ? '/ft' : ''}/night
-                    </span>
-                  )}
-                  {slip.defaultLeaseBaseRate != null && (
-                    <span className="ml-1 text-xs text-purple-500">
-                      · L: ${slip.defaultLeaseBaseRate}{slip.defaultLeaseRateKind === 'PerFoot' ? '/ft' : ''}/{slip.defaultLeaseTerm ?? 'lease'}
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-3 shrink-0 ml-3">
-                  <button onClick={() => setEditingSlipId(slip.id)} className="text-xs text-muted-foreground/70 hover:text-foreground">
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(slip.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">
-                    Remove
-                  </button>
+              <div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-sm font-medium text-foreground">{slip.name}</span>
+                    {slip.dockId && (
+                      <span className="ml-2 text-xs text-muted-foreground/70">
+                        {docks.find((d) => d.id === slip.dockId)?.name ?? 'Dock'}
+                      </span>
+                    )}
+                    <span className="ml-2 text-xs text-muted-foreground/70">{slip.slipType} · {slip.maxLength}′ L · {slip.maxBeam}′ B · {slip.maxDraft}′ D</span>
+                    {slip.hasWater && <span className="ml-1 text-xs text-muted-foreground/70">· Water</span>}
+                    {slip.hasElectric && <span className="ml-1 text-xs text-muted-foreground/70">· Electric {slip.electric}A</span>}
+                  </div>
+                  <div className="flex gap-3 shrink-0 ml-3">
+                    <button onClick={() => setEditingSlipId(slip.id)} className="text-xs text-muted-foreground/70 hover:text-foreground">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(slip.id)} className="text-xs text-muted-foreground/70 hover:text-red-500">
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -2474,6 +2370,7 @@ export function MarinaDashboardPage() {
     <div className="min-h-screen bg-background">
       <NavBar />
       <MarinaStatusBanner marina={marina} onUpdated={setMarina} />
+      <PricingComplianceBanner marinaId={marinaId} />
       <div className="max-w-4xl mx-auto py-10 px-4 space-y-6">
         <MarinaInfoPanel marina={marina} onSaved={setMarina} />
         <DocksPanel marinaId={marinaId} />
@@ -2489,6 +2386,42 @@ export function MarinaDashboardPage() {
         <PhotosPanel marinaId={marinaId} />
         <AnnouncementsPanel marinaId={marinaId} />
         <StaffPanel marinaId={marinaId} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Pricing compliance banner ───────────────────────────────────────────────
+
+function PricingComplianceBanner({ marinaId }: { marinaId: string }) {
+  const [hasDefault, setHasDefault] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    getPricingPlans(marinaId)
+      .then((plans) => setHasDefault(plans.some((p) => p.isDefault)))
+      .catch(() => setHasDefault(null));
+  }, [marinaId]);
+
+  if (hasDefault !== false) return null;
+
+  return (
+    <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-amber-500 text-lg">⚠</span>
+          <div>
+            <p className="text-sm font-medium text-amber-800">No default pricing plan</p>
+            <p className="text-xs text-amber-600 mt-0.5">
+              Slips cannot be listed on the marketplace until a default pricing plan is set.
+            </p>
+          </div>
+        </div>
+        <a
+          href={`/marina/${marinaId}/pricing`}
+          className="shrink-0 rounded-lg bg-amber-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-amber-700 transition-colors"
+        >
+          Set up pricing →
+        </a>
       </div>
     </div>
   );

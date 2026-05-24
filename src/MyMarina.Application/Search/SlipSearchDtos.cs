@@ -63,16 +63,11 @@ public sealed record SlipDetailDto(
     string MarinaName,
     string? MarinaDescription,
     string? MarinaPhoneNumber,
-    // Transient direct-booking rate (no window required)
-    string? DefaultTransientRateKind,   // "Flat" | "PerFoot" | null
-    decimal? DefaultTransientBaseRate,
-    decimal? DefaultTransientMinCharge,
-    bool TransientBookingAvailable,     // true when rate set + no conflicting assignment/reservation
-    // Lease default rate
-    string? DefaultLeaseRateKind,       // "Flat" | "PerFoot" | null
-    decimal? DefaultLeaseBaseRate,
-    string? DefaultLeaseTerm,           // "Monthly" | "Seasonal" | "Annual" | null
-    bool LeaseInquiryAvailable,         // true when lease rate set
+    // Resolved rates — cached from the assigned pricing plan, null = listing kind not supported.
+    decimal? ResolvedTransientBaseRate,
+    bool TransientBookingAvailable,
+    decimal? ResolvedLeaseBaseRate,
+    bool LeaseInquiryAvailable,
     IReadOnlyList<PublicWindowSummaryDto> OpenWindows
 );
 
