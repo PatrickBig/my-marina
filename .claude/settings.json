@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(dotnet test *)",
+      "Bash(dotnet build *)",
       "Bash(xargs ls *)",
       "Bash(openspec new *)",
       "Bash(openspec status *)",
@@ -9,9 +10,7 @@
       "Bash(xargs grep *)",
       "Bash(openspec list *)",
       "Bash(helm template *)",
-      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")",
-      "Bash(dotnet build)",
-      "Bash(dotnet test)"
+      "Bash(grep -E \"^\\(---$|# Source:|kind:|Error\\)\")"
     ]
   }
 }

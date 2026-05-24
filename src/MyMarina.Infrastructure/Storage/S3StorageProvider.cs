@@ -37,6 +37,7 @@ public sealed class S3StorageProvider : IStorageProvider, IDisposable
             InputStream = content,
             ContentType = contentType,
             AutoCloseStream = false,
+            UseChunkEncoding = false,
         };
         await _client.PutObjectAsync(request, ct);
     }
