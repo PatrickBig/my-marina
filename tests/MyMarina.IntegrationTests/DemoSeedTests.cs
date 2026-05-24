@@ -106,8 +106,8 @@ public class DemoSeedTests(ApiWebApplicationFactory factory)
 
         var demoClient = factory.CreateClientWithToken(session!.AccessToken);
         var response   = await demoClient.PostAsJsonAsync(
-            $"/marinas/{DemoSeedScript.SunsetBayId}/pricing/rules",
-            new { name = "Hacked rule", contributionKind = "Base" });
+            $"/marinas/{DemoSeedScript.SunsetBayId}/pricing/plans",
+            new { name = "Hacked plan", isDefault = false });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }

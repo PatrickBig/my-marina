@@ -131,7 +131,7 @@ public class PricingPlansController(
         {
             var result = await bulkAssign.HandleAsync(new BulkAssignPricingPlanCommand(
                 marinaId, userContext.UserId!.Value,
-                request.TargetPlanId,
+                request.PricingPlanId,
                 request.DockId,
                 request.MinLength, request.MaxLength,
                 request.MinBeam, request.MaxBeam,
@@ -172,7 +172,7 @@ public sealed record UpdatePlanRequest(
 );
 
 public sealed record BulkAssignRequest(
-    Guid TargetPlanId,
+    Guid PricingPlanId,
     Guid? DockId,
     decimal? MinLength,
     decimal? MaxLength,
