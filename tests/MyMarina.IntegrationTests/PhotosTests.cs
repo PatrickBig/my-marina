@@ -286,16 +286,16 @@ public class PhotosTests(ApiWebApplicationFactory factory)
         db.Tenants.Add(tenant);
         db.Marinas.Add(marina);
 
-        // Old orphan (no UrlFull, >1 hour old)
+        // Old orphan (no UrlFull, >5 hours old)
         var oldOrphan = new MarinaPhoto
         {
             MarinaId = marina.Id, TenantId = tenant.Id,
             Kind = MarinaPhotoKind.Gallery,
             StorageKey = $"test/orphan/old-{Guid.CreateVersion7()}.jpg",
-            UploadedAt = DateTimeOffset.UtcNow.AddHours(-2),
+            UploadedAt = DateTimeOffset.UtcNow.AddHours(-6),
             SortOrder = 0, FileSizeBytes = 100,
         };
-        // Recent orphan (no UrlFull, <1 hour old) — should be kept
+        // Recent orphan (no UrlFull, <5 hours old) — should be kept
         var recentOrphan = new MarinaPhoto
         {
             MarinaId = marina.Id, TenantId = tenant.Id,

@@ -9,13 +9,19 @@ namespace MyMarina.Infrastructure.Photos;
 
 public class DeletePhotoCommandHandler(
     AppDbContext db,
-    IBackgroundJobClient jobClient) : ICommandHandler<DeletePhotoCommand>
+    IBackgroundJobClient jobClient,
+    IUserContext userContext) : ICommandHandler<DeletePhotoCommand>
 {
     public async Task HandleAsync(DeletePhotoCommand command, CancellationToken ct = default)
     {
+        if (!userContext.HasMarinaAccess(command.MarinaId))
+            throw new UnauthorizedAccessException("You do not have access to this marina.");
+
         var photo = await db.MarinaPhotos
-            .FirstOrDefaultAsync(p => p.Id == command.PhotoId && p.MarinaId == command.MarinaId, ct)
-            ?? throw new KeyNotFoundException("Photo not found.");
+            .FirstOrDefaultAsync(p => p.Id == command.PhotoId && p.MarinaId == command.MarinaId, ct);
+
+        if (photo is null)
+            return;
 
         var storageKey = photo.StorageKey;
         db.MarinaPhotos.Remove(photo);

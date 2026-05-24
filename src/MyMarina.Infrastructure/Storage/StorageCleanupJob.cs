@@ -22,11 +22,21 @@ public class StorageCleanupJob(IStorageProvider storage, ILogger<StorageCleanupJ
             $"{keyWithoutExt}_full{ext}",
         };
 
+        int deletedCount = 0;
         foreach (var key in keysToDelete)
         {
-            await storage.DeleteAsync(key);
+            try
+            {
+                await storage.DeleteAsync(key);
+                deletedCount++;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "StorageCleanupJob: failed to delete object {Key}", key);
+            }
         }
 
-        logger.LogInformation("StorageCleanupJob: deleted {Count} objects for key {Key}", keysToDelete.Length, storageKey);
+        logger.LogInformation("StorageCleanupJob: deleted {DeletedCount}/{TotalCount} objects for key {Key}",
+            deletedCount, keysToDelete.Length, storageKey);
     }
 }

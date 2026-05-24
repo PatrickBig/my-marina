@@ -5,10 +5,13 @@ using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Photos;
 
-public class ReorderPhotoCommandHandler(AppDbContext db) : ICommandHandler<ReorderPhotoCommand>
+public class ReorderPhotoCommandHandler(AppDbContext db, IUserContext userContext) : ICommandHandler<ReorderPhotoCommand>
 {
     public async Task HandleAsync(ReorderPhotoCommand command, CancellationToken ct = default)
     {
+        if (!userContext.HasMarinaAccess(command.MarinaId))
+            throw new UnauthorizedAccessException("You do not have access to this marina.");
+
         var photo = await db.MarinaPhotos
             .FirstOrDefaultAsync(p => p.Id == command.PhotoId && p.MarinaId == command.MarinaId, ct)
             ?? throw new KeyNotFoundException("Photo not found.");

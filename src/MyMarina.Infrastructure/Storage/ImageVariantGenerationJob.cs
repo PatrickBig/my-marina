@@ -57,9 +57,18 @@ public class ImageVariantGenerationJob(
                 foreach (var (suffix, size) in SquareSizes)
                 {
                     var variantKey = $"{keyWithoutExt}{suffix}.{ext}";
-                    var bytes = CropSquare(bitmap, size, format);
-                    await SaveVariantAsync(variantKey, bytes, contentType);
-                    SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
+                    try
+                    {
+                        var bytes = CropSquare(bitmap, size, format);
+                        await SaveVariantAsync(variantKey, bytes, contentType);
+                        SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "ImageVariantGenerationJob: failed to generate {Size}x{Size} variant for photo {PhotoId} key {Key}",
+                            size, size, photoId, variantKey);
+                        throw;
+                    }
                 }
             }
             else
@@ -67,9 +76,18 @@ public class ImageVariantGenerationJob(
                 foreach (var (suffix, width) in LandscapeWidths)
                 {
                     var variantKey = $"{keyWithoutExt}{suffix}.{ext}";
-                    var bytes = ResizeMaxWidth(bitmap, width, format);
-                    await SaveVariantAsync(variantKey, bytes, contentType);
-                    SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
+                    try
+                    {
+                        var bytes = ResizeMaxWidth(bitmap, width, format);
+                        await SaveVariantAsync(variantKey, bytes, contentType);
+                        SetVariantUrl(photo, suffix, storage.GetPublicUrl(variantKey));
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "ImageVariantGenerationJob: failed to generate {Width}px variant for photo {PhotoId} key {Key}",
+                            width, photoId, variantKey);
+                        throw;
+                    }
                 }
             }
         }
