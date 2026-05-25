@@ -167,6 +167,129 @@ public class ActivateUserCommandHandler(
     }
 }
 
+public class ChangeUserEmailCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    AppDbContext db,
+    IUserContext user)
+    : ICommandHandler<ChangeUserEmailCommand>
+{
+    public async Task HandleAsync(ChangeUserEmailCommand command, CancellationToken ct = default)
+    {
+        var appUser = await userManager.FindByIdAsync(command.TargetUserId.ToString())
+            ?? throw new KeyNotFoundException("User not found.");
+
+        var oldEmail = appUser.Email;
+
+        var existingUser = await userManager.FindByEmailAsync(command.NewEmail);
+        if (existingUser != null && existingUser.Id != appUser.Id)
+            throw new InvalidOperationException("Email already in use.");
+
+        appUser.Email = command.NewEmail;
+        appUser.UserName = command.NewEmail;
+        appUser.EmailConfirmed = true;
+
+        var result = await userManager.UpdateAsync(appUser);
+        if (!result.Succeeded)
+            throw new InvalidOperationException("Failed to update user email.");
+
+        db.AuditLogs.Add(new AuditLog
+        {
+            ActorUserId = user.UserId,
+            Action = "user.email_changed",
+            TargetType = "User",
+            TargetId = command.TargetUserId.ToString(),
+            Details = $"Changed email from {oldEmail} to {command.NewEmail}",
+        });
+
+        await db.SaveChangesAsync(ct);
+    }
+}
+
+public class ChangeUserNameCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    AppDbContext db,
+    IUserContext user)
+    : ICommandHandler<ChangeUserNameCommand>
+{
+    public async Task HandleAsync(ChangeUserNameCommand command, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(command.FirstName) && string.IsNullOrWhiteSpace(command.LastName))
+            throw new InvalidOperationException("At least one of FirstName or LastName must be provided.");
+
+        var appUser = await userManager.FindByIdAsync(command.TargetUserId.ToString())
+            ?? throw new KeyNotFoundException("User not found.");
+
+        if (!string.IsNullOrWhiteSpace(command.FirstName))
+        {
+            var oldFirstName = appUser.FirstName;
+            appUser.FirstName = command.FirstName;
+
+            db.AuditLogs.Add(new AuditLog
+            {
+                ActorUserId = user.UserId,
+                Action = "user.first_name_changed",
+                TargetType = "User",
+                TargetId = command.TargetUserId.ToString(),
+                Details = $"Changed first name from {oldFirstName} to {command.FirstName}",
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(command.LastName))
+        {
+            var oldLastName = appUser.LastName;
+            appUser.LastName = command.LastName;
+
+            db.AuditLogs.Add(new AuditLog
+            {
+                ActorUserId = user.UserId,
+                Action = "user.last_name_changed",
+                TargetType = "User",
+                TargetId = command.TargetUserId.ToString(),
+                Details = $"Changed last name from {oldLastName} to {command.LastName}",
+            });
+        }
+
+        var result = await userManager.UpdateAsync(appUser);
+        if (!result.Succeeded)
+            throw new InvalidOperationException("Failed to update user name.");
+
+        await db.SaveChangesAsync(ct);
+    }
+}
+
+public class InitiatePasswordResetCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    AppDbContext db,
+    IUserContext user,
+    IEmailService emailService)
+    : ICommandHandler<InitiatePasswordResetCommand>
+{
+    public async Task HandleAsync(InitiatePasswordResetCommand command, CancellationToken ct = default)
+    {
+        var appUser = await userManager.FindByIdAsync(command.TargetUserId.ToString())
+            ?? throw new KeyNotFoundException("User not found.");
+
+        var now = DateTimeOffset.UtcNow;
+        await db.RefreshTokens
+            .Where(t => t.UserId == command.TargetUserId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
+
+        db.AuditLogs.Add(new AuditLog
+        {
+            ActorUserId = user.UserId,
+            Action = "user.password_reset_requested",
+            TargetType = "User",
+            TargetId = command.TargetUserId.ToString(),
+            Details = "Password reset initiated by operator",
+        });
+
+        await db.SaveChangesAsync(ct);
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(appUser);
+        await emailService.SendPasswordResetAsync(appUser.Email!, appUser.Id.ToString(), token, ct);
+    }
+}
+
 public class RemoveListingCommandHandler(AppDbContext db, IUserContext user)
     : ICommandHandler<RemoveListingCommand>
 {

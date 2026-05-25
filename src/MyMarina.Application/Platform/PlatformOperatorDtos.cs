@@ -55,3 +55,56 @@ public record PagedResult<T>(
     int TotalCount,
     int Page,
     int PageSize);
+
+public record UserProfileDto(
+    UserSummaryDto User,
+    List<VesselSummaryDto> Vessels,
+    List<ReservationSummaryDto> Reservations,
+    List<MembershipSummaryDto> Memberships,
+    List<AuditLogEntryDto> RecentActivity);
+
+public record VesselSummaryDto(
+    Guid Id,
+    string Name,
+    string? Make,
+    string? Model,
+    int? Year,
+    decimal Length,
+    decimal Beam,
+    decimal Draft,
+    string BoatType,
+    string? HullColor,
+    string? RegistrationNumber,
+    string? RegistrationState,
+    bool IsArchived,
+    DateTimeOffset CreatedAt);
+
+public record ReservationSummaryDto(
+    Guid Id,
+    Guid VesselId,
+    string VesselName,
+    Guid SlipId,
+    string SlipName,
+    Guid MarinaId,
+    string MarinaName,
+    DateTimeOffset ArrivesAt,
+    DateTimeOffset DepartsAt,
+    string Status,
+    decimal BasePrice,
+    decimal Fees,
+    decimal Taxes,
+    decimal Total,
+    DateTimeOffset RequestedAt,
+    DateTimeOffset? ConfirmedAt,
+    DateTimeOffset? CancelledAt);
+
+public record MembershipSummaryDto(
+    Guid Id,
+    Guid UserId,
+    Guid TenantId,
+    Guid? MarinaId,
+    string Scope,
+    string Role,
+    DateTimeOffset InvitedAt,
+    DateTimeOffset? AcceptedAt,
+    bool IsPending);

@@ -4852,6 +4852,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserProfileDto"];
+                        "application/json": components["schemas"]["UserProfileDto"];
+                        "text/json": components["schemas"]["UserProfileDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/users/{userId}/force-signout": {
         parameters: {
             query?: never;
@@ -4961,6 +5000,123 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/platform/users/{userId}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangeEmailBody"];
+                    "text/json": components["schemas"]["ChangeEmailBody"];
+                    "application/*+json": components["schemas"]["ChangeEmailBody"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/users/{userId}/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangeNameBody"];
+                    "text/json": components["schemas"]["ChangeNameBody"];
+                    "application/*+json": components["schemas"]["ChangeNameBody"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/platform/users/{userId}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/platform/audit-log": {
@@ -7296,7 +7452,7 @@ export interface components {
         BillingAccountRole: number;
         BulkAssignRequest: {
             /** Format: uuid */
-            targetPlanId: string;
+            pricingPlanId: string;
             /** Format: uuid */
             dockId: null | string;
             /** Format: double */
@@ -7316,6 +7472,13 @@ export interface components {
         BulkAssignResultDto: {
             /** Format: int32 */
             assignedCount: number | string;
+        };
+        ChangeEmailBody: {
+            newEmail: string;
+        };
+        ChangeNameBody: {
+            firstName: null | string;
+            lastName: null | string;
         };
         ChangePasswordRequest: {
             currentPassword: string;
