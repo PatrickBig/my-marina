@@ -108,15 +108,15 @@ setupJob:
     ownerEmail: patrick@biglernet.com
     ownerPassword: "Testpasswordhotdate1!"
 
-# --- Object storage (Cloudflare R2 / S3-compatible) ---
-# Non-sensitive config lives here; credentials are injected via --set from CI secrets.
-storage:
-  s3:
-    endpoint: ""            # e.g. https://<account-id>.r2.cloudflarestorage.com
-    region: "auto"          # "auto" for Cloudflare R2; specific region for AWS S3
-    bucket: ""              # bucket name for this environment
-    bucketPublicBaseUrl: "" # public base URL for served assets, e.g. https://storage.mymarina.org
-    maxFileSizeBytes: 20971520  # 20 MB
+# --- ConfigMap: Application Configuration ---
+# Non-sensitive app config (storage, feature flags, etc.)
+configMap:
+  data:
+    Storage__S3__Endpoint: ""                    # e.g. https://<account-id>.r2.cloudflarestorage.com
+    Storage__S3__Region: "auto"                  # "auto" for Cloudflare R2; specific region for AWS S3
+    Storage__S3__Bucket: ""                      # bucket name for this environment
+    Storage__S3__BucketPublicBaseUrl: ""         # public base URL for served assets
+    Storage__S3__MaxFileSizeBytes: "20971520"    # 20 MB (always a string in ConfigMap)
 
 # --- Service Account ---
 serviceAccount:

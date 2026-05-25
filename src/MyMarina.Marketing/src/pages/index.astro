@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import FeaturesSection from '../components/FeaturesSection.astro';
-import ScreenshotsSection from '../components/ScreenshotsSection.astro';
+import { ScreenshotsSection } from '../components/ScreenshotsSection.tsx';
 import { HeroSection } from '../components/HeroSection';
 import { PricingSection } from '../components/PricingSection';
 import { ContactSection } from '../components/ContactSection';
@@ -18,7 +18,7 @@ import { ContactSection } from '../components/ContactSection';
   <FeaturesSection />
 
   <!-- Screenshots -->
-  <ScreenshotsSection />
+  <ScreenshotsSection client:load />
 
   <!-- Pricing table (fetches live capability list from API) -->
   <PricingSection client:load />
