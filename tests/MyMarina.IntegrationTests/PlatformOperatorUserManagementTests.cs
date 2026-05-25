@@ -334,7 +334,7 @@ public class PlatformOperatorUserManagementTests(ApiWebApplicationFactory factor
 
         Assert.NotNull(auditEntry);
         Assert.Equal(_platformOperator.Id, auditEntry.ActorUserId);
-        Assert.DoesNotContain("password", auditEntry.Details?.ToLower() ?? ""); // No password/token in log
+        Assert.Equal("Password reset initiated by operator", auditEntry.Details);
     }
 
     #endregion
