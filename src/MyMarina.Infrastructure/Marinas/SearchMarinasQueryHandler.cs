@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Marinas;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Marinas;
@@ -31,7 +32,15 @@ public class SearchMarinasQueryHandler(AppDbContext db)
                 m.Name,
                 m.AddressCity,
                 m.AddressState,
-                m.MarinaType.ToString()))
+                m.MarinaType.ToString(),
+                m.Photos
+                    .Where(p => p.Kind == MarinaPhotoKind.Logo)
+                    .Select(p => p.UrlThumbnail)
+                    .FirstOrDefault(),
+                m.Photos
+                    .Where(p => p.Kind == MarinaPhotoKind.Banner)
+                    .Select(p => p.UrlMedium)
+                    .FirstOrDefault()))
             .ToListAsync(ct);
 
         return results;

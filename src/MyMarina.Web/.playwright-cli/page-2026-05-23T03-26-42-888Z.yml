@@ -1,0 +1,176 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "MyMarina, home" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img [ref=e7]
+        - generic [ref=e9]: MyMarina
+      - navigation "Primary" [ref=e10]:
+        - link "Find a slip" [ref=e11] [cursor=pointer]:
+          - /url: /search
+        - link "My trips" [ref=e12] [cursor=pointer]:
+          - /url: /trips
+        - link "My slips" [ref=e13] [cursor=pointer]:
+          - /url: /my-slips
+        - link "My boats" [ref=e14] [cursor=pointer]:
+          - /url: /boats
+        - link "Maintenance" [ref=e15] [cursor=pointer]:
+          - /url: /maintenance
+        - link "Invoices" [ref=e16] [cursor=pointer]:
+          - /url: /invoices
+        - link "My Marina" [ref=e17] [cursor=pointer]:
+          - /url: /marina/019e52db-bfee-7263-8598-a5a5cab018b7
+      - generic [ref=e18]:
+        - button "Notifications" [ref=e19] [cursor=pointer]:
+          - img [ref=e20]
+        - button "Walk" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: WT
+          - generic [ref=e25]: Walk
+          - img [ref=e26]
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]: 🚧
+      - generic [ref=e32]:
+        - paragraph [ref=e33]: Setup not complete
+        - paragraph [ref=e34]: Your marina is in draft mode and not visible to boaters.
+    - link "Continue setup →" [ref=e35] [cursor=pointer]:
+      - /url: /marina/019e52db-bfee-7263-8598-a5a5cab018b7/setup
+  - generic [ref=e36]:
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - heading "Walkthrough Marina" [level=2] [ref=e40]
+        - paragraph [ref=e41]: Commercial · UTC
+        - paragraph [ref=e42]: ⚠ No location set — slips won't appear in search
+      - button "Edit" [ref=e43]
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - heading "Docks" [level=2] [ref=e46]
+        - button "+ Add dock" [ref=e47]
+      - list [ref=e117]:
+        - listitem [ref=e118]:
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - text: Test Dock
+              - generic [ref=e121]: "#0"
+            - generic [ref=e122]:
+              - button "Edit" [ref=e123]
+              - button "Remove" [ref=e124]
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - heading "Slips" [level=2] [ref=e51]
+        - button "+ Add slip" [ref=e52]
+      - list [ref=e125]:
+        - listitem [ref=e126]:
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - generic [ref=e129]:
+                - text: A-1Test Dock
+                - generic [ref=e130]: Floating · 40′ L · 14′ B · 6′ D
+              - generic [ref=e131]:
+                - button "Hide adjustments" [active] [ref=e143]
+                - button "Edit" [ref=e133]
+                - button "Remove" [ref=e134]
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - heading "Slip Price Adjustments" [level=3] [ref=e148]
+                  - paragraph [ref=e149]: Named deltas applied on top of the marina's pricing rules for this specific slip.
+                - button "+ Add adjustment" [ref=e150]
+              - generic [ref=e151]:
+                - generic [ref=e152]: Transient
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Premium waterfront view
+                  - generic [ref=e156]:
+                    - generic [ref=e157]: +$75.00
+                    - button "Edit" [ref=e158]
+                    - button "Delete" [ref=e159]
+    - generic [ref=e54]:
+      - generic [ref=e55]:
+        - heading "Billing Accounts" [level=2] [ref=e56]
+        - button "+ Add account" [ref=e57]
+      - paragraph [ref=e58]: No billing accounts yet.
+      - list
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Slip Assignments" [level=2] [ref=e61]
+        - button "+ New assignment" [ref=e62]
+      - paragraph [ref=e63]: No active assignments.
+      - list
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - heading "Marketplace Listings" [level=2] [ref=e66]
+        - button "+ New listing window" [ref=e67]
+      - paragraph [ref=e68]: No listing windows yet. Create one to accept transient bookings.
+      - list
+    - generic [ref=e69]:
+      - heading "Holder Absences & Sublet Opportunities" [level=2] [ref=e70]
+      - paragraph [ref=e135]: No holder absences reported yet.
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - heading "Reservation Inbox" [level=2] [ref=e74]
+        - combobox [ref=e75]:
+          - option "All statuses" [selected]
+          - option "Pending approval"
+          - option "Pending host approval"
+          - option "Confirmed"
+          - option "Declined"
+          - option "Cancelled"
+          - option "Completed"
+      - paragraph [ref=e136]: No reservations found.
+    - generic [ref=e77]:
+      - generic [ref=e78]:
+        - heading "Lease Inquiries" [level=2] [ref=e79]
+        - combobox [ref=e80]:
+          - option "All statuses" [selected]
+          - option "Pending"
+          - option "Under Review"
+          - option "Approved"
+          - option "Declined"
+          - option "Withdrawn"
+      - paragraph [ref=e137]: No lease inquiries yet.
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - heading "Invoices" [level=2] [ref=e84]
+        - generic [ref=e85]:
+          - combobox [ref=e86]:
+            - option "All statuses" [selected]
+            - option "Draft"
+            - option "Sent"
+            - option "Partially paid"
+            - option "Paid"
+            - option "Overdue"
+            - option "Voided"
+          - button "+ New invoice" [ref=e87]
+      - paragraph [ref=e138]: No invoices found.
+      - list
+    - generic [ref=e89]:
+      - heading "Maintenance" [level=2] [ref=e90]
+      - generic [ref=e91]:
+        - button "Requests (0)" [ref=e92]
+        - button "Work Orders (0)" [ref=e93]
+      - paragraph [ref=e94]: No maintenance requests.
+    - generic [ref=e95]:
+      - heading "Photos" [level=2] [ref=e96]
+      - generic [ref=e97]:
+        - button "Logo" [ref=e98]
+        - button "Banner" [ref=e99]
+        - button "Gallery" [ref=e100]
+        - button "Aerial" [ref=e101]
+        - button "Approach" [ref=e102]
+      - generic [ref=e103]:
+        - generic [ref=e104]: No logo
+        - button "Upload logo" [ref=e105]
+        - paragraph [ref=e106]: "Square image, 1:1 ratio (±10%). Recommended: 512×512px or larger."
+    - generic [ref=e107]:
+      - generic [ref=e108]:
+        - heading "Announcements" [level=2] [ref=e109]
+        - button "New announcement" [ref=e110]
+      - paragraph [ref=e111]: No announcements yet.
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - heading "Staff" [level=2] [ref=e114]
+        - button "+ Invite" [ref=e115]
+      - list [ref=e139]:
+        - listitem [ref=e140]:
+          - generic [ref=e141]: walkthrough@test.localOwner
+          - button "Remove" [ref=e142]

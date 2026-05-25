@@ -1,0 +1,9 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: Demo — read-only preview
+    - generic [ref=e5]:
+      - link "Sign up free →" [ref=e6] [cursor=pointer]:
+        - /url: https://mymarina.org/register
+      - link "Back to mymarina.org" [ref=e7] [cursor=pointer]:
+        - /url: https://mymarina.org
+  - generic [ref=e8]: Loading…

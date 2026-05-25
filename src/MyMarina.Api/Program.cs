@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMarina.Infrastructure;
 using MyMarina.Infrastructure.Invoicing;
+using MyMarina.Infrastructure.Pricing;
+using MyMarina.Infrastructure.Storage;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Setup;
 using Scalar.AspNetCore;
@@ -38,8 +40,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Controllers + OpenAPI ---
 builder.Services.AddControllers(options =>
-    options.Filters.AddService<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>());
+    options.Filters.AddService<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>())
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddScoped<MyMarina.Api.Infrastructure.DemoWriteBlockFilter>();
+// Set the multipart ceiling to 5× the configured app limit so the controller's
+// explicit 413 check fires before the middleware hard-rejects with 400.
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+    o.MultipartBodyLengthLimit = builder.Configuration.GetValue<long>("Storage:S3:MaxFileSizeBytes", 20_971_520) * 5);
 builder.Services.AddOpenApi();
 
 // --- Infrastructure (EF Core, Identity, Redis, Hangfire, user context) ---
@@ -186,6 +194,12 @@ static void RegisterRecurringJobs(IRecurringJobManager jobs)
         "invoice-overdue-check",
         job => job.CheckOverdueAsync(),
         Cron.Daily(2));
+    jobs.AddOrUpdate<OrphanPhotoCleanupJob>(
+        "orphan-photo-cleanup",
+        "photos",
+        job => job.ExecuteAsync(),
+        Cron.Daily(3),
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 }
 
 public partial class Program;

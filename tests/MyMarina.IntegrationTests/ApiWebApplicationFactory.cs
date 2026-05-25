@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using MyMarina.Application.Abstractions;
 using MyMarina.Infrastructure.Email;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
+using MyMarina.Infrastructure.Storage;
 using Testcontainers.PostgreSql;
 
 namespace MyMarina.IntegrationTests;
@@ -76,10 +78,21 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Hangfire:UseRedis"]          = "false",
-                ["ConnectionStrings:Postgres"] = _postgres.GetConnectionString(),
-                ["ConnectionStrings:Redis"]    = "localhost:6379,abortConnect=false",
-                ["Email:RequireConfirmedEmail"] = "false",
+                ["Hangfire:UseRedis"]           = "false",
+                ["ConnectionStrings:Postgres"]  = _postgres.GetConnectionString(),
+                ["ConnectionStrings:Redis"]     = "localhost:6379,abortConnect=false",
+                ["Email:RequireConfirmedEmail"]  = "false",
+                // Storage:Provider must be "S3" so InfrastructureServiceExtensions registers
+                // IStorageProvider, but we immediately replace it with InMemoryStorageProvider below.
+                ["Storage:Provider"]            = "S3",
+                ["Storage:S3:Endpoint"]         = "http://localhost:4566",
+                ["Storage:S3:Bucket"]           = "mymarina-test",
+                ["Storage:S3:AccessKey"]        = "test",
+                ["Storage:S3:SecretKey"]        = "test",
+                ["Storage:S3:BucketPublicBaseUrl"] = "http://localhost/test-storage",
+                // 100 KB — large enough for solid-color test JPEGs, small enough
+                // that the 200 KB oversized test triggers the controller's 413 check.
+                ["Storage:S3:MaxFileSizeBytes"] = "102400",
             });
         });
 
@@ -87,6 +100,15 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             services.RemoveAll<IEmailService>();
             services.AddScoped<IEmailService, NullEmailService>();
+
+            // Program.cs sets MultipartBodyLengthLimit = MaxFileSizeBytes (100 KB).
+            // Raise it here so oversized bodies reach the controller and get 413,
+            // rather than being rejected by the middleware with 400.
+            services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 10_485_760L);
+
+            // Replace S3StorageProvider with the in-memory test double.
+            services.RemoveAll<IStorageProvider>();
+            services.AddSingleton<IStorageProvider, InMemoryStorageProvider>();
 
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));

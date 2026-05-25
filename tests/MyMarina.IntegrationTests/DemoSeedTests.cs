@@ -42,6 +42,8 @@ public class DemoSeedTests(ApiWebApplicationFactory factory)
         Assert.True(await db.MaintenanceRequests.AnyAsync(r => r.MarinaId == DemoSeedScript.SunsetBayId),    "MaintenanceRequest");
         Assert.True(await db.WorkOrders.AnyAsync(w => w.MarinaId == DemoSeedScript.SunsetBayId),             "WorkOrder");
         Assert.True(await db.Announcements.AnyAsync(a => a.MarinaId == DemoSeedScript.SunsetBayId),          "Announcement");
+        Assert.True(await db.MarinaPhotos.AnyAsync(p => p.MarinaId == DemoSeedScript.SunsetBayId),            "MarinaPhoto");
+        Assert.True(await db.PricingPlans.AnyAsync(p => p.MarinaId == DemoSeedScript.SunsetBayId),            "PricingPlan");
     }
 
     [Fact]
@@ -88,6 +90,24 @@ public class DemoSeedTests(ApiWebApplicationFactory factory)
         {
             name = "Hacked Vessel", length = 30, beam = 10, draft = 3, boatType = "Powerboat"
         });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DemoSession_PricingRuleWrite_Returns403()
+    {
+        await EnsureSeeded();
+
+        var anonClient  = factory.CreateClient();
+        var sessionResp = await anonClient.PostAsync("/demo/session", null);
+        var session     = await sessionResp.Content.ReadFromJsonAsync<DemoSessionBody>();
+        Assert.NotNull(session?.AccessToken);
+
+        var demoClient = factory.CreateClientWithToken(session!.AccessToken);
+        var response   = await demoClient.PostAsJsonAsync(
+            $"/marinas/{DemoSeedScript.SunsetBayId}/pricing/plans",
+            new { name = "Hacked plan", isDefault = false });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }

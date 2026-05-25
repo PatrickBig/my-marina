@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Marinas;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Marinas;
@@ -36,8 +37,15 @@ public class GetMyMarinasQueryHandler(AppDbContext db, IUserContext userContext)
             .Where(m => allMarinaIds.Contains(m.Id))
             .ToListAsync(ct);
 
+        var logoUrls = await db.MarinaPhotos
+            .Where(p => allMarinaIds.Contains(p.MarinaId) && p.Kind == MarinaPhotoKind.Logo)
+            .Select(p => new { p.MarinaId, p.UrlThumbnail })
+            .ToDictionaryAsync(p => p.MarinaId, p => p.UrlThumbnail, ct);
+
         foreach (var m in marinas)
         {
+            logoUrls.TryGetValue(m.Id, out var logoUrl);
+
             // Staff membership takes priority over billing account
             var staffEntry = staffMarinaIds.FirstOrDefault(x => x.MarinaId == m.Id);
             if (staffEntry != default)
@@ -55,7 +63,8 @@ public class GetMyMarinasQueryHandler(AppDbContext db, IUserContext userContext)
                     Latitude: m.Latitude,
                     Longitude: m.Longitude,
                     UserRole: staffEntry.Role,
-                    RelationshipKind: "Staff"
+                    RelationshipKind: "Staff",
+                    LogoUrl: logoUrl
                 );
             }
             else
@@ -74,7 +83,8 @@ public class GetMyMarinasQueryHandler(AppDbContext db, IUserContext userContext)
                     Latitude: m.Latitude,
                     Longitude: m.Longitude,
                     UserRole: billingEntry.Role,
-                    RelationshipKind: "BillingAccount"
+                    RelationshipKind: "BillingAccount",
+                    LogoUrl: logoUrl
                 );
             }
         }

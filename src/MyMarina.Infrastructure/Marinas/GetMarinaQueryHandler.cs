@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Marinas;
+using MyMarina.Domain.Enums;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Marinas;
@@ -14,8 +15,19 @@ public class GetMarinaQueryHandler(AppDbContext db)
         // The controller already enforces HasMarinaAccess() before calling this handler.
         var marina = await db.Marinas
             .IgnoreQueryFilters()
+            .Include(m => m.Photos)
             .FirstOrDefaultAsync(m => m.Id == query.MarinaId, ct)
             ?? throw new KeyNotFoundException("Marina not found.");
-        return MarinaMappers.ToMarinaDto(marina);
+
+        var logoUrl = marina.Photos
+            .Where(p => p.Kind == MarinaPhotoKind.Logo)
+            .Select(p => p.UrlThumbnail)
+            .FirstOrDefault();
+        var bannerUrl = marina.Photos
+            .Where(p => p.Kind == MarinaPhotoKind.Banner)
+            .Select(p => p.UrlMedium)
+            .FirstOrDefault();
+
+        return MarinaMappers.ToMarinaDto(marina, logoUrl, bannerUrl);
     }
 }

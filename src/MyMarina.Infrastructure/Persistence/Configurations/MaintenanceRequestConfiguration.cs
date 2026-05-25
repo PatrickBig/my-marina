@@ -26,6 +26,8 @@ public class MaintenanceRequestConfiguration : IEntityTypeConfiguration<Maintena
                .HasForeignKey<WorkOrder>(w => w.MaintenanceRequestId)
                .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasQueryFilter(r => r.Marina.IsSetupComplete);
+
         builder.HasIndex(r => r.MarinaId);
         builder.HasIndex(r => r.BoaterUserId);
         builder.HasIndex(r => new { r.MarinaId, r.Status });

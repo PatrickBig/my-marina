@@ -19,6 +19,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 EXPOSE 8080
 
+# SkiaSharp requires fontconfig
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        fontconfig \
+        libgdiplus \
+    && rm -rf /var/lib/apt/lists/*
+
 # Non-root user
 RUN groupadd --system --gid 1001 appgroup \
  && useradd  --system --uid 1001 --gid appgroup appuser

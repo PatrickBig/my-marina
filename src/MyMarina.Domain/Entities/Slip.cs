@@ -34,16 +34,14 @@ public class Slip
     public string? AddressZip { get; set; }
     public string? AddressCountry { get; set; }
 
-    // Transient default rate — when set, slip is implicitly available for transient booking
-    // any time it has no active SlipAssignment or confirmed Reservation.
-    public RateKind? DefaultTransientRateKind { get; set; }   // null = not listed for transient
-    public decimal? DefaultTransientBaseRate { get; set; }
-    public decimal? DefaultTransientMinCharge { get; set; }
+    // Explicit plan assignment — null means use the marina's default pricing plan.
+    public Guid? PricingPlanId { get; set; }
+    public PricingPlan? PricingPlan { get; set; }
 
-    // Lease default rate — when set, slip appears in lease searches.
-    public RateKind? DefaultLeaseRateKind { get; set; }       // null = not listed for lease
-    public decimal? DefaultLeaseBaseRate { get; set; }
-    public LeaseTerm? DefaultLeaseTerm { get; set; }
+    // Cached resolved prices — recomputed by Hangfire when plan rates or assignment changes.
+    // null = plan does not support that listing kind.
+    public decimal? ResolvedTransientBaseRate { get; set; }
+    public decimal? ResolvedLeaseBaseRate { get; set; }
 
     public string? Notes { get; set; }
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;

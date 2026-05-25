@@ -89,8 +89,7 @@ public class MarinaRollupSearchTests(ApiWebApplicationFactory factory)
             }
             else
             {
-                slip.DefaultTransientRateKind = rateKind == "Flat" ? RateKind.Flat : RateKind.PerFoot;
-                slip.DefaultTransientBaseRate = flatRate ?? 3000m + i * 100m;
+                slip.ResolvedTransientBaseRate = flatRate ?? 3000m + i * 100m;
             }
 
             db.Slips.Add(slip);

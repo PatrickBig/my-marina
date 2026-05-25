@@ -16,6 +16,8 @@ public class InvoiceLineItemConfiguration : IEntityTypeConfiguration<InvoiceLine
         builder.Property(l => l.UnitPrice).HasColumnType("numeric(18,2)");
         builder.Property(l => l.LineTotal).HasColumnType("numeric(18,2)");
 
+        builder.HasQueryFilter(l => l.Invoice.Marina.IsSetupComplete);
+
         builder.HasIndex(l => l.InvoiceId);
     }
 }

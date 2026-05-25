@@ -30,6 +30,14 @@ public class UpdateMarinaCommandHandler(AppDbContext db)
         if (command.TimeZoneId is not null) marina.TimeZoneId = command.TimeZoneId;
         if (command.SetupStep.HasValue) marina.SetupStep = command.SetupStep.Value;
         if (command.IsSetupComplete.HasValue) marina.IsSetupComplete = command.IsSetupComplete.Value;
+        if (command.IsListed is true)
+        {
+            var hasDefaultPlan = await db.PricingPlans
+                .IgnoreQueryFilters()
+                .AnyAsync(p => p.MarinaId == command.MarinaId && p.IsDefault, ct);
+            if (!hasDefaultPlan)
+                throw new InvalidOperationException("A default pricing plan is required before listing on the marketplace.");
+        }
         if (command.IsListed.HasValue) marina.IsListed = command.IsListed.Value;
         marina.UpdatedAt = DateTimeOffset.UtcNow;
 

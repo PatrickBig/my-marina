@@ -14,7 +14,7 @@ internal static class MarinaMappers
         CreatedAt: t.CreatedAt
     );
 
-    internal static MarinaDto ToMarinaDto(Marina m) => new(
+    internal static MarinaDto ToMarinaDto(Marina m, string? logoUrl = null, string? bannerThumbnailUrl = null) => new(
         Id: m.Id,
         TenantId: m.TenantId,
         Name: m.Name,
@@ -35,7 +35,9 @@ internal static class MarinaMappers
         IsListed: m.IsListed,
         IsSetupComplete: m.IsSetupComplete,
         SetupStep: m.SetupStep,
-        CreatedAt: m.CreatedAt
+        CreatedAt: m.CreatedAt,
+        LogoUrl: logoUrl,
+        BannerThumbnailUrl: bannerThumbnailUrl
     );
 
     internal static DockDto ToDockDto(Dock d) => new(
@@ -64,12 +66,9 @@ internal static class MarinaMappers
         IsIndoor: s.IsIndoor,
         Amenities: s.Amenities.AsReadOnly(),
         Status: s.Status.ToString(),
-        DefaultTransientRateKind: s.DefaultTransientRateKind?.ToString(),
-        DefaultTransientBaseRate: s.DefaultTransientBaseRate,
-        DefaultTransientMinCharge: s.DefaultTransientMinCharge,
-        DefaultLeaseRateKind: s.DefaultLeaseRateKind?.ToString(),
-        DefaultLeaseBaseRate: s.DefaultLeaseBaseRate,
-        DefaultLeaseTerm: s.DefaultLeaseTerm?.ToString(),
+        ResolvedTransientBaseRate: s.ResolvedTransientBaseRate,
+        ResolvedLeaseBaseRate: s.ResolvedLeaseBaseRate,
+        PricingPlanId: s.PricingPlanId,
         Notes: s.Notes,
         CreatedAt: s.CreatedAt
     );

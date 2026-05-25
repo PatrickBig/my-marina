@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(dotnet test *)",
+      "Bash(dotnet build *)",
       "Bash(xargs ls *)",
       "Bash(openspec new *)",
       "Bash(openspec status *)",

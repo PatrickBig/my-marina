@@ -88,6 +88,10 @@ public class DemoSeedScript(
     static readonly Guid Announce2Id = new("d0000000-0000-0000-0000-0000000000d1");
     static readonly Guid Announce3Id = new("d0000000-0000-0000-0000-0000000000d2");
 
+    static readonly Guid PlanStandardId = new("d0000000-0000-0000-0000-0000000000f1");
+    static readonly Guid PlanPremiumId  = new("d0000000-0000-0000-0000-0000000000f2");
+    static readonly Guid PlanLeaseId    = new("d0000000-0000-0000-0000-0000000000f3");
+
     // ─────────────────────────────────────────────────────────────────────────
 
     public async Task SeedAsync(CancellationToken ct = default)
@@ -267,18 +271,58 @@ public class DemoSeedScript(
             new Dock { Id = DockHVId, MarinaId = HarborViewId, Name = "Transient Dock", Description = "Premium transient slips with mixed rate options" }
         );
 
+        // ── Pricing Plans (must be saved before slips that reference them) ────
+        db.PricingPlans.AddRange(
+            new PricingPlan
+            {
+                Id = PlanStandardId, MarinaId = SunsetBayId, TenantId = TenantId,
+                Name = "Standard", IsDefault = true,
+                TransientRateKind = RateKind.PerFoot, TransientAmount = 3.50m, TransientMinCharge = 80m,
+                LeaseRateKind = RateKind.PerFoot, LeaseAmount = 110m, LeaseMinCharge = 2000m,
+                AmenityAddOns =
+                [
+                    new AmenityAddOn { Amenity = PlanAmenity.Electric30A, TransientAmount = 10m, LeaseAmount = 75m },
+                    new AmenityAddOn { Amenity = PlanAmenity.Electric50A, TransientAmount = 15m, LeaseAmount = 120m },
+                    new AmenityAddOn { Amenity = PlanAmenity.HasPumpOut, TransientAmount = 5m, LeaseAmount = 30m },
+                ],
+            },
+            new PricingPlan
+            {
+                Id = PlanPremiumId, MarinaId = SunsetBayId, TenantId = TenantId,
+                Name = "Premium (PerArea)", IsDefault = false,
+                TransientRateKind = RateKind.PerArea, TransientAmount = 0.18m, TransientMinCharge = 150m,
+                LeaseRateKind = RateKind.PerArea, LeaseAmount = 5.50m, LeaseMinCharge = 3500m,
+                AmenityAddOns =
+                [
+                    new AmenityAddOn { Amenity = PlanAmenity.Covered, TransientAmount = 20m, LeaseAmount = 150m },
+                    new AmenityAddOn { Amenity = PlanAmenity.Electric50A, TransientAmount = 18m, LeaseAmount = 140m },
+                ],
+            },
+            new PricingPlan
+            {
+                Id = PlanLeaseId, MarinaId = SunsetBayId, TenantId = TenantId,
+                Name = "Lease Only (Flat)", IsDefault = false,
+                TransientRateKind = null,
+                LeaseRateKind = RateKind.Flat, LeaseAmount = 2800m,
+                AmenityAddOns =
+                [
+                    new AmenityAddOn { Amenity = PlanAmenity.Covered, LeaseAmount = 200m },
+                ],
+            }
+        );
+
         // ── Slips ──────────────────────────────────────────────────────────────
         db.Slips.AddRange(
-            Slip(SlipA1Id,  SunsetBayId, DockAId,  "A-1", 50, 17, 8, true,  ElectricAmperage.Amp50, true,  transientRate: 3.50m, lat: 41.4902m, lon: -71.3127m, hasPumpOut: true,  amenities: ["Fuel dock", "Wi-Fi"]),
-            Slip(SlipA2Id,  SunsetBayId, DockAId,  "A-2", 48, 16, 7, true,  ElectricAmperage.Amp30, true,  transientRate: 3.25m, lat: 41.4902m, lon: -71.3126m, hasPumpOut: true),
+            Slip(SlipA1Id,  SunsetBayId, DockAId,  "A-1", 50, 17, 8, true,  ElectricAmperage.Amp50, true,  transientRate: 3.50m, lat: 41.4902m, lon: -71.3127m, hasPumpOut: true,  amenities: ["Fuel dock", "Wi-Fi"], pricingPlanId: PlanPremiumId),
+            Slip(SlipA2Id,  SunsetBayId, DockAId,  "A-2", 48, 16, 7, true,  ElectricAmperage.Amp30, true,  transientRate: 3.25m, lat: 41.4902m, lon: -71.3126m, hasPumpOut: true, pricingPlanId: PlanPremiumId),
             Slip(SlipA3Id,  SunsetBayId, DockAId,  "A-3", 50, 17, 8, true,  ElectricAmperage.Amp50, true,  transientRate: 3.50m, lat: 41.4902m, lon: -71.3125m, hasPumpOut: true),
             Slip(SlipA4Id,  SunsetBayId, DockAId,  "A-4", 45, 15, 6, true,  ElectricAmperage.Amp30, true,  transientRate: 3.00m, lat: 41.4903m, lon: -71.3124m, hasPumpOut: true),
             Slip(SlipA5Id,  SunsetBayId, DockAId,  "A-5", 38, 14, 5, true,  ElectricAmperage.Amp30, true,  transientRate: 2.75m, lat: 41.4903m, lon: -71.3123m),
             Slip(SlipA6Id,  SunsetBayId, DockAId,  "A-6", 36, 13, 5, true,  ElectricAmperage.Amp30, true,  transientRate: 2.75m, lat: 41.4903m, lon: -71.3122m),
             Slip(SlipB1Id,  SunsetBayId, DockBId,  "B-1", 40, 14, 5, true,  ElectricAmperage.Amp30, true,  transientRate: 2.80m, lat: 41.4904m, lon: -71.3130m),
             Slip(SlipB2Id,  SunsetBayId, DockBId,  "B-2", 38, 14, 5, true,  ElectricAmperage.Amp30, true,  transientRate: 2.80m, lat: 41.4904m, lon: -71.3129m),
-            Slip(SlipB3Id,  SunsetBayId, DockBId,  "B-3", 28, 10, 4, false, null,                   true,  leaseRate: 18m, leaseTerm: LeaseTerm.Monthly, lat: 41.4904m, lon: -71.3128m),
-            Slip(SlipB4Id,  SunsetBayId, DockBId,  "B-4", 30, 11, 4, false, null,                   true,  leaseRate: 18m, leaseTerm: LeaseTerm.Monthly, lat: 41.4905m, lon: -71.3128m),
+            Slip(SlipB3Id,  SunsetBayId, DockBId,  "B-3", 28, 10, 4, false, null,                   true,  leaseRate: 18m, leaseTerm: LeaseTerm.Monthly, lat: 41.4904m, lon: -71.3128m, pricingPlanId: PlanLeaseId),
+            Slip(SlipB4Id,  SunsetBayId, DockBId,  "B-4", 30, 11, 4, false, null,                   true,  leaseRate: 18m, leaseTerm: LeaseTerm.Monthly, lat: 41.4905m, lon: -71.3128m, pricingPlanId: PlanLeaseId),
             Slip(SlipYC1Id, YachtClubId, YCDockId, "P-1", 65, 22, 9, true,  ElectricAmperage.Amp50, true,  leaseRate: 24m, leaseTerm: LeaseTerm.Annual,  lat: 41.5204m, lon: -71.2774m, isCovered: true, amenities: ["Gated access", "Valet launch service"]),
             new Slip
             {
@@ -289,7 +333,6 @@ public class DemoSeedScript(
                 HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
                 HasPumpOut = false, IsCovered = false, IsIndoor = false, Amenities = [],
                 Status = SlipStatus.Active,
-                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 95m,
                 Latitude = 41.4901m, Longitude = -71.3128m,
             },
             // Harbor View: PerFoot + Flat mix → RateKind = "Mixed" in rollup
@@ -303,7 +346,6 @@ public class DemoSeedScript(
                 HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
                 HasPumpOut = false, IsCovered = false, IsIndoor = false, Amenities = ["Guest lounge access"],
                 Status = SlipStatus.Active,
-                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 120m,
                 Latitude = 41.4854m, Longitude = -71.3195m,
             },
             new Slip
@@ -314,7 +356,6 @@ public class DemoSeedScript(
                 HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
                 HasPumpOut = false, IsCovered = false, IsIndoor = false, Amenities = [],
                 Status = SlipStatus.Active,
-                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 95m,
                 Latitude = 41.4854m, Longitude = -71.3196m,
             },
             new Slip
@@ -325,7 +366,6 @@ public class DemoSeedScript(
                 HasElectric = true, Electric = ElectricAmperage.Amp30, HasWater = true,
                 HasPumpOut = false, IsCovered = true, IsIndoor = false, Amenities = ["Private parking"],
                 Status = SlipStatus.Active,
-                DefaultTransientRateKind = RateKind.Flat, DefaultTransientBaseRate = 75m,
                 Latitude = 41.6039m, Longitude = -71.2631m,
             }
         );
@@ -406,10 +446,10 @@ public class DemoSeedScript(
         );
 
         // ── Availability Windows ───────────────────────────────────────────────
-        var splitOwner = new List<RevenueSplitEntry>
-        {
-            new() { PayeeKind = "SlipOwner", PayeeId = SunsetBayId, Percent = 1m }
-        };
+        // Each window needs its own RevenueSplitEntry instances — EF Core cannot share
+        // the same entity objects across multiple parent entities when the FK is part of the key.
+        static List<RevenueSplitEntry> OwnerSplit(Guid marinaId) =>
+            [new() { PayeeKind = "SlipOwner", PayeeId = marinaId, Percent = 1m }];
 
         db.AvailabilityWindows.AddRange(
             new AvailabilityWindow
@@ -421,7 +461,7 @@ public class DemoSeedScript(
                 InstantBook = true, MinNights = 1, MaxNights = 30,
                 RateKind = RateKind.PerFoot, BasePricePerNight = 3.25m,
                 CleaningFee = 35m, WeeklyDiscount = 0.10m, MonthlyDiscount = 0.20m,
-                RevenueSplit = splitOwner,
+                RevenueSplit = OwnerSplit(SunsetBayId),
                 Status = AvailabilityWindowStatus.Open,
             },
             new AvailabilityWindow
@@ -433,7 +473,7 @@ public class DemoSeedScript(
                 InstantBook = false, MinNights = 2, MaxNights = 14,
                 RateKind = RateKind.PerFoot, BasePricePerNight = 3.00m,
                 CleaningFee = 35m,
-                RevenueSplit = splitOwner,
+                RevenueSplit = OwnerSplit(SunsetBayId),
                 Status = AvailabilityWindowStatus.Open,
             },
             new AvailabilityWindow
@@ -444,7 +484,7 @@ public class DemoSeedScript(
                 StartsAt = now.AddDays(-60), EndsAt = now.AddDays(90),
                 InstantBook = true, MinNights = 1,
                 RateKind = RateKind.PerFoot, BasePricePerNight = 2.80m,
-                RevenueSplit = splitOwner,
+                RevenueSplit = OwnerSplit(SunsetBayId),
                 Status = AvailabilityWindowStatus.Open,
             },
             new AvailabilityWindow
@@ -455,16 +495,15 @@ public class DemoSeedScript(
                 StartsAt = now.AddDays(-90), EndsAt = now.AddDays(60),
                 InstantBook = true, MinNights = 1,
                 RateKind = RateKind.PerFoot, BasePricePerNight = 2.80m,
-                RevenueSplit = splitOwner,
+                RevenueSplit = OwnerSplit(SunsetBayId),
                 Status = AvailabilityWindowStatus.Open,
             }
         );
 
         // ── Reservations ───────────────────────────────────────────────────────
-        var splitSnap = new List<RevenueSplitEntry>
-        {
-            new() { PayeeKind = "SlipOwner", PayeeId = SunsetBayId, Percent = 1m }
-        };
+        // Each reservation needs its own RevenueSplitEntry instances — cannot share across parents.
+        static List<RevenueSplitEntry> OwnerSnapSplit(Guid marinaId) =>
+            [new() { PayeeKind = "SlipOwner", PayeeId = marinaId, Percent = 1m }];
 
         db.Reservations.AddRange(
             new Reservation
@@ -474,7 +513,7 @@ public class DemoSeedScript(
                 ArrivesAt = now.AddDays(14), DepartsAt = now.AddDays(17),
                 Status = ReservationStatus.Confirmed,
                 BasePrice = 3 * 40 * 2.80m, Fees = 35m, Taxes = 0m, Total = 3 * 40 * 2.80m + 35m,
-                RevenueSplitSnapshot = splitSnap,
+                RevenueSplitSnapshot = OwnerSnapSplit(SunsetBayId),
                 ConfirmedAt = now.AddDays(-2),
                 PaymentStatus = PaymentStatus.OffPlatform,
             },
@@ -485,7 +524,7 @@ public class DemoSeedScript(
                 ArrivesAt = now.AddDays(30), DepartsAt = now.AddDays(33),
                 Status = ReservationStatus.PendingApproval,
                 BasePrice = 3 * 45 * 3.00m, Fees = 35m, Taxes = 0m, Total = 3 * 45 * 3.00m + 35m,
-                RevenueSplitSnapshot = splitSnap,
+                RevenueSplitSnapshot = OwnerSnapSplit(SunsetBayId),
                 PaymentStatus = PaymentStatus.OffPlatform,
             },
             new Reservation
@@ -495,7 +534,7 @@ public class DemoSeedScript(
                 ArrivesAt = now.AddDays(-20), DepartsAt = now.AddDays(-17),
                 Status = ReservationStatus.Completed,
                 BasePrice = 3 * 44 * 3.25m, Fees = 35m, Taxes = 0m, Total = 3 * 44 * 3.25m + 35m,
-                RevenueSplitSnapshot = splitSnap,
+                RevenueSplitSnapshot = OwnerSnapSplit(SunsetBayId),
                 ConfirmedAt = now.AddDays(-25),
                 PaymentStatus = PaymentStatus.OffPlatform,
             },
@@ -506,7 +545,7 @@ public class DemoSeedScript(
                 ArrivesAt = now.AddDays(-5), DepartsAt = now.AddDays(-3),
                 Status = ReservationStatus.Cancelled,
                 BasePrice = 2 * 40 * 2.80m, Fees = 35m, Taxes = 0m, Total = 2 * 40 * 2.80m + 35m,
-                RevenueSplitSnapshot = splitSnap,
+                RevenueSplitSnapshot = OwnerSnapSplit(SunsetBayId),
                 CancelledAt = now.AddDays(-10), CancelledByUserId = DemoUserId,
                 PaymentStatus = PaymentStatus.OffPlatform,
             }
@@ -655,6 +694,106 @@ public class DemoSeedScript(
         );
 
         await db.SaveChangesAsync(ct);
+
+        // ── Marina Photos (Picsum placeholders) ───────────────────────────────
+        if (!await db.MarinaPhotos.AnyAsync(p => p.MarinaId == SunsetBayId, ct))
+        {
+            db.MarinaPhotos.AddRange(
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000101"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Logo,
+                    StorageKey = "demo/marina/logo/sunset-bay-logo.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-logo/256/256",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-logo/256/256",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-logo/512/512",
+                    SortOrder = 0, Width = 512, Height = 512, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000102"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Banner,
+                    StorageKey = "demo/marina/banner/sunset-bay-banner.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-banner/400/225",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-banner/800/450",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-banner/1280/720",
+                    SortOrder = 0, Width = 1280, Height = 720, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000103"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Gallery,
+                    StorageKey = "demo/marina/gallery/photo-1.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-gallery-1/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-gallery-1/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-gallery-1/1200/800",
+                    SortOrder = 0, Width = 1200, Height = 800, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000104"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Gallery,
+                    StorageKey = "demo/marina/gallery/photo-2.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-gallery-2/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-gallery-2/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-gallery-2/1200/800",
+                    SortOrder = 1, Width = 1200, Height = 800, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000105"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Gallery,
+                    StorageKey = "demo/marina/gallery/photo-3.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-gallery-3/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-gallery-3/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-gallery-3/1200/800",
+                    SortOrder = 2, Width = 1200, Height = 800, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000106"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Aerial,
+                    StorageKey = "demo/marina/aerial/aerial-1.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-aerial/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-aerial/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-aerial/2000/1333",
+                    SortOrder = 0, Width = 2000, Height = 1333, UploadedByUserId = DemoUserId,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000107"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Approach,
+                    StorageKey = "demo/marina/approach/approach-1.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-approach-1/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-approach-1/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-approach-1/1200/800",
+                    SortOrder = 0, Width = 1200, Height = 800, UploadedByUserId = DemoUserId,
+                    Caption = "Main channel entrance — stay between the red and green markers.",
+                    Latitude = 27.4678m, Longitude = -82.5432m,
+                },
+                new Domain.Entities.MarinaPhoto
+                {
+                    Id = new Guid("d0000000-0000-0000-0000-000000000108"),
+                    MarinaId = SunsetBayId, TenantId = TenantId,
+                    Kind = Domain.Enums.MarinaPhotoKind.Approach,
+                    StorageKey = "demo/marina/approach/approach-2.jpg",
+                    UrlThumbnail = "https://picsum.photos/seed/sunset-bay-approach-2/400/267",
+                    UrlMedium    = "https://picsum.photos/seed/sunset-bay-approach-2/800/533",
+                    UrlFull      = "https://picsum.photos/seed/sunset-bay-approach-2/1200/800",
+                    SortOrder = 1, Width = 1200, Height = 800, UploadedByUserId = DemoUserId,
+                    Caption = "Fuel dock and guest slips visible on the port side after clearing the breakwater.",
+                }
+            );
+            await db.SaveChangesAsync(ct);
+        }
+
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -666,7 +805,8 @@ public class DemoSeedScript(
         decimal? transientRate = null, decimal? leaseRate = null, LeaseTerm? leaseTerm = null,
         decimal? lat = null, decimal? lon = null,
         bool hasPumpOut = false, bool isCovered = false, bool isIndoor = false,
-        List<string>? amenities = null)
+        List<string>? amenities = null,
+        Guid? pricingPlanId = null)
         => new()
         {
             Id = id, MarinaId = marinaId, DockId = dockId, Name = name,
@@ -675,11 +815,7 @@ public class DemoSeedScript(
             HasPumpOut = hasPumpOut, IsCovered = isCovered, IsIndoor = isIndoor,
             Amenities = amenities ?? [],
             Status = SlipStatus.Active,
-            DefaultTransientRateKind = transientRate.HasValue ? RateKind.PerFoot : null,
-            DefaultTransientBaseRate = transientRate,
-            DefaultLeaseRateKind     = leaseRate.HasValue ? RateKind.PerFoot : null,
-            DefaultLeaseBaseRate     = leaseRate,
-            DefaultLeaseTerm         = leaseTerm,
+            PricingPlanId = pricingPlanId,
             Latitude  = lat,
             Longitude = lon,
         };

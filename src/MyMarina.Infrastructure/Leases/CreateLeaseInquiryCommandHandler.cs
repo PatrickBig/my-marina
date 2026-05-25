@@ -18,7 +18,7 @@ public class CreateLeaseInquiryCommandHandler(AppDbContext db, UserManager<Appli
             .FirstOrDefaultAsync(s => s.Id == command.SlipId && s.Status == SlipStatus.Active, ct)
             ?? throw new KeyNotFoundException($"Slip {command.SlipId} not found or inactive.");
 
-        if (slip.DefaultLeaseRateKind == null)
+        if (slip.ResolvedLeaseBaseRate == null)
             throw new InvalidOperationException("This slip is not currently listed for lease.");
 
         var inquiry = new SlipLeaseInquiry
@@ -30,9 +30,9 @@ public class CreateLeaseInquiryCommandHandler(AppDbContext db, UserManager<Appli
             DesiredTerm       = command.DesiredTerm,
             DesiredStartDate  = command.DesiredStartDate,
             Message           = command.Message,
-            // Pre-fill agreed terms from slip defaults so marina can just confirm
-            AgreedRateKind    = slip.DefaultLeaseRateKind,
-            AgreedBaseRate    = slip.DefaultLeaseBaseRate,
+            // Pre-fill agreed terms from resolved pricing rule so marina can just confirm
+            AgreedRateKind    = RateKind.Flat,
+            AgreedBaseRate    = slip.ResolvedLeaseBaseRate,
             Status            = LeaseInquiryStatus.Pending,
         };
 

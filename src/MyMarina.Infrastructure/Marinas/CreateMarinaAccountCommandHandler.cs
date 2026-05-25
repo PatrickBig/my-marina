@@ -29,7 +29,8 @@ public class CreateMarinaAccountCommandHandler(
         var user = await userManager.FindByIdAsync(command.UserId.ToString())
             ?? throw new InvalidOperationException("User not found.");
 
-        var tenantSlug = GenerateSlug(command.TenantName);
+        var tenantName = string.IsNullOrWhiteSpace(command.TenantName) ? command.MarinaName : command.TenantName;
+        var tenantSlug = GenerateSlug(tenantName);
         var marinaSlug = GenerateSlug(command.MarinaName);
 
         // Ensure slug uniqueness by appending a short suffix when needed
@@ -38,7 +39,7 @@ public class CreateMarinaAccountCommandHandler(
 
         var tenant = new Tenant
         {
-            Name = command.TenantName,
+            Name = tenantName,
             Slug = tenantSlug,
         };
 

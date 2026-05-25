@@ -42,6 +42,8 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
                .HasForeignKey(p => p.InvoiceId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasQueryFilter(i => i.Marina.IsSetupComplete);
+
         builder.HasIndex(i => i.MarinaId);
         builder.HasIndex(i => i.BillingAccountId);
         builder.HasIndex(i => new { i.MarinaId, i.InvoiceNumber }).IsUnique();

@@ -17,6 +17,16 @@ const screenshots = [
     alt: 'Invoicing screen with line items, payment status, and bulk actions',
     caption: 'Invoicing',
   },
+  {
+    src: '/screenshots/pricing-rules.png',
+    alt: 'Pricing rules management page — create base rates and surcharges with size brackets, amenity filters, and scheduled future-dated price changes',
+    caption: 'Pricing Rules',
+  },
+  {
+    src: '/screenshots/slip-adjustments.png',
+    alt: 'Per-slip price adjustments tab — apply named flat or per-foot deltas on top of marina-wide pricing rules for individual slips',
+    caption: 'Per-Slip Price Adjustments',
+  },
 ];
 ---
 
@@ -39,7 +49,7 @@ const screenshots = [
       </div>
     </div>
 
-    <div class="grid sm:grid-cols-2 gap-6">
+    <div class="grid sm:grid-cols-3 gap-6">
       {screenshots.map(shot => (
         <figure class="rounded-xl overflow-hidden border border-border shadow-sm bg-secondary/20">
           <img

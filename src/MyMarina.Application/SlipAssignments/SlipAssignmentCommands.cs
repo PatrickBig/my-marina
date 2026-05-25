@@ -51,6 +51,16 @@ public sealed record GetSlipAssignmentsQuery(
 
 public sealed record GetSlipAssignmentQuery(Guid Id, Guid MarinaId, Guid RequestingUserId);
 
+// Renews an existing assignment into a new period, resolving price via IPriceResolver.
+// Returns null BaseRate resolving to 409 is handled by the handler.
+public sealed record RenewSlipAssignmentCommand(
+    Guid ExistingAssignmentId,
+    Guid MarinaId,
+    Guid RequestingUserId,
+    DateOnly NewStartDate,
+    DateOnly? NewEndDate
+);
+
 public sealed record CheckSlipAvailabilityQuery(
     Guid SlipId,
     Guid MarinaId,

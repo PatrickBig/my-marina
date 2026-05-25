@@ -12,6 +12,7 @@ public class SlipAssignmentsController(
     ICommandHandler<CreateSlipAssignmentCommand, SlipAssignmentDto> create,
     ICommandHandler<UpdateSlipAssignmentCommand, SlipAssignmentDto> update,
     ICommandHandler<EndSlipAssignmentCommand, SlipAssignmentDto> end,
+    ICommandHandler<RenewSlipAssignmentCommand, SlipAssignmentDto> renew,
     IQueryHandler<GetSlipAssignmentsQuery, IReadOnlyList<SlipAssignmentDto>> list,
     IQueryHandler<GetSlipAssignmentQuery, SlipAssignmentDto> get,
     IQueryHandler<CheckSlipAvailabilityQuery, SlipAvailabilityResult> checkAvailability,
@@ -146,6 +147,29 @@ public class SlipAssignmentsController(
         catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Detail = ex.Message }); }
     }
 
+    // POST /marinas/{marinaId}/slip-assignments/{id}/renew
+    [HttpPost("marinas/{marinaId:guid}/slip-assignments/{id:guid}/renew")]
+    [ProducesResponseType(typeof(SlipAssignmentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Renew(Guid marinaId, Guid id, [FromBody] RenewSlipAssignmentRequest request, CancellationToken ct)
+    {
+        if (!userContext.HasMarinaAccess(marinaId)) return Forbid();
+        try
+        {
+            var item = await renew.HandleAsync(new RenewSlipAssignmentCommand(
+                ExistingAssignmentId: id,
+                MarinaId:             marinaId,
+                RequestingUserId:     userContext.UserId!.Value,
+                NewStartDate:         request.NewStartDate,
+                NewEndDate:           request.NewEndDate), ct);
+            return CreatedAtAction(nameof(Get), new { marinaId, id = item.Id }, item);
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new ProblemDetails { Detail = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Detail = ex.Message }); }
+    }
+
     // GET /marinas/{marinaId}/slips/{slipId}/availability
     [HttpGet("marinas/{marinaId:guid}/slips/{slipId:guid}/availability")]
     [ProducesResponseType(typeof(SlipAvailabilityResult), StatusCodes.Status200OK)]
@@ -209,3 +233,5 @@ public sealed record UpdateSlipAssignmentRequest(
 );
 
 public sealed record EndSlipAssignmentRequest(DateOnly? EndDate);
+
+public sealed record RenewSlipAssignmentRequest(DateOnly NewStartDate, DateOnly? NewEndDate);

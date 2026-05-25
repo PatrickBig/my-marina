@@ -30,12 +30,15 @@ public class SlipConfiguration : IEntityTypeConfiguration<Slip>
         builder.Property(s => s.AddressCountry).HasMaxLength(100);
         builder.Property(s => s.Notes).HasMaxLength(2000);
 
-        builder.Property(s => s.DefaultTransientRateKind).HasConversion<string?>();
-        builder.Property(s => s.DefaultTransientBaseRate).HasPrecision(10, 2);
-        builder.Property(s => s.DefaultTransientMinCharge).HasPrecision(10, 2);
-        builder.Property(s => s.DefaultLeaseRateKind).HasConversion<string?>();
-        builder.Property(s => s.DefaultLeaseBaseRate).HasPrecision(10, 2);
-        builder.Property(s => s.DefaultLeaseTerm).HasConversion<string?>();
+        builder.Property(s => s.ResolvedTransientBaseRate).HasPrecision(10, 2);
+        builder.Property(s => s.ResolvedLeaseBaseRate).HasPrecision(10, 2);
+
+        builder.HasOne(s => s.PricingPlan)
+               .WithMany()
+               .HasForeignKey(s => s.PricingPlanId)
+               .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(s => s.PricingPlanId).HasFilter("\"PricingPlanId\" IS NOT NULL");
 
         builder.Property(s => s.Amenities)
                .HasColumnType("jsonb")

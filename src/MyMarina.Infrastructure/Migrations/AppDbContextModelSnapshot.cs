@@ -18,7 +18,7 @@ namespace MyMarina.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("mymarina")
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -708,6 +708,82 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("marinas", "mymarina");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.MarinaPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("numeric(9,6)");
+
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UrlFull")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("UrlMedium")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("UrlThumbnail")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarinaId");
+
+                    b.HasIndex("MarinaId", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_marina_photos_marina_logo_banner_unique")
+                        .HasFilter("\"Kind\" IN (0, 1)");
+
+                    b.HasIndex("MarinaId", "Kind", "SortOrder");
+
+                    b.ToTable("marina_photos", "mymarina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.MarinaVesselRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -887,6 +963,67 @@ namespace MyMarina.Infrastructure.Migrations
                     b.ToTable("payments", "mymarina");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.PricingPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("LeaseAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal?>("LeaseMinCharge")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("LeaseRateKind")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MarinaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("TransientAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal?>("TransientMinCharge")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("TransientRateKind")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarinaId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_pricing_plans_marina_single_default")
+                        .HasFilter("\"IsDefault\" = true");
+
+                    b.HasIndex("MarinaId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("pricing_plans", "mymarina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1055,27 +1192,6 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("DefaultLeaseBaseRate")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<string>("DefaultLeaseRateKind")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DefaultLeaseTerm")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("DefaultTransientBaseRate")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<decimal?>("DefaultTransientMinCharge")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<string>("DefaultTransientRateKind")
-                        .HasColumnType("text");
-
                     b.Property<Guid?>("DockId")
                         .HasColumnType("uuid");
 
@@ -1136,6 +1252,17 @@ namespace MyMarina.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<Guid?>("PricingPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("ResolvedLeaseBaseRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal?>("ResolvedTransientBaseRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<string>("SlipType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1150,6 +1277,9 @@ namespace MyMarina.Infrastructure.Migrations
                         .HasFilter("\"DockId\" IS NOT NULL");
 
                     b.HasIndex("MarinaId");
+
+                    b.HasIndex("PricingPlanId")
+                        .HasFilter("\"PricingPlanId\" IS NOT NULL");
 
                     b.HasIndex("Status");
 
@@ -1779,6 +1909,17 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.MarinaPhoto", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Marina", "Marina")
+                        .WithMany("Photos")
+                        .HasForeignKey("MarinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Marina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.MarinaVesselRecord", b =>
                 {
                     b.HasOne("MyMarina.Domain.Entities.BillingAccount", "BillingAccount")
@@ -1838,6 +1979,47 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Invoice");
                 });
 
+            modelBuilder.Entity("MyMarina.Domain.Entities.PricingPlan", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.Marina", "Marina")
+                        .WithMany()
+                        .HasForeignKey("MarinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("MyMarina.Domain.ValueObjects.AmenityAddOn", "AmenityAddOns", b1 =>
+                        {
+                            b1.Property<Guid>("PricingPlanId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Amenity")
+                                .IsRequired();
+
+                            b1.Property<decimal?>("LeaseAmount")
+                                .HasPrecision(10, 2);
+
+                            b1.Property<decimal?>("TransientAmount")
+                                .HasPrecision(10, 2);
+
+                            b1.HasKey("PricingPlanId", "__synthesizedOrdinal");
+
+                            b1.ToTable("pricing_plans", "mymarina");
+
+                            b1
+                                .ToJson("add_ons")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PricingPlanId");
+                        });
+
+                    b.Navigation("AmenityAddOns");
+
+                    b.Navigation("Marina");
+                });
+
             modelBuilder.Entity("MyMarina.Domain.Entities.Reservation", b =>
                 {
                     b.HasOne("MyMarina.Domain.Entities.AvailabilityWindow", "AvailabilityWindow")
@@ -1893,6 +2075,16 @@ namespace MyMarina.Infrastructure.Migrations
                     b.Navigation("Slip");
 
                     b.Navigation("Vessel");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Slip", b =>
+                {
+                    b.HasOne("MyMarina.Domain.Entities.PricingPlan", "PricingPlan")
+                        .WithMany()
+                        .HasForeignKey("PricingPlanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("PricingPlan");
                 });
 
             modelBuilder.Entity("MyMarina.Domain.Entities.SlipAssignment", b =>
@@ -1968,6 +2160,11 @@ namespace MyMarina.Infrastructure.Migrations
             modelBuilder.Entity("MyMarina.Domain.Entities.MaintenanceRequest", b =>
                 {
                     b.Navigation("WorkOrder");
+                });
+
+            modelBuilder.Entity("MyMarina.Domain.Entities.Marina", b =>
+                {
+                    b.Navigation("Photos");
                 });
 #pragma warning restore 612, 618
         }

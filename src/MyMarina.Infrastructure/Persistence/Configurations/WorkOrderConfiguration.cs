@@ -22,6 +22,8 @@ public class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrder>
                .HasForeignKey(w => w.MarinaId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasQueryFilter(w => w.Marina.IsSetupComplete);
+
         builder.HasIndex(w => w.MarinaId);
         builder.HasIndex(w => new { w.MarinaId, w.Status });
     }

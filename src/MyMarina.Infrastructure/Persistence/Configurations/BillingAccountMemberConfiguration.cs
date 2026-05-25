@@ -18,6 +18,8 @@ public class BillingAccountMemberConfiguration : IEntityTypeConfiguration<Billin
                .HasForeignKey(m => m.BillingAccountId)
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasQueryFilter(m => m.BillingAccount.Marina.IsSetupComplete);
+
         builder.HasIndex(m => m.UserId);
         builder.HasIndex(m => new { m.BillingAccountId, m.UserId }).IsUnique();
     }

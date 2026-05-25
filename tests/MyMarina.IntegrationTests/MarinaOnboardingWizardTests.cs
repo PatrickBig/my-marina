@@ -222,7 +222,7 @@ public class MarinaOnboardingWizardTests(ApiWebApplicationFactory factory)
             MarinaId = marina.Id, Name = "Draft Slip",
             MaxLength = 40, MaxBeam = 14, MaxDraft = 5,
             Status = SlipStatus.Active,
-            DefaultTransientRateKind = Domain.Enums.RateKind.Flat, DefaultTransientBaseRate = 100m,
+            ResolvedTransientBaseRate = 100m,
         };
 
         db.Tenants.Add(tenant); db.Marinas.Add(marina); db.Slips.Add(slip);

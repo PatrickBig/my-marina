@@ -1,0 +1,193 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]: Demo — read-only preview
+    - generic [ref=e5]:
+      - link "Sign up free →" [ref=e6] [cursor=pointer]:
+        - /url: https://mymarina.org/register
+      - link "Back to mymarina.org" [ref=e7] [cursor=pointer]:
+        - /url: https://mymarina.org
+  - generic [ref=e8]:
+    - banner [ref=e9]:
+      - generic [ref=e10]:
+        - link "MyMarina, home" [ref=e11] [cursor=pointer]:
+          - /url: /
+          - img [ref=e12]
+          - generic [ref=e14]: MyMarina
+        - navigation "Primary" [ref=e15]:
+          - link "Find a slip" [ref=e16] [cursor=pointer]:
+            - /url: /search
+          - link "My trips" [ref=e17] [cursor=pointer]:
+            - /url: /trips
+          - link "My slips" [ref=e18] [cursor=pointer]:
+            - /url: /my-slips
+          - link "My boats" [ref=e19] [cursor=pointer]:
+            - /url: /boats
+          - link "Maintenance" [ref=e20] [cursor=pointer]:
+            - /url: /maintenance
+          - link "Invoices" [ref=e21] [cursor=pointer]:
+            - /url: /invoices
+          - link "My Marina" [ref=e22] [cursor=pointer]:
+            - /url: /marina/d0000000-0000-0000-0000-000000000011
+          - link "My Marina" [ref=e23] [cursor=pointer]:
+            - /url: /marina/d0000000-0000-0000-0000-000000000010
+        - generic [ref=e24]:
+          - button "Notifications" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+          - button "Demo" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]: DU
+            - generic [ref=e31]: Demo
+            - img [ref=e32]
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: ●
+        - paragraph [ref=e38]: Listed — visible to boaters on the marketplace
+      - button "Pause listing" [ref=e39]
+    - generic [ref=e40]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - heading "Eastside Yacht Club" [level=2] [ref=e44]
+          - paragraph [ref=e45]: YachtClub · America/New_York
+          - paragraph [ref=e46]: 55 Sail Club Drive, Middletown, RI, 02842
+          - paragraph [ref=e47]: 📍 41.52030, -71.27750
+          - paragraph [ref=e48]: Members-only yacht club with 30 deep-water slips and a full race program.
+        - button "Edit" [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - heading "Docks" [level=2] [ref=e52]
+          - button "+ Add dock" [ref=e53]
+        - list [ref=e54]:
+          - listitem [ref=e55]:
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - text: Members' Dock
+                - generic [ref=e58]: "#0"
+              - generic [ref=e59]:
+                - button "Edit" [ref=e60]
+                - button "Remove" [ref=e61]
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - heading "Slips" [level=2] [ref=e64]
+          - button "+ Add slip" [ref=e65]
+        - list [ref=e130]:
+          - listitem [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - generic [ref=e134]:
+                  - text: P-1Members' Dock
+                  - generic [ref=e135]: Floating · 65′ L · 22′ B · 9′ D
+                  - text: · Water
+                  - generic [ref=e136]: · Electric 50A
+                - generic [ref=e137]:
+                  - button "Hide adjustments" [ref=e149]
+                  - button "Edit" [ref=e139]
+                  - button "Remove" [ref=e140]
+              - generic [ref=e151]:
+                - generic [ref=e153]:
+                  - heading "Slip Price Adjustments" [level=3] [ref=e154]
+                  - paragraph [ref=e155]: Named deltas applied on top of the marina's pricing rules for this specific slip.
+                - generic [ref=e158]:
+                  - generic [ref=e159]: New adjustment
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: Listing kind
+                    - combobox [ref=e162]:
+                      - option "Transient" [selected]
+                      - option "Lease"
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: Label
+                    - textbox "e.g. Premium waterfront view" [ref=e165]
+                  - generic [ref=e166]:
+                    - generic [ref=e167]: Amount (negative for discount)
+                    - spinbutton [ref=e168]
+                  - generic [ref=e169]:
+                    - button "Add" [ref=e170]
+                    - button "Cancel" [ref=e171]
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - heading "Billing Accounts" [level=2] [ref=e69]
+          - button "+ Add account" [ref=e70]
+        - paragraph [ref=e71]: No billing accounts yet.
+        - list
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Slip Assignments" [level=2] [ref=e74]
+          - button "+ New assignment" [ref=e75]
+        - paragraph [ref=e76]: No active assignments.
+        - list
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - heading "Marketplace Listings" [level=2] [ref=e79]
+          - button "+ New listing window" [ref=e80]
+        - paragraph [ref=e81]: No listing windows yet. Create one to accept transient bookings.
+        - list
+      - generic [ref=e82]:
+        - heading "Holder Absences & Sublet Opportunities" [level=2] [ref=e83]
+        - paragraph [ref=e141]: No holder absences reported yet.
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - heading "Reservation Inbox" [level=2] [ref=e87]
+          - combobox [ref=e88]:
+            - option "All statuses" [selected]
+            - option "Pending approval"
+            - option "Pending host approval"
+            - option "Confirmed"
+            - option "Declined"
+            - option "Cancelled"
+            - option "Completed"
+        - paragraph [ref=e142]: No reservations found.
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - heading "Lease Inquiries" [level=2] [ref=e92]
+          - combobox [ref=e93]:
+            - option "All statuses" [selected]
+            - option "Pending"
+            - option "Under Review"
+            - option "Approved"
+            - option "Declined"
+            - option "Withdrawn"
+        - paragraph [ref=e143]: No lease inquiries yet.
+      - generic [ref=e95]:
+        - generic [ref=e96]:
+          - heading "Invoices" [level=2] [ref=e97]
+          - generic [ref=e98]:
+            - combobox [ref=e99]:
+              - option "All statuses" [selected]
+              - option "Draft"
+              - option "Sent"
+              - option "Partially paid"
+              - option "Paid"
+              - option "Overdue"
+              - option "Voided"
+            - button "+ New invoice" [ref=e100]
+        - paragraph [ref=e144]: No invoices found.
+        - list
+      - generic [ref=e102]:
+        - heading "Maintenance" [level=2] [ref=e103]
+        - generic [ref=e104]:
+          - button "Requests (0)" [ref=e105]
+          - button "Work Orders (0)" [ref=e106]
+        - paragraph [ref=e107]: No maintenance requests.
+      - generic [ref=e108]:
+        - heading "Photos" [level=2] [ref=e109]
+        - generic [ref=e110]:
+          - button "Logo" [ref=e111]
+          - button "Banner" [ref=e112]
+          - button "Gallery" [ref=e113]
+          - button "Aerial" [ref=e114]
+          - button "Approach" [ref=e115]
+        - generic [ref=e116]:
+          - generic [ref=e117]: No logo
+          - button "Upload logo" [ref=e118]
+          - paragraph [ref=e119]: "Square image, 1:1 ratio (±10%). Recommended: 512×512px or larger."
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - heading "Announcements" [level=2] [ref=e122]
+          - button "New announcement" [ref=e123]
+        - paragraph [ref=e124]: No announcements yet.
+      - generic [ref=e125]:
+        - generic [ref=e126]:
+          - heading "Staff" [level=2] [ref=e127]
+          - button "+ Invite" [ref=e128]
+        - list [ref=e145]:
+          - listitem [ref=e146]:
+            - generic [ref=e147]: demo@mymarina.orgManager
+            - button "Remove" [ref=e148]

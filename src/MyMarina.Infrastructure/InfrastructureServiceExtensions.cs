@@ -8,10 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Leases;
 using MyMarina.Infrastructure.Email;
+using MyMarina.Infrastructure.Pricing;
 using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Messaging;
 using MyMarina.Infrastructure.Persistence;
 using MyMarina.Infrastructure.Services;
+using MyMarina.Infrastructure.Storage;
 using MyMarina.Infrastructure.UserContext;
 
 namespace MyMarina.Infrastructure;
@@ -23,6 +25,19 @@ public static class InfrastructureServiceExtensions
         IConfiguration configuration,
         bool registerHangfireServer = true)
     {
+        // --- Storage provider ---
+        services.Configure<StorageOptions>(configuration.GetSection("Storage"));
+        var storageProvider = configuration.GetValue<string>("Storage:Provider") ?? string.Empty;
+        if (string.Equals(storageProvider, "S3", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IStorageProvider, S3StorageProvider>();
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Storage:Provider '{storageProvider}' is not recognised. Valid value: 'S3'.");
+        }
+
         // --- EF Core + Postgres ---
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
@@ -95,10 +110,19 @@ public static class InfrastructureServiceExtensions
         });
 
         if (registerHangfireServer)
-            services.AddHangfireServer();
+            services.AddHangfireServer(options =>
+            {
+                options.Queues = ["photos", "default"];
+            });
 
         // --- Hangfire jobs ---
         services.AddScoped<Invoicing.InvoiceOverdueJob>();
+        services.AddScoped<Storage.ImageVariantGenerationJob>();
+        services.AddScoped<Storage.StorageCleanupJob>();
+        services.AddScoped<Storage.OrphanPhotoCleanupJob>();
+        services.AddScoped<Pricing.RecomputeSlipPriceJob>();
+        services.AddScoped<Pricing.RecomputePlanSlipPricesJob>();
+        services.AddScoped<Pricing.RecomputeDefaultPlanSlipPricesJob>();
 
         // --- Message bus ---
         services.AddScoped<IMessageBus, HangfireMessageBus>();

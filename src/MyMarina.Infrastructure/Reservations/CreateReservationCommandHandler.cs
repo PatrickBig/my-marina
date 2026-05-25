@@ -56,8 +56,8 @@ public class CreateReservationCommandHandler(
             .FirstOrDefaultAsync(s => s.Id == command.SlipId && s.Status == SlipStatus.Active, ct)
             ?? throw new KeyNotFoundException($"Slip {command.SlipId} not found or inactive.");
 
-        if (slip.DefaultTransientBaseRate is null || slip.DefaultTransientRateKind is null)
-            throw new InvalidOperationException("This slip does not have a direct booking rate configured.");
+        if (slip.ResolvedTransientBaseRate is null)
+            throw new InvalidOperationException("This slip does not have an active pricing rule for transient booking.");
 
         // Check for conflicting assignment
         var assigned = await db.SlipAssignments.AnyAsync(
@@ -74,9 +74,9 @@ public class CreateReservationCommandHandler(
             StartsAt          = command.ArrivesAt,
             EndsAt            = command.DepartsAt,
             InstantBook       = true,
-            BasePricePerNight = slip.DefaultTransientBaseRate.Value,
-            RateKind          = slip.DefaultTransientRateKind.Value,
-            MinCharge         = slip.DefaultTransientMinCharge,
+            BasePricePerNight = slip.ResolvedTransientBaseRate.Value,
+            RateKind          = RateKind.Flat,
+            MinCharge         = null,
             ListingKind       = ListingKind.Transient,
             Status            = AvailabilityWindowStatus.Open,
             ListedByKind      = ListedByKind.Owner,

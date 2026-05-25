@@ -32,7 +32,9 @@ public sealed record MarinaDto(
     bool IsListed,
     bool IsSetupComplete,
     int SetupStep,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    string? LogoUrl = null,
+    string? BannerThumbnailUrl = null
 );
 
 public sealed record DockDto(
@@ -61,14 +63,10 @@ public sealed record SlipDto(
     bool IsIndoor,
     IReadOnlyList<string> Amenities,
     string Status,
-    // Transient default rate
-    string? DefaultTransientRateKind,
-    decimal? DefaultTransientBaseRate,
-    decimal? DefaultTransientMinCharge,
-    // Lease default rate
-    string? DefaultLeaseRateKind,
-    decimal? DefaultLeaseBaseRate,
-    string? DefaultLeaseTerm,
+    // Resolved rates — cached from the assigned pricing plan, null = listing kind not supported.
+    decimal? ResolvedTransientBaseRate,
+    decimal? ResolvedLeaseBaseRate,
+    Guid? PricingPlanId,
     string? Notes,
     DateTimeOffset CreatedAt
 );
@@ -89,7 +87,9 @@ public sealed record MarinaSummaryDto(
     string Name,
     string? AddressCity,
     string? AddressState,
-    string MarinaType
+    string MarinaType,
+    string? LogoUrl = null,
+    string? BannerThumbnailUrl = null
 );
 
 // Returned from GetMyMarinasQuery — marina summary with the caller's relationship context.
@@ -106,5 +106,6 @@ public sealed record MyMarinaDto(
     decimal? Latitude,
     decimal? Longitude,
     string? UserRole,           // membership role ("Owner"/"Manager"/"Staff") or billing account role
-    string RelationshipKind     // "Staff" | "BillingAccount"
+    string RelationshipKind,    // "Staff" | "BillingAccount"
+    string? LogoUrl = null
 );
