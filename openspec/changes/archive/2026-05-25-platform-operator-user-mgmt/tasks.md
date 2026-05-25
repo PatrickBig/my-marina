@@ -61,7 +61,7 @@
 
 ## 6. Frontend: API Types & Setup
 
-- [ ] 6.1 Run `npm run generate-api` from `src/MyMarina.Web/` to regenerate TypeScript types after backend changes
+- [x] 6.1 Run `npm run generate-api` from `src/MyMarina.Web/` to regenerate TypeScript types after backend changes
 - [x] 6.2 Verify `UserProfileDto`, `UserSummaryDto`, and new DTOs appear in `src/api/schema.d.ts`
 - [x] 6.3 Update API client hooks if needed (e.g., `useQuery` for fetching user profile, `useMutation` for modifications)
 

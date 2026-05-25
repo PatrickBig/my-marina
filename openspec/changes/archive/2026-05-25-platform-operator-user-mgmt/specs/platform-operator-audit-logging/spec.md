@@ -87,7 +87,7 @@ Audit log entries SHALL display the operator's name (first and last) in human-re
 - **THEN** entry displays "Operator Pat Bigler" not just the user ID
 
 ### Requirement: Action-specific audit logging
-Different actions MAY have specialized details relevant to that action type. For example:
+Each action type SHALL include details specific to that action in the audit log entry. For example:
 - Email changes show old and new email
 - Name changes show which field (first/last) and old/new values
 - Password reset shows only that reset was initiated

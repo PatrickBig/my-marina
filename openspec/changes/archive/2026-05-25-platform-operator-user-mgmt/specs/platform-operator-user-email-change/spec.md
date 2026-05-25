@@ -44,7 +44,7 @@ The email change endpoint SHALL only be accessible to users with platform operat
 - **THEN** system returns 403 Forbidden
 
 ### Requirement: User notification (optional)
-After email change, the system MAY optionally send a notification email to the user's new email address informing them of the account email change by support staff.
+After email change, the system MAY send a notification email to the user's new email address. Any such notification SHALL NOT include sensitive account details beyond confirming the change was made by support staff.
 
 #### Scenario: User receives email change notification
 - **WHEN** operator changes user email
