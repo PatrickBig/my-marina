@@ -2,10 +2,10 @@
 # All defaults in values.yaml target production — only explicit overrides go here.
 # Image tags are injected at deploy time via --set flags in the workflow.
 
-storage:
-  s3:
-    endpoint: "https://9dde5df340e1a330841b1bef228580b8.r2.cloudflarestorage.com"
-    bucket: "my-marina-prod"
-    bucketPublicBaseUrl: "https://storage.mymarina.org"
+configMap:
+  data:
+    Storage__S3__Endpoint: "https://9dde5df340e1a330841b1bef228580b8.r2.cloudflarestorage.com"
+    Storage__S3__Bucket: "my-marina-prod"
+    Storage__S3__BucketPublicBaseUrl: "https://storage.mymarina.org"
     # Storage__S3__AccessKey and Storage__S3__SecretKey are managed by HashiCorp Vault
     # and injected into the pod via the app-secrets envFrom reference.
