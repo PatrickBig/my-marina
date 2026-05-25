@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavBar } from '@/components/NavBar';
+import { UserProfileDetail } from '@/components/UserProfileDetail';
 import {
   getPlatformTenants, createPlatformTenant, suspendTenant, reactivateTenant,
   searchPlatformUsers, forceSignOut, deactivatePlatformUser, activatePlatformUser,
@@ -209,6 +210,7 @@ function UsersPanel() {
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     searchPlatformUsers(q || undefined, page).then((r) => {
@@ -237,62 +239,80 @@ function UsersPanel() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-4">
-      <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
-        className={`${input} max-w-xs`} placeholder="Search by email or name…" />
+    <>
+      <div className="space-y-4">
+        <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
+          className={`${input} max-w-xs`} placeholder="Search by email, name, or phone…" />
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/30 border-b border-border">
-            <tr>
-              {['Name', 'Email', 'Status', 'Confirmed', 'Joined', 'Actions'].map((h) => (
-                <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-muted/30">
-                <td className="px-4 py-2 font-medium text-foreground">
-                  {u.firstName} {u.lastName}
-                  {u.isPlatformOperator && <span className="ml-1 text-xs text-indigo-500">(operator)</span>}
-                </td>
-                <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
-                <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${u.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {u.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{u.emailConfirmed ? 'Yes' : 'No'}</td>
-                <td className="px-4 py-2 text-muted-foreground/70 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-2">
-                  <div className="flex gap-1">
-                    <button onClick={() => handleForceSignOut(u.id)} className={btnSm('bg-muted text-foreground/80 hover:bg-muted')}>
-                      Sign out
-                    </button>
-                    {u.isActive
-                      ? <button onClick={() => handleDeactivate(u.id)} className={btnSm('bg-red-50 text-red-600 hover:bg-red-100')}>Deactivate</button>
-                      : <button onClick={() => handleActivate(u.id)} className={btnSm('bg-green-50 text-green-700 hover:bg-green-100')}>Activate</button>
-                    }
-                  </div>
-                </td>
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 border-b border-border">
+              <tr>
+                {['Name', 'Email', 'Status', 'Confirmed', 'Joined', 'Actions'].map((h) => (
+                  <th key={h} className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">{h}</th>
+                ))}
               </tr>
-            ))}
-            {users.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground/70">No users found.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {users.map((u) => (
+                <tr key={u.id} className="hover:bg-muted/30">
+                  <td className="px-4 py-2 font-medium text-foreground cursor-pointer hover:underline" onClick={() => setSelectedUserId(u.id)}>
+                    {u.firstName} {u.lastName}
+                    {u.isPlatformOperator && <span className="ml-1 text-xs text-indigo-500">(operator)</span>}
+                  </td>
+                  <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${u.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                      {u.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-muted-foreground/70 text-xs">{u.emailConfirmed ? 'Yes' : 'No'}</td>
+                  <td className="px-4 py-2 text-muted-foreground/70 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex gap-1">
+                      <button onClick={() => setSelectedUserId(u.id)} className={btnSm('bg-blue-50 text-blue-600 hover:bg-blue-100')}>
+                        View
+                      </button>
+                      <button onClick={() => handleForceSignOut(u.id)} className={btnSm('bg-muted text-foreground/80 hover:bg-muted')}>
+                        Sign out
+                      </button>
+                      {u.isActive
+                        ? <button onClick={() => handleDeactivate(u.id)} className={btnSm('bg-red-50 text-red-600 hover:bg-red-100')}>Deactivate</button>
+                        : <button onClick={() => handleActivate(u.id)} className={btnSm('bg-green-50 text-green-700 hover:bg-green-100')}>Activate</button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground/70">No users found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-end gap-2">
+            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
+            <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
+            <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
+          </div>
+        )}
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-end gap-2">
-          <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className={btn}>Prev</button>
-          <span className="text-sm text-muted-foreground self-center">Page {page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className={btn}>Next</button>
-        </div>
+      {selectedUserId && (
+        <UserProfileDetail
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          onRefresh={() => {
+            searchPlatformUsers(q || undefined, page).then((r) => {
+              setUsers(r.items);
+              setTotal(r.totalCount);
+            });
+          }}
+        />
       )}
-    </div>
+    </>
   );
 }
 

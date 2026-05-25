@@ -15,9 +15,13 @@ public class PlatformOperatorController(
     ICommandHandler<ForceSignOutCommand> forceSignOut,
     ICommandHandler<DeactivateUserCommand> deactivateUser,
     ICommandHandler<ActivateUserCommand> activateUser,
+    ICommandHandler<ChangeUserEmailCommand> changeUserEmail,
+    ICommandHandler<ChangeUserNameCommand> changeUserName,
+    ICommandHandler<InitiatePasswordResetCommand> initiatePasswordReset,
     ICommandHandler<RemoveListingCommand> removeListing,
     IQueryHandler<GetTenantsQuery, PagedResult<TenantSummaryDto>> getTenants,
     IQueryHandler<SearchUsersQuery, PagedResult<UserSummaryDto>> searchUsers,
+    IQueryHandler<GetUserProfileQuery, UserProfileDto> getUserProfile,
     IQueryHandler<GetAuditLogQuery, PagedResult<AuditLogEntryDto>> getAuditLog,
     IQueryHandler<GetListingModerationQueueQuery, PagedResult<ListingModerationDto>> getListings,
     IUserContext userContext)
@@ -93,6 +97,18 @@ public class PlatformOperatorController(
         return Ok(await searchUsers.HandleAsync(new SearchUsersQuery(q, page, pageSize), ct));
     }
 
+    [HttpGet("users/{userId:guid}")]
+    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserProfile(Guid userId, CancellationToken ct)
+    {
+        if (RequireOperator() is { } r) return r;
+        try
+        {
+            return Ok(await getUserProfile.HandleAsync(new GetUserProfileQuery(userId), ct));
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("users/{userId:guid}/force-signout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ForceSignOut(Guid userId, CancellationToken ct)
@@ -124,6 +140,47 @@ public class PlatformOperatorController(
         try
         {
             await activateUser.HandleAsync(new ActivateUserCommand(userId), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("users/{userId:guid}/email")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ChangeUserEmail(Guid userId, [FromBody] ChangeEmailBody body, CancellationToken ct)
+    {
+        if (RequireOperator() is { } r) return r;
+        try
+        {
+            await changeUserEmail.HandleAsync(new ChangeUserEmailCommand(userId, body.NewEmail), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPatch("users/{userId:guid}/name")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ChangeUserName(Guid userId, [FromBody] ChangeNameBody body, CancellationToken ct)
+    {
+        if (RequireOperator() is { } r) return r;
+        try
+        {
+            await changeUserName.HandleAsync(new ChangeUserNameCommand(userId, body.FirstName, body.LastName), ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPost("users/{userId:guid}/password-reset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> InitiatePasswordReset(Guid userId, CancellationToken ct)
+    {
+        if (RequireOperator() is { } r) return r;
+        try
+        {
+            await initiatePasswordReset.HandleAsync(new InitiatePasswordResetCommand(userId), ct);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -174,4 +231,6 @@ public class PlatformOperatorController(
 
     public record CreateTenantBody(string Name, string Slug, string? BillingEmail, string? SubscriptionTier);
     public record ReasonBody(string? Reason);
+    public record ChangeEmailBody(string NewEmail);
+    public record ChangeNameBody(string? FirstName, string? LastName);
 }

@@ -13,4 +13,8 @@ public record ForceSignOutCommand(Guid TargetUserId);
 public record DeactivateUserCommand(Guid TargetUserId, string? Reason);
 public record ActivateUserCommand(Guid TargetUserId);
 
+public record ChangeUserEmailCommand(Guid TargetUserId, string NewEmail);
+public record ChangeUserNameCommand(Guid TargetUserId, string? FirstName, string? LastName);
+public record InitiatePasswordResetCommand(Guid TargetUserId);
+
 public record RemoveListingCommand(Guid ListingId, string? Reason);

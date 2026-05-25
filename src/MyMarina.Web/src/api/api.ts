@@ -2,14 +2,7 @@ import { apiClient } from './client';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
-  user: UserProfileDto;
-}
-
-export interface UserProfileDto {
+export interface AuthUserDto {
   id: string;
   email: string;
   emailConfirmed: boolean;
@@ -22,7 +15,14 @@ export interface UserProfileDto {
   lastLoginAt?: string | null;
 }
 
-export interface MeResponse extends UserProfileDto {
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  user: AuthUserDto;
+}
+
+export interface MeResponse extends AuthUserDto {
   memberships: MembershipClaim[];
   billingAccounts: BillingAccountMemberClaim[];
   isPlatformOperator: boolean;
@@ -1227,6 +1227,63 @@ export interface ListingModerationDto {
   createdAt: string;
 }
 
+export interface VesselSummaryDto {
+  id: string;
+  name: string;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  length: number;
+  beam: number;
+  draft: number;
+  boatType: string;
+  hullColor: string | null;
+  registrationNumber: string | null;
+  registrationState: string | null;
+  isArchived: boolean;
+  createdAt: string;
+}
+
+export interface ReservationSummaryDto {
+  id: string;
+  vesselId: string;
+  vesselName: string;
+  slipId: string;
+  slipName: string;
+  marinaId: string;
+  marinaName: string;
+  arrivesAt: string;
+  departsAt: string;
+  status: string;
+  basePrice: number;
+  fees: number;
+  taxes: number;
+  total: number;
+  requestedAt: string;
+  confirmedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface MembershipSummaryDto {
+  id: string;
+  userId: string;
+  tenantId: string;
+  marinaId: string | null;
+  scope: string;
+  role: string;
+  invitedAt: string;
+  acceptedAt: string | null;
+  isPending: boolean;
+}
+
+export interface UserProfileDto {
+  user: UserSummaryDto;
+  vessels: VesselSummaryDto[];
+  reservations: ReservationSummaryDto[];
+  memberships: MembershipSummaryDto[];
+  recentActivity: AuditLogEntryDto[];
+}
+
 // Tenants
 export const getPlatformTenants = (search?: string, page = 1, pageSize = 25) =>
   apiClient.get<PagedResult<TenantSummaryDto>>('/platform/tenants', { params: { search, page, pageSize } }).then((r) => r.data);
@@ -1252,6 +1309,18 @@ export const deactivatePlatformUser = (userId: string, reason?: string) =>
 
 export const activatePlatformUser = (userId: string) =>
   apiClient.patch(`/platform/users/${userId}/activate`, {});
+
+export const getUserProfile = (userId: string) =>
+  apiClient.get<UserProfileDto>(`/platform/users/${userId}`).then((r) => r.data);
+
+export const changeUserEmail = (userId: string, newEmail: string) =>
+  apiClient.patch(`/platform/users/${userId}/email`, { newEmail });
+
+export const changeUserName = (userId: string, firstName?: string | null, lastName?: string | null) =>
+  apiClient.patch(`/platform/users/${userId}/name`, { firstName, lastName });
+
+export const initiatePasswordReset = (userId: string) =>
+  apiClient.post(`/platform/users/${userId}/password-reset`);
 
 // Audit log
 export const getPlatformAuditLog = (tenantId?: string, page = 1, pageSize = 50) =>
