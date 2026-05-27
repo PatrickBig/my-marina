@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -15,11 +16,6 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
-
-function getSlipIdFromPath(): string | null {
-  const m = window.location.pathname.match(/^\/slips\/([^/]+)/);
-  return m ? m[1] : null;
-}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -306,7 +302,7 @@ function LeaseInquiryCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function SlipDetailPage() {
-  const slipId = getSlipIdFromPath();
+  const { slipId = null } = useParams({ strict: false });
   const { isAuthenticated } = useAuthStore();
   const authed = isAuthenticated();
 

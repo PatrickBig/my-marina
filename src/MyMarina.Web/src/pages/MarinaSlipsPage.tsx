@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,10 +14,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function getMarinaIdFromPath(): string | null {
-  const m = window.location.pathname.match(/^\/search\/marinas\/([^/]+)/);
-  return m ? m[1] : null;
-}
 
 function formatRate(rateKind: RateKind, price: number, listingKind: ListingKind, leaseTerm?: LeaseTerm | null): string {
   if (listingKind === 'Lease') {
@@ -107,7 +104,7 @@ function SlipRow({ slip, onClick }: { slip: SlipSearchResultDto; onClick: () => 
 }
 
 export function MarinaSlipsPage() {
-  const marinaId = getMarinaIdFromPath();
+  const { marinaId = null } = useParams({ strict: false });
   const params   = new URLSearchParams(window.location.search);
 
   const listingKind  = (params.get('listingKind') ?? 'Transient') as ListingKind;

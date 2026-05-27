@@ -3,6 +3,7 @@ import { Bell, LogOut, User, Moon, Sun, HelpCircle, Navigation, Anchor, Ship, Fi
 import { logout } from '@/api/api';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
+import { OperatorButton } from '@/components/OperatorButton';
 import './NavBar.css';
 
 function BrandIcon() {
@@ -147,6 +148,8 @@ export function NavBar() {
 
         {/* Right cluster */}
         <div className="mm-cluster">
+          {user && <OperatorButton />}
+
           <button
             type="button"
             className="mm-icon-btn mm-notif-btn"

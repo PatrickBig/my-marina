@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { NavBar } from '@/components/NavBar';
 import { PricingPreviewPanel } from '@/components/PricingPreviewPanel';
 import {
@@ -480,8 +481,7 @@ function PlanCard({
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
 export function PricingPlansPage() {
-  const path = window.location.pathname;
-  const marinaId = path.split('/')[2];
+  const { marinaId = '' } = useParams({ strict: false });
 
   const [plans, setPlans] = useState<PricingPlanDto[]>([]);
   const [loading, setLoading] = useState(true);

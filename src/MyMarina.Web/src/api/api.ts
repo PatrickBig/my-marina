@@ -400,6 +400,34 @@ export const getMyMemberships = () =>
 export const acceptMembership = (membershipId: string) =>
   apiClient.post(`/memberships/${membershipId}/accept`);
 
+// ─── Marina Stats ─────────────────────────────────────────────────────────────
+
+export interface MarinaCompositionDto {
+  total: number;
+  annual: number;
+  seasonal: number;
+  monthly: number;
+  transient: number;
+  listed: number;
+  maintenance: number;
+  vacant: number;
+}
+
+export interface BillingSummaryDto {
+  totalOutstanding: number;
+  overdueCount: number;
+  totalOverdue: number;
+  collectedThisMonth: number;
+  draftCount: number;
+  sentCount: number;
+}
+
+export const getMarinaComposition = (marinaId: string) =>
+  apiClient.get<MarinaCompositionDto>(`/marinas/${marinaId}/composition`).then((r) => r.data);
+
+export const getBillingSummary = (marinaId: string) =>
+  apiClient.get<BillingSummaryDto>(`/marinas/${marinaId}/billing-summary`).then((r) => r.data);
+
 // ─── Billing Accounts ─────────────────────────────────────────────────────────
 
 export interface BillingAccountDto {

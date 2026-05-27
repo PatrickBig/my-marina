@@ -92,6 +92,28 @@ public sealed record MarinaSummaryDto(
     string? BannerThumbnailUrl = null
 );
 
+// Returned from GetMarinaCompositionQuery — slip count breakdown by assignment type.
+public sealed record MarinaCompositionDto(
+    int Total,
+    int Annual,
+    int Seasonal,
+    int Monthly,
+    int Transient,
+    int Listed,
+    int Maintenance,
+    int Vacant
+);
+
+// Returned from GetBillingSummaryQuery — invoice KPI aggregates.
+public sealed record BillingSummaryDto(
+    decimal TotalOutstanding,
+    int OverdueCount,
+    decimal TotalOverdue,
+    decimal CollectedThisMonth,
+    int DraftCount,
+    int SentCount
+);
+
 // Returned from GetMyMarinasQuery — marina summary with the caller's relationship context.
 public sealed record MyMarinaDto(
     Guid Id,

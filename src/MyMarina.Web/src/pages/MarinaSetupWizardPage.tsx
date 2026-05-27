@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -1262,7 +1263,7 @@ function Step7({
 const STEPS = ['Marina profile', 'GPS location', 'Dock structure', 'Preview', 'Pricing', 'Photos', 'Publish'];
 
 export function MarinaSetupWizardPage() {
-  const marinaId = window.location.pathname.split('/')[2];
+  const { marinaId = '' } = useParams({ strict: false });
   const [marina, setMarina] = useState<MarinaDto | null>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);

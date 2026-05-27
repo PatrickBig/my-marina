@@ -127,6 +127,8 @@ public sealed record DeleteDraftMarinaCommand(Guid MarinaId, Guid RequestingUser
 
 // Queries
 public sealed record GetMarinaQuery(Guid MarinaId, Guid RequestingUserId);
+public sealed record GetMarinaCompositionQuery(Guid MarinaId);
+public sealed record GetBillingSummaryQuery(Guid MarinaId);
 public sealed record GetMyMarinasQuery;
 public sealed record GetDocksQuery(Guid MarinaId, Guid RequestingUserId);
 public sealed record GetSlipsQuery(Guid MarinaId, Guid RequestingUserId, Guid? DockId = null);
