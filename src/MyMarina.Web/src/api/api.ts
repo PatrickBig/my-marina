@@ -236,6 +236,7 @@ export interface SlipDto {
   defaultLeaseTerm?: LeaseTerm | null;
   notes?: string | null;
   createdAt: string;
+  currentHolder?: string | null;
 }
 
 export interface MarinaSignupResponse {

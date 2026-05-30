@@ -1,67 +1,119 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Leases;
 using MyMarina.Domain.Entities;
-using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Leases;
 
 internal static class LeaseInquiryMappers
 {
+    /// <summary>
+    /// Single-item convenience wrapper used by command handlers after mutations.
+    /// Re-queries by ID so the returned DTO reflects the saved state.
+    /// </summary>
     internal static async Task<LeaseInquiryDto> ToDtoAsync(
         SlipLeaseInquiry i,
-        UserManager<ApplicationUser> userManager,
         AppDbContext db,
         CancellationToken ct)
     {
-        var requester = await userManager.FindByIdAsync(i.RequestingUserId.ToString());
-        var marina    = await db.Marinas.FindAsync([i.MarinaId], ct);
-
-        var vessel = i.VesselId.HasValue
-            ? await db.Vessels.FindAsync([i.VesselId.Value], ct)
-            : null;
-
-        string? reviewedByName  = await UserName(userManager, i.ReviewedByUserId);
-        string? approvedByName  = await UserName(userManager, i.ApprovedByUserId);
-        string? declinedByName  = await UserName(userManager, i.DeclinedByUserId);
-
-        return new LeaseInquiryDto(
-            Id: i.Id,
-            SlipId: i.SlipId,
-            SlipName: i.Slip.Name,
-            MarinaId: i.MarinaId,
-            MarinaName: marina?.Name ?? string.Empty,
-            RequestingUserId: i.RequestingUserId,
-            RequestingUserName: requester != null ? $"{requester.FirstName} {requester.LastName}".Trim() : "Unknown",
-            RequestingUserEmail: requester?.Email ?? string.Empty,
-            VesselId: i.VesselId,
-            VesselName: vessel?.Name,
-            DesiredTerm: i.DesiredTerm.ToString(),
-            DesiredStartDate: i.DesiredStartDate,
-            Message: i.Message,
-            AgreedRateKind: i.AgreedRateKind?.ToString(),
-            AgreedBaseRate: i.AgreedBaseRate,
-            AssignmentStartDate: i.AssignmentStartDate,
-            AssignmentEndDate: i.AssignmentEndDate,
-            MarinaNote: i.MarinaNote,
-            Status: i.Status.ToString(),
-            ReviewedByUserName: reviewedByName,
-            ReviewedAt: i.ReviewedAt,
-            ApprovedByUserName: approvedByName,
-            ApprovedAt: i.ApprovedAt,
-            DeclinedByUserName: declinedByName,
-            DeclinedAt: i.DeclinedAt,
-            SlipAssignmentId: i.SlipAssignmentId,
-            BillingAccountId: i.BillingAccountId,
-            CreatedAt: i.CreatedAt
-        );
+        var results = await QueryAsync(db.SlipLeaseInquiries.Where(x => x.Id == i.Id), db, ct);
+        return results.Single();
     }
 
-    private static async Task<string?> UserName(UserManager<ApplicationUser> um, Guid? userId)
+    /// <summary>
+    /// Projects a filtered, ordered inquiry queryable to DTOs in a single SQL query.
+    /// Correlated subqueries on Users/Marinas/Vessels are translated to LEFT JOINs by EF Core.
+    /// Enum-to-string mapping happens in memory after materialization.
+    /// </summary>
+    internal static async Task<IReadOnlyList<LeaseInquiryDto>> QueryAsync(
+        IQueryable<SlipLeaseInquiry> q,
+        AppDbContext db,
+        CancellationToken ct)
     {
-        if (!userId.HasValue) return null;
-        var u = await um.FindByIdAsync(userId.Value.ToString());
-        return u != null ? $"{u.FirstName} {u.LastName}".Trim() : null;
+        var rows = await q
+            .Select(i => new
+            {
+                i.Id,
+                i.SlipId,
+                SlipName = i.Slip.Name,
+                i.MarinaId,
+                MarinaName = db.Marinas
+                    .Where(m => m.Id == i.MarinaId)
+                    .Select(m => m.Name)
+                    .FirstOrDefault(),
+                i.RequestingUserId,
+                RequesterName = db.Users
+                    .Where(u => u.Id == i.RequestingUserId)
+                    .Select(u => u.FirstName + " " + u.LastName)
+                    .FirstOrDefault(),
+                RequesterEmail = db.Users
+                    .Where(u => u.Id == i.RequestingUserId)
+                    .Select(u => u.Email)
+                    .FirstOrDefault(),
+                i.VesselId,
+                VesselName = db.Vessels
+                    .Where(v => i.VesselId != null && v.Id == i.VesselId.Value)
+                    .Select(v => v.Name)
+                    .FirstOrDefault(),
+                i.DesiredTerm,
+                i.DesiredStartDate,
+                i.Message,
+                i.AgreedRateKind,
+                i.AgreedBaseRate,
+                i.AssignmentStartDate,
+                i.AssignmentEndDate,
+                i.MarinaNote,
+                i.Status,
+                ReviewedByName = db.Users
+                    .Where(u => i.ReviewedByUserId != null && u.Id == i.ReviewedByUserId.Value)
+                    .Select(u => u.FirstName + " " + u.LastName)
+                    .FirstOrDefault(),
+                i.ReviewedAt,
+                ApprovedByName = db.Users
+                    .Where(u => i.ApprovedByUserId != null && u.Id == i.ApprovedByUserId.Value)
+                    .Select(u => u.FirstName + " " + u.LastName)
+                    .FirstOrDefault(),
+                i.ApprovedAt,
+                DeclinedByName = db.Users
+                    .Where(u => i.DeclinedByUserId != null && u.Id == i.DeclinedByUserId.Value)
+                    .Select(u => u.FirstName + " " + u.LastName)
+                    .FirstOrDefault(),
+                i.DeclinedAt,
+                i.SlipAssignmentId,
+                i.BillingAccountId,
+                i.CreatedAt,
+            })
+            .ToListAsync(ct);
+
+        return rows.Select(r => new LeaseInquiryDto(
+            Id:                  r.Id,
+            SlipId:              r.SlipId,
+            SlipName:            r.SlipName,
+            MarinaId:            r.MarinaId,
+            MarinaName:          r.MarinaName ?? string.Empty,
+            RequestingUserId:    r.RequestingUserId,
+            RequestingUserName:  string.IsNullOrWhiteSpace(r.RequesterName) ? "Unknown" : r.RequesterName.Trim(),
+            RequestingUserEmail: r.RequesterEmail ?? string.Empty,
+            VesselId:            r.VesselId,
+            VesselName:          r.VesselName,
+            DesiredTerm:         r.DesiredTerm.ToString(),
+            DesiredStartDate:    r.DesiredStartDate,
+            Message:             r.Message,
+            AgreedRateKind:      r.AgreedRateKind?.ToString(),
+            AgreedBaseRate:      r.AgreedBaseRate,
+            AssignmentStartDate: r.AssignmentStartDate,
+            AssignmentEndDate:   r.AssignmentEndDate,
+            MarinaNote:          r.MarinaNote,
+            Status:              r.Status.ToString(),
+            ReviewedByUserName:  r.ReviewedByName?.Trim() ?? string.Empty,
+            ReviewedAt:          r.ReviewedAt,
+            ApprovedByUserName:  r.ApprovedByName?.Trim() ?? string.Empty,
+            ApprovedAt:          r.ApprovedAt,
+            DeclinedByUserName:  r.DeclinedByName?.Trim() ?? string.Empty,
+            DeclinedAt:          r.DeclinedAt,
+            SlipAssignmentId:    r.SlipAssignmentId,
+            BillingAccountId:    r.BillingAccountId,
+            CreatedAt:           r.CreatedAt
+        )).ToList();
     }
 }

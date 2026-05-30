@@ -1,15 +1,13 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Leases;
 using MyMarina.Domain.Entities;
 using MyMarina.Domain.Enums;
-using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Leases;
 
-public class CreateLeaseInquiryCommandHandler(AppDbContext db, UserManager<ApplicationUser> userManager)
+public class CreateLeaseInquiryCommandHandler(AppDbContext db)
     : ICommandHandler<CreateLeaseInquiryCommand, LeaseInquiryDto>
 {
     public async Task<LeaseInquiryDto> HandleAsync(CreateLeaseInquiryCommand command, CancellationToken ct = default)
@@ -39,8 +37,6 @@ public class CreateLeaseInquiryCommandHandler(AppDbContext db, UserManager<Appli
         db.SlipLeaseInquiries.Add(inquiry);
         await db.SaveChangesAsync(ct);
 
-        inquiry.Slip = slip;
-
-        return await LeaseInquiryMappers.ToDtoAsync(inquiry, userManager, db, ct);
+        return await LeaseInquiryMappers.ToDtoAsync(inquiry, db, ct);
     }
 }

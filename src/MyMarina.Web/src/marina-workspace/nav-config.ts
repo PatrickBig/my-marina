@@ -2,13 +2,13 @@ import {
   LayoutGrid, CalendarCheck, Wrench, Calendar,
   Users, ListChecks, Receipt,
   Anchor, DollarSign, Megaphone, Shield, Settings,
-  Menu,
+  Menu, FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { MarinaCounters } from './useMarinaCounters';
 
 export type NavId =
-  | 'dashboard' | 'reservations' | 'maintenance' | 'listings'
+  | 'dashboard' | 'reservations' | 'inquiries' | 'maintenance' | 'listings'
   | 'accounts' | 'assignments' | 'billing'
   | 'slips' | 'pricing' | 'announcements' | 'staff' | 'settings';
 
@@ -30,6 +30,7 @@ export const MARINA_NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'dashboard',    label: 'Dashboard',     icon: LayoutGrid,    counter: null },
       { id: 'reservations', label: 'Reservations',  icon: CalendarCheck, counter: 'pendingReservations' },
+      { id: 'inquiries',    label: 'Inquiries',     icon: FileText,      counter: 'pendingInquiries' },
       { id: 'maintenance',  label: 'Maintenance',   icon: Wrench,        counter: 'openWorkOrders' },
       { id: 'listings',     label: 'Listings',      icon: Calendar,      counter: null },
     ],

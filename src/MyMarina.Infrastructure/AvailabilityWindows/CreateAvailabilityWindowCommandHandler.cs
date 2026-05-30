@@ -20,9 +20,9 @@ public class CreateAvailabilityWindowCommandHandler(AppDbContext db)
             .FirstOrDefaultAsync(s => s.Id == command.SlipId && s.MarinaId == command.MarinaId, ct)
             ?? throw new KeyNotFoundException($"Slip {command.SlipId} not found.");
 
-        // Non-overlap enforcement
+        // Non-overlap enforcement — Closed windows are soft-deleted, don't block new ones
         var existing = await db.AvailabilityWindows
-            .Where(w => w.SlipId == command.SlipId)
+            .Where(w => w.SlipId == command.SlipId && w.Status != AvailabilityWindowStatus.Closed)
             .ToListAsync(ct);
 
         var overlap = existing.FirstOrDefault(w =>

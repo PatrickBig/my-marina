@@ -68,7 +68,8 @@ public sealed record SlipDto(
     decimal? ResolvedLeaseBaseRate,
     Guid? PricingPlanId,
     string? Notes,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    string? CurrentHolder = null  // "Brennan · annual" — null when vacant
 );
 
 // Returned from CreateMarinaAccountCommand — includes a fresh JWT so the user is

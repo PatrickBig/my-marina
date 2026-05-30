@@ -24,10 +24,18 @@ import { MarinaSetupWizardPage } from '@/pages/MarinaSetupWizardPage';
 import { PricingPlansPage } from '@/pages/PricingPlansPage';
 import { DashboardPage } from '@/routes/marina/dashboard';
 import { ReservationsPage } from '@/routes/marina/reservations';
+import { InquiriesPage } from '@/routes/marina/inquiries';
 import { MaintenancePage as MarinaMaintenancePage } from '@/routes/marina/maintenance';
 import { MyMarinasPage } from '@/pages/MyMarinasPage';
 import { MarinaWorkspaceLayout } from '@/marina-workspace/MarinaWorkspaceLayout';
 import { BillingPage } from '@/routes/marina/billing';
+import { CustomersPage } from '@/routes/marina/customers';
+import { AssignmentsPage } from '@/routes/marina/assignments';
+import { ListingsPage } from '@/routes/marina/listings';
+import { SlipsPage } from '@/routes/marina/slips';
+import { AnnouncementsPage } from '@/routes/marina/announcements';
+import { StaffPage } from '@/routes/marina/staff';
+import { SettingsPage } from '@/routes/marina/settings';
 
 // ─── Root layout ──────────────────────────────────────────────────────────────
 
@@ -182,15 +190,6 @@ const marinaWorkspaceRoute = createRoute({
   component: MarinaWorkspaceLayout,
 });
 
-// Placeholder stub component used by unimplemented workspace routes
-function WorkspacePlaceholder({ name }: { name: string }) {
-  return (
-    <div className="p-6 text-muted-foreground text-sm">
-      {name} — coming soon
-    </div>
-  );
-}
-
 // /marina/$marinaId → redirect to /marina/$marinaId/dashboard
 const marinaWorkspaceIndexRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
@@ -211,36 +210,77 @@ const reservationsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/reservations',
   component: ReservationsPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; id?: string; page?: string } => ({
+    status: typeof s.status === 'string' ? s.status : undefined,
+    id:     typeof s.id     === 'string' ? s.id     : undefined,
+    page:   typeof s.page   === 'string' ? s.page   : undefined,
+  }),
+});
+const inquiriesRoute = createRoute({
+  getParentRoute: () => marinaWorkspaceRoute,
+  path: '/inquiries',
+  component: InquiriesPage,
 });
 const workspaceMaintenanceRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/maintenance',
   component: MarinaMaintenancePage,
+  validateSearch: (s: Record<string, unknown>): { view?: string; done?: string; col?: string } => ({
+    view: typeof s.view === 'string' ? s.view : undefined,
+    done: typeof s.done === 'string' ? s.done : undefined,
+    col:  typeof s.col  === 'string' ? s.col  : undefined,
+  }),
 });
 const listingsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/listings',
-  component: () => <WorkspacePlaceholder name="Listings" />,
+  component: ListingsPage,
+  validateSearch: (s: Record<string, unknown>): { slipId?: string; slipName?: string; windowId?: string } => ({
+    slipId:   typeof s.slipId   === 'string' ? s.slipId   : undefined,
+    slipName: typeof s.slipName === 'string' ? s.slipName : undefined,
+    windowId: typeof s.windowId === 'string' ? s.windowId : undefined,
+  }),
 });
 const accountsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/accounts',
-  component: () => <WorkspacePlaceholder name="Customers" />,
+  component: CustomersPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; id?: string; page?: string; q?: string } => ({
+    status: typeof s.status === 'string' ? s.status : undefined,
+    id:     typeof s.id     === 'string' ? s.id     : undefined,
+    page:   typeof s.page   === 'string' ? s.page   : undefined,
+    q:      typeof s.q      === 'string' ? s.q      : undefined,
+  }),
 });
 const assignmentsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/assignments',
-  component: () => <WorkspacePlaceholder name="Assignments" />,
+  component: AssignmentsPage,
+  validateSearch: (s: Record<string, unknown>): { type?: string; endingSoon?: string; page?: string } => ({
+    type:       typeof s.type       === 'string' ? s.type       : undefined,
+    endingSoon: typeof s.endingSoon === 'string' ? s.endingSoon : undefined,
+    page:       typeof s.page       === 'string' ? s.page       : undefined,
+  }),
 });
 const billingRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/billing',
   component: BillingPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; id?: string; page?: string } => ({
+    status: typeof s.status === 'string' ? s.status : undefined,
+    id:     typeof s.id     === 'string' ? s.id     : undefined,
+    page:   typeof s.page   === 'string' ? s.page   : undefined,
+  }),
 });
 const slipsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/slips',
-  component: () => <WorkspacePlaceholder name="Slips & docks" />,
+  component: SlipsPage,
+  validateSearch: (s: Record<string, unknown>): { status?: string; page?: string; dock?: string } => ({
+    status: typeof s.status === 'string' ? s.status : undefined,
+    page:   typeof s.page   === 'string' ? s.page   : undefined,
+    dock:   typeof s.dock   === 'string' ? s.dock   : undefined,
+  }),
 });
 const pricingRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
@@ -250,17 +290,20 @@ const pricingRoute = createRoute({
 const announcementsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/announcements',
-  component: () => <WorkspacePlaceholder name="Announcements" />,
+  component: AnnouncementsPage,
 });
 const staffRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/staff',
-  component: () => <WorkspacePlaceholder name="Staff" />,
+  component: StaffPage,
 });
 const settingsRoute = createRoute({
   getParentRoute: () => marinaWorkspaceRoute,
   path: '/settings',
-  component: () => <WorkspacePlaceholder name="Settings" />,
+  component: SettingsPage,
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof s.tab === 'string' ? s.tab : undefined,
+  }),
 });
 
 const homeRoute = createRoute({
@@ -295,6 +338,7 @@ const routeTree = rootRoute.addChildren([
       marinaWorkspaceIndexRoute,
       dashboardRoute,
       reservationsRoute,
+      inquiriesRoute,
       workspaceMaintenanceRoute,
       listingsRoute,
       accountsRoute,

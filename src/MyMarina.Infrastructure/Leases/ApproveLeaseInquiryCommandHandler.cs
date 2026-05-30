@@ -189,6 +189,6 @@ public class ApproveLeaseInquiryCommandHandler(
             RequestingUserId: inquiry.RequestingUserId,
             ApprovedByUserId: command.ApprovingUserId), ct);
 
-        return await LeaseInquiryMappers.ToDtoAsync(inquiry, userManager, db, ct);
+        return await LeaseInquiryMappers.ToDtoAsync(inquiry, db, ct);
     }
 }

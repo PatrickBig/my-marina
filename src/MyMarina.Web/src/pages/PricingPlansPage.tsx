@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { NavBar } from '@/components/NavBar';
+import { PageHeader, PageBody } from '@/marina-workspace/PageHeader';
 import { PricingPreviewPanel } from '@/components/PricingPreviewPanel';
 import {
   getPricingPlans, createPricingPlan, updatePricingPlan, deletePricingPlan,
@@ -547,30 +547,17 @@ export function PricingPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <NavBar />
-      <div className="max-w-3xl mx-auto py-10 px-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <a href={`/marina/${marinaId}`} className="text-xs text-muted-foreground hover:text-foreground underline">
-              ← Back to dashboard
-            </a>
-            <h1 className="text-2xl font-semibold text-foreground mt-1">Pricing plans</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Define rate bundles for your slips. The default plan applies to any slip without an explicit assignment.
-            </p>
-          </div>
-          {!isCreating && (
-            <button
-              type="button"
-              onClick={() => setEditingPlan('new')}
-              className={btn}
-            >
-              + New plan
-            </button>
-          )}
-        </div>
-
+    <>
+      <PageHeader
+        title="Pricing plans"
+        subtitle="Define rate bundles for your slips. The default plan applies to any slip without an explicit assignment."
+        actions={!isCreating ? (
+          <button type="button" onClick={() => setEditingPlan('new')} className={btn}>
+            + New plan
+          </button>
+        ) : undefined}
+      />
+      <PageBody className="space-y-6">
         {loading && <p className="text-sm text-muted-foreground/70">Loading…</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -613,7 +600,7 @@ export function PricingPlansPage() {
             />
           ))}
         </div>
-      </div>
-    </div>
+      </PageBody>
+    </>
   );
 }

@@ -1,14 +1,12 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyMarina.Application.Abstractions;
 using MyMarina.Application.Leases;
 using MyMarina.Domain.Enums;
-using MyMarina.Infrastructure.Identity;
 using MyMarina.Infrastructure.Persistence;
 
 namespace MyMarina.Infrastructure.Leases;
 
-public class UpdateLeaseInquiryCommandHandler(AppDbContext db, UserManager<ApplicationUser> userManager)
+public class UpdateLeaseInquiryCommandHandler(AppDbContext db)
     : ICommandHandler<UpdateLeaseInquiryCommand, LeaseInquiryDto>
 {
     public async Task<LeaseInquiryDto> HandleAsync(UpdateLeaseInquiryCommand command, CancellationToken ct = default)
@@ -31,12 +29,12 @@ public class UpdateLeaseInquiryCommandHandler(AppDbContext db, UserManager<Appli
 
         if (command.MarkUnderReview && inquiry.Status == LeaseInquiryStatus.Pending)
         {
-            inquiry.Status      = LeaseInquiryStatus.UnderReview;
+            inquiry.Status           = LeaseInquiryStatus.UnderReview;
             inquiry.ReviewedByUserId = command.RequestingUserId;
-            inquiry.ReviewedAt  = DateTimeOffset.UtcNow;
+            inquiry.ReviewedAt       = DateTimeOffset.UtcNow;
         }
 
         await db.SaveChangesAsync(ct);
-        return await LeaseInquiryMappers.ToDtoAsync(inquiry, userManager, db, ct);
+        return await LeaseInquiryMappers.ToDtoAsync(inquiry, db, ct);
     }
 }

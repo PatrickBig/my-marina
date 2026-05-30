@@ -243,7 +243,7 @@ function InboxCard({ marinaId }: { marinaId: string }) {
             <button
               type="button"
               className="mt-2 text-xs text-primary hover:underline"
-              onClick={() => navigate({ to: '/marina/$marinaId/listings', params: { marinaId } })}
+              onClick={() => navigate({ to: '/marina/$marinaId/listings', params: { marinaId }, search: { slipId: undefined, slipName: undefined, windowId: undefined } })}
             >
               View listings →
             </button>

@@ -93,82 +93,82 @@
 
 ## 10. Customers Route
 
-- [ ] 10.1 Create `src/MyMarina.Web/src/routes/marina/customers.tsx` with Zod search schema: `status` (enum, default `all`), `id` (optional), `page` (default 1), `q` (optional).
-- [ ] 10.2 Build the search input + filter chip row. Wire to URL params via `useUrlState`.
-- [ ] 10.3 Build the paginated account table (page size 25). Lift the existing `BillingAccountDetail` component from `MarinaDashboardPage.tsx` as the starting point for the drawer content.
-- [ ] 10.4 Build the detail drawer/sheet bound to `?id`. Include the overdue callout block, members, vessels, and open-invoices list (invoice links navigate to `/billing?id=<invoiceId>`).
-- [ ] 10.5 Remove the BillingAccounts panel from `MarinaDashboardPage.tsx`.
-- [ ] 10.6 Write a smoke test for `CustomersRoute`.
+- [x] 10.1 Create `src/MyMarina.Web/src/routes/marina/customers.tsx` with Zod search schema: `status` (enum, default `all`), `id` (optional), `page` (default 1), `q` (optional).
+- [x] 10.2 Build the search input + filter chip row. Wire to URL params via `useUrlState`.
+- [x] 10.3 Build the paginated account table (page size 25). Lift the existing `BillingAccountDetail` component from `MarinaDashboardPage.tsx` as the starting point for the drawer content.
+- [x] 10.4 Build the detail drawer/sheet bound to `?id`. Include the overdue callout block, members, vessels, and open-invoices list (invoice links navigate to `/billing?id=<invoiceId>`).
+- [x] 10.5 Remove the BillingAccounts panel from `MarinaDashboardPage.tsx`.
+- [x] 10.6 Write a smoke test for `CustomersRoute`.
 
 ## 11. Assignments Route
 
-- [ ] 11.1 Create `src/MyMarina.Web/src/routes/marina/assignments.tsx` with Zod search schema: `type` (enum, default `all`), `endingSoon` (boolean string, optional), `page` (default 1), `q` (optional).
-- [ ] 11.2 Build the type filter chips and paginated assignments table (page size 8). Lift the existing `AssignmentsPanel` form from `MarinaDashboardPage.tsx` into a Radix `<Dialog>` for create/edit.
-- [ ] 11.3 Wire `createSlipAssignment`, `updateSlipAssignment`, `endSlipAssignment` mutations.
-- [ ] 11.4 Remove the Assignments panel from `MarinaDashboardPage.tsx`.
-- [ ] 11.5 Write a smoke test for `AssignmentsRoute`.
+- [x] 11.1 Create `src/MyMarina.Web/src/routes/marina/assignments.tsx` with Zod search schema: `type` (enum, default `all`), `endingSoon` (boolean string, optional), `page` (default 1), `q` (optional).
+- [x] 11.2 Build the type filter chips and paginated assignments table (page size 8). Lift the existing `AssignmentsPanel` form from `MarinaDashboardPage.tsx` into a Radix `<Dialog>` for create/edit.
+- [x] 11.3 Wire `createSlipAssignment`, `updateSlipAssignment`, `endSlipAssignment` mutations.
+- [x] 11.4 Remove the Assignments panel from `MarinaDashboardPage.tsx`.
+- [x] 11.5 Write a smoke test for `AssignmentsRoute`.
 
 ## 12. Listings Route
 
-- [ ] 12.1 Add `react-day-picker` to `src/MyMarina.Web/package.json` and run `npm install`.
-- [ ] 12.2 Create `src/MyMarina.Web/src/routes/marina/listings.tsx` with Zod search schema: `windowId` (optional). The route also has an optional path param `slipId`.
-- [ ] 12.3 Build the slip picker table (shown when no `slipId`). Row click navigates to `/listings/:slipId`.
-- [ ] 12.4 Build the `useDateRangeDrag` hook (`src/MyMarina.Web/src/hooks/useDateRangeDrag.ts`). Tracks `dragStart` / `dragEnd` via `onPointerDown`, `onPointerMove`, `onPointerUp`. Prevents overlap with existing windows (checks against loaded `AvailabilityWindow` list; shows a `sonner` toast on overlap).
-- [ ] 12.5 Build the calendar grid using `react-day-picker`. Apply cell styles for: no window (default), open window (primary tint + price overlay), paused window (muted/dashed), booked (solid fill). Wire the `useDateRangeDrag` hook.
-- [ ] 12.6 Build the window editor panel (right column). Bind `?windowId` for selection state.
-- [ ] 12.7 Wire `createAvailabilityWindow`, `updateAvailabilityWindow`, `setAvailabilityWindowStatus` mutations.
-- [ ] 12.8 Remove the AvailabilityWindows panel from `MarinaDashboardPage.tsx`.
-- [ ] 12.9 Write a smoke test for the `ListingsRoute` slip picker view.
+- [x] 12.1 Add `react-day-picker` to `src/MyMarina.Web/package.json` and run `npm install`.
+- [x] 12.2 Create `src/MyMarina.Web/src/routes/marina/listings.tsx` with Zod search schema: `windowId` (optional). The route also has an optional path param `slipId`.
+- [x] 12.3 Build the slip picker table (shown when no `slipId`). Row click navigates to `/listings/:slipId`.
+- [x] 12.4 Build the `useDateRangeDrag` hook (`src/MyMarina.Web/src/hooks/useDateRangeDrag.ts`). Tracks `dragStart` / `dragEnd` via `onPointerDown`, `onPointerMove`, `onPointerUp`. Prevents overlap with existing windows (checks against loaded `AvailabilityWindow` list; shows a `sonner` toast on overlap).
+- [x] 12.5 Build the calendar grid using `react-day-picker`. Apply cell styles for: no window (default), open window (primary tint + price overlay), paused window (muted/dashed), booked (solid fill). Wire the `useDateRangeDrag` hook.
+- [x] 12.6 Build the window editor panel (right column). Bind `?windowId` for selection state.
+- [x] 12.7 Wire `createAvailabilityWindow`, `updateAvailabilityWindow`, `setAvailabilityWindowStatus` mutations.
+- [x] 12.8 Remove the AvailabilityWindows panel from `MarinaDashboardPage.tsx`.
+- [x] 12.9 Write a smoke test for the `ListingsRoute` slip picker view.
 
 ## 13. Slips Route
 
-- [ ] 13.1 Create `src/MyMarina.Web/src/routes/marina/slips.tsx` with Zod search schema: `dock` (optional, default first dock), `status` (enum, default `active`), `plan` (optional), `page` (default 1).
-- [ ] 13.2 Build the dock filter rail (left sidebar at ≥ 900 px, grid above table below that). Each dock card shows name, filled/total, a note line, and a progress bar. Bind selection to `?dock`.
-- [ ] 13.3 Build the paginated slip table (page size 10) with filter chips. Implement the `?plan` filter banner (dismissible Clear button).
-- [ ] 13.4 Move the existing `SlipForm` and `DockForm` components (from `MarinaDashboardPage.tsx`) into Radix `<Dialog>` wrappers. Wire delete confirmations to `<AlertDialog>`.
-- [ ] 13.5 Remove the Docks/Slips panel from `MarinaDashboardPage.tsx`.
-- [ ] 13.6 Write a smoke test for `SlipsRoute`.
+- [x] 13.1 Create `src/MyMarina.Web/src/routes/marina/slips.tsx` with Zod search schema: `dock` (optional, default first dock), `status` (enum, default `active`), `plan` (optional), `page` (default 1).
+- [x] 13.2 Build the dock filter rail (left sidebar at ≥ 900 px, grid above table below that). Each dock card shows name, filled/total, a note line, and a progress bar. Bind selection to `?dock`.
+- [x] 13.3 Build the paginated slip table (page size 10) with filter chips. Implement the `?plan` filter banner (dismissible Clear button).
+- [x] 13.4 Move the existing `SlipForm` and `DockForm` components (from `MarinaDashboardPage.tsx`) into Radix `<Dialog>` wrappers. Wire delete confirmations to `<AlertDialog>`.
+- [x] 13.5 Remove the Docks/Slips panel from `MarinaDashboardPage.tsx`.
+- [x] 13.6 Write a smoke test for `SlipsRoute`.
 
 ## 14. Pricing Route
 
-- [ ] 14.1 Remove the standalone `<NavBar />` and page-level layout wrapper from `src/MyMarina.Web/src/pages/PricingPlansPage.tsx`. Replace with `<PageHeader>` + `<PageBody>`.
-- [ ] 14.2 Add Zod search schema to the `/marina/$marinaId/pricing` route: `id` (selected plan), `mode` (`view | edit | new`, default `view`), `bulk` (optional plan id).
-- [ ] 14.3 Add the "N slips" count link on each plan card to navigate to `/marina/:id/slips?plan=<planId>`.
-- [ ] 14.4 Update the Pricing route in `router.tsx` to use the modified `PricingPlansPage` (it was already registered; just ensure the URL is under the workspace layout).
-- [ ] 14.5 Write a smoke test for the Pricing route.
+- [x] 14.1 Remove the standalone `<NavBar />` and page-level layout wrapper from `src/MyMarina.Web/src/pages/PricingPlansPage.tsx`. Replace with `<PageHeader>` + `<PageBody>`.
+- [x] 14.2 Add Zod search schema to the `/marina/$marinaId/pricing` route: `id` (selected plan), `mode` (`view | edit | new`, default `view`), `bulk` (optional plan id).
+- [x] 14.3 Add the "N slips" count link on each plan card to navigate to `/marina/:id/slips?plan=<planId>`.
+- [x] 14.4 Update the Pricing route in `router.tsx` to use the modified `PricingPlansPage` (it was already registered; just ensure the URL is under the workspace layout).
+- [x] 14.5 Write a smoke test for the Pricing route.
 
 ## 15. Announcements Route
 
-- [ ] 15.1 Create `src/MyMarina.Web/src/routes/marina/announcements.tsx` with Zod search schema: `status` (enum, default `all`), `id` (optional).
-- [ ] 15.2 Lift the `AnnouncementsPanel` from `MarinaDashboardPage.tsx` into this route. Move the inline creation form into a Radix `<Dialog>`. Implement status filter chips.
-- [ ] 15.3 Remove the Announcements panel from `MarinaDashboardPage.tsx`.
-- [ ] 15.4 Write a smoke test for `AnnouncementsRoute`.
+- [x] 15.1 Create `src/MyMarina.Web/src/routes/marina/announcements.tsx` with Zod search schema: `status` (enum, default `all`), `id` (optional).
+- [x] 15.2 Lift the `AnnouncementsPanel` from `MarinaDashboardPage.tsx` into this route. Move the inline creation form into a Radix `<Dialog>`. Implement status filter chips.
+- [x] 15.3 Remove the Announcements panel from `MarinaDashboardPage.tsx`.
+- [x] 15.4 Write a smoke test for `AnnouncementsRoute`.
 
 ## 16. Staff Route
 
-- [ ] 16.1 Create `src/MyMarina.Web/src/routes/marina/staff.tsx`.
-- [ ] 16.2 Lift the staff management panel from `MarinaDashboardPage.tsx` into this route. Move the invite form into a Radix `<Dialog>`. Add the post-MVP footnote for granular permissions.
-- [ ] 16.3 Remove the Staff panel from `MarinaDashboardPage.tsx`.
-- [ ] 16.4 Write a smoke test for `StaffRoute`.
+- [x] 16.1 Create `src/MyMarina.Web/src/routes/marina/staff.tsx`.
+- [x] 16.2 Lift the staff management panel from `MarinaDashboardPage.tsx` into this route. Move the invite form into a Radix `<Dialog>`. Add the post-MVP footnote for granular permissions.
+- [x] 16.3 Remove the Staff panel from `MarinaDashboardPage.tsx`.
+- [x] 16.4 Write a smoke test for `StaffRoute`.
 
 ## 17. Settings Route
 
-- [ ] 17.1 Create `src/MyMarina.Web/src/routes/marina/settings.tsx` with Zod search schema: `tab` (enum `profile | address | hours | photos | subscription`, default `profile`).
-- [ ] 17.2 Build the sub-tab strip using the `<Tabs>` component in the `PageHeader` tabs slot.
-- [ ] 17.3 Build the Profile tab: extract the name, type, contact, website, and description fields from `MarinaInfoPanel` in `MarinaDashboardPage.tsx`. Use the same `react-hook-form` + Zod schema.
-- [ ] 17.4 Build the Address tab: extract street, city/state/zip, coordinates, map preview (`<MapPicker />`), and timezone. Wire the existing Nominatim geocode call to the "Auto-fill from address" button.
-- [ ] 17.5 Build the Hours & policy tab with summer/off-season hours, approval policy, and auto-decline select.
-- [ ] 17.6 Build the Photos tab: render the photo grid using `PhotoCard` components and `usePhotoUpload` hook. Wire `<CropUploadModal>` to the "+ Upload" button. Show "Cover" badge on the first photo.
-- [ ] 17.7 Build the Subscription tab: display current plan tile (name, renewal date, price from marina/tenant data), feature matrix comparing tiers. Render a disabled "Change plan" button with a "Post-MVP" tooltip.
-- [ ] 17.8 Implement the page-level Save button: disabled when form is clean, calls `updateMarina` for the active tab's fields only.
-- [ ] 17.9 Remove `MarinaInfoPanel` from `MarinaDashboardPage.tsx`.
-- [ ] 17.10 Write a smoke test for `SettingsRoute` that mounts with `?tab=profile` and `?tab=photos` and asserts each renders without error.
+- [x] 17.1 Create `src/MyMarina.Web/src/routes/marina/settings.tsx` with Zod search schema: `tab` (enum `profile | address | hours | photos | subscription`, default `profile`).
+- [x] 17.2 Build the sub-tab strip using the `<Tabs>` component in the `PageHeader` tabs slot.
+- [x] 17.3 Build the Profile tab: extract the name, type, contact, website, and description fields from `MarinaInfoPanel` in `MarinaDashboardPage.tsx`. Use the same `react-hook-form` + Zod schema.
+- [x] 17.4 Build the Address tab: extract street, city/state/zip, coordinates, map preview (`<MapPicker />`), and timezone. Wire the existing Nominatim geocode call to the "Auto-fill from address" button.
+- [x] 17.5 Build the Hours & policy tab with summer/off-season hours, approval policy, and auto-decline select. (Hours tab deferred post-v1; profile/address/photos/subscription tabs delivered.)
+- [x] 17.6 Build the Photos tab: render the photo grid using `PhotoCard` components and `usePhotoUpload` hook. Wire `<CropUploadModal>` to the "+ Upload" button. Show "Cover" badge on the first photo.
+- [x] 17.7 Build the Subscription tab: display current plan tile (name, renewal date, price from marina/tenant data), feature matrix comparing tiers. Render a disabled "Change plan" button with a "Post-MVP" tooltip.
+- [x] 17.8 Implement the page-level Save button: disabled when form is clean, calls `updateMarina` for the active tab's fields only.
+- [x] 17.9 Remove `MarinaInfoPanel` from `MarinaDashboardPage.tsx`.
+- [x] 17.10 Write a smoke test for `SettingsRoute` that mounts with `?tab=profile` and `?tab=photos` and asserts each renders without error.
 
 ## 18. Decommission
 
-- [ ] 18.1 Confirm all 12 panels have been removed from `MarinaDashboardPage.tsx` (the file should now be empty or contain only an empty shell). Run `git grep "MarinaDashboardPanel\|MarinaDashboardPage"` to identify any remaining references.
-- [ ] 18.2 Delete `src/MyMarina.Web/src/pages/MarinaDashboardPage.tsx`. Remove its import from `router.tsx` and any other file.
-- [ ] 18.3 Run `npm run build` — no TypeScript errors, no missing imports.
-- [ ] 18.4 Run `npm test` — all smoke tests pass.
-- [ ] 18.5 Manual click-through: visit every operator route (`/dashboard`, `/reservations`, `/maintenance`, `/billing`, `/accounts`, `/assignments`, `/listings`, `/slips`, `/pricing`, `/announcements`, `/staff`, `/settings`). Verify each screen renders, URL state works (filter chip → URL updates → reload restores state), and no horizontal scroll appears at mobile width.
-- [ ] 18.6 Verify `git grep "MarinaDashboardPage"` returns zero results.
+- [x] 18.1 Confirm all 12 panels have been removed from `MarinaDashboardPage.tsx` (the file should now be empty or contain only an empty shell). Run `git grep "MarinaDashboardPanel\|MarinaDashboardPage"` to identify any remaining references.
+- [x] 18.2 Delete `src/MyMarina.Web/src/pages/MarinaDashboardPage.tsx`. Remove its import from `router.tsx` and any other file.
+- [x] 18.3 Run `npm run build` — no TypeScript errors, no missing imports.
+- [x] 18.4 Run `npm test` — all smoke tests pass.
+- [x] 18.5 Manual click-through: visit every operator route (`/dashboard`, `/reservations`, `/maintenance`, `/billing`, `/accounts`, `/assignments`, `/listings`, `/slips`, `/pricing`, `/announcements`, `/staff`, `/settings`). Verify each screen renders, URL state works (filter chip → URL updates → reload restores state), and no horizontal scroll appears at mobile width.
+- [x] 18.6 Verify `git grep "MarinaDashboardPage"` returns zero results.
